@@ -8,7 +8,7 @@ import { createUploadLink } from "apollo-upload-client";
 import { useUserStore } from "stores/user";
 
 const httpLink = createUploadLink({
-  uri: "http://localhost:4000/graphql",
+  uri: process.env.NEXT_PUBLIC_GRAPHQL_URL,
 });
 
 const { token } = useUserStore.getState();
@@ -16,7 +16,7 @@ const { token } = useUserStore.getState();
 const wsClient = process.browser
   ? createClient({
       lazy: true,
-      url: "wss://localhost:4000/graphql",
+      url: `${process.env.NEXT_PUBLIC_GRAPHQL_WS_URL}`,
       connectionParams: {
         headers: {
           authorization: token ? `Bearer ${token}` : "",
