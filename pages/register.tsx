@@ -128,7 +128,7 @@ export default function Checkout() {
         role: `${reverseMap[registeredAs] as Roles}`,
       });
 
-      push("/");
+      push("/dashboard");
     } catch (error) {
       setErrorMessage(`${error}`);
     }

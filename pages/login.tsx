@@ -73,7 +73,7 @@ export default function Login() {
               try {
                 await login(data);
 
-                push("/");
+                push("/dashboard");
               } catch (error) {
                 setErrorMessage(`${error}`);
               }
