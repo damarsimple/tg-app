@@ -37,7 +37,7 @@ export const useUserStore = create(
   persist<UserState>(
     (set, get) => ({
       setUser: (user?: User) => set(() => ({ user })),
-      validateEmail: async (e) => {
+      register: async (e) => {
         const { data } = await client.mutate<{ register: Auth }>({
           mutation: gql`
             mutation Register(
@@ -50,7 +50,8 @@ export const useUserStore = create(
               $address: String
               $nrg: String
               $nisn: String
-              $phoneNumber: String
+              $phoneNumber: String!
+              $schoolId: String
             ) {
               register(
                 email: $email
@@ -63,6 +64,7 @@ export const useUserStore = create(
                 nrg: $nrg
                 nisn: $nisn
                 phoneNumber: $phoneNumber
+                schoolId: $schoolId
               ) {
                 token
                 success
@@ -137,26 +139,34 @@ export const useUserStore = create(
           token: login.token,
         });
       },
-      register: async (e) => {
-        const { data } = await client.mutate({
+      validateEmail: async (e) => {
+        const { data } = await client.mutate<{ validate: Auth }>({
           mutation: gql`
-            mutation Test {
-              test {
-                test
+            mutation Validate($email: String!) {
+              validate(email: $email) {
+                success
+                message
               }
             }
           `,
-          variables: {},
+          variables: { email: e.email },
         });
+        if (!data) return;
+
+        const { validate } = data;
+
+        if (!validate.success) {
+          throw Error(validate.message ?? "Undefined Error");
+        }
       },
       logout: () => {
         set({ user: undefined, token: undefined });
-        window.location.replace("/");
+        window.location.replace("/dashboard");
       },
     }),
     {
-      name: "food-storage", // unique name
-      getStorage: () => sessionStorage, // (optional) by default, 'localStorage' is used
+      name: "user-storage", // unique name
+      getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
     }
   )
 );

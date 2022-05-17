@@ -11,7 +11,9 @@ import { createTheme } from "@mui/material/styles";
 import Copyright from "components/Copyright";
 import {
   Autocomplete,
+  Checkbox,
   FormControl,
+  FormControlLabel,
   FormHelperText,
   Grid,
   InputAdornment,
@@ -22,24 +24,109 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/router";
 import { useUserStore, RegisterPayload } from "stores/user";
+import next from "next";
+import { gql, useQuery } from "@apollo/client";
+import { Province, Regency, Roles, School } from "../generated";
 const steps = ["Pilih", "Biodata", "Data Akun"];
+
+const ROLES = [
+  {
+    label: "GURU",
+    role: "TEACHER",
+  },
+  {
+    label: "SISWA",
+    role: "STUDENT",
+  },
+  {
+    label: "ORANG TUA",
+    role: "PARENT",
+  },
+];
+
+const reverseMap = ROLES.reduce((acc, cur) => {
+  return {
+    ...acc,
+    [cur.label]: cur.role as Roles,
+  };
+}, {} as Record<string, Roles>);
 
 export default function Checkout() {
   const { push } = useRouter();
 
-  const { register } = useUserStore();
+  const { register, validateEmail } = useUserStore();
 
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [selectedProvince, setSelectedProvince] = useState("");
   const [data, setData] = useState<RegisterPayload | null>(null);
+
+  const { data: { findManyProvince } = {} } = useQuery<{
+    findManyProvince: Province[];
+  }>(gql`
+    query Query {
+      findManyProvince {
+        id
+        name
+        regencies {
+          id
+          name
+        }
+      }
+    }
+  `);
+
+  const { data: { findManySchool } = {} } = useQuery<{
+    findManySchool: School[];
+  }>(
+    gql`
+      query FindManySchool($where: SchoolWhereInput) {
+        findManySchool(where: $where) {
+          id
+          name
+        }
+      }
+    `,
+    {
+      variables: {
+        where: {
+          provinceId: {
+            equals: data?.provinceId,
+          },
+          regencyId: {
+            equals: data?.regencyId,
+          },
+        },
+      },
+    }
+  );
+
+  const provinceIdMap: Record<string, Regency[]> =
+    findManyProvince?.reduce((acc, cur) => {
+      return {
+        ...acc,
+        [cur.id]: cur.regencies,
+      };
+    }, {}) || {};
+
+  const [asBimbel, setAsBimbel] = useState(false);
 
   const [activeStep, setActiveStep] = useState(0);
   const [registeredAs, setRegisteredAs] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
 
-  const handleRegister = async (data: RegisterPayload) => {
+  const handleRegister = async (extra: Partial<RegisterPayload>) => {
     try {
-      await register(data);
+      if (!data) return;
+
+      await register({
+        ...data,
+        ...extra,
+
+        phoneNumber: `${data.phoneNumber}`,
+        //@ts-ignore
+        role: `${reverseMap[registeredAs] as Roles}`,
+      });
 
       push("/");
     } catch (error) {
@@ -48,7 +135,7 @@ export default function Checkout() {
   };
 
   const handleNext = () => {
-    if (activeStep == 1) {
+    if (activeStep == 1 || activeStep == 2) {
       formRef.current?.dispatchEvent(
         new Event("submit", { bubbles: true, cancelable: true })
       );
@@ -68,20 +155,7 @@ export default function Checkout() {
       case 0:
         return (
           <Box sx={{ display: "flex", gap: 3 }}>
-            {[
-              {
-                label: "GURU",
-                role: "TEACHER",
-              },
-              {
-                label: "SISWA",
-                role: "STUDENT",
-              },
-              {
-                label: "ORANG TUA",
-                role: "PARENT",
-              },
-            ].map((e) => (
+            {ROLES.map((e) => (
               <Button
                 variant="contained"
                 key={e.role}
@@ -102,9 +176,9 @@ export default function Checkout() {
               email: "",
               password: "",
               confirmation_password: "",
-              city: "",
-              province: "",
-              phone_number: "",
+              regencyId: "",
+              provinceId: "",
+              phoneNumber: "",
               address: "",
             }}
             validationSchema={Yup.object({
@@ -116,20 +190,23 @@ export default function Checkout() {
               confirmation_password: Yup.string()
                 .required("Harus di isi")
                 .oneOf([Yup.ref("password"), null], "Password tidak sama"),
-              city: Yup.string().required("Harus di isi"),
-              province: Yup.string().required("Harus di isi"),
-              phone_number: Yup.string()
+              regencyId: Yup.string().required("Harus di isi"),
+              provinceId: Yup.string().required("Harus di isi"),
+              phoneNumber: Yup.string()
                 .required("Harus di isi")
                 .min(10, "Min 10")
                 .max(13, "Max 13"),
               address: Yup.string().required("Harus di isi"),
             })}
-            onSubmit={(values, { setSubmitting, setFieldError }) => {
-              setTimeout(() => {
-                alert(JSON.stringify(values, null, 2));
+            onSubmit={async (values, { setSubmitting }) => {
+              try {
+                await validateEmail(values);
 
-                setSubmitting(false);
-              }, 400);
+                setData(values as unknown as RegisterPayload);
+                setActiveStep(activeStep + 1);
+              } catch (error) {
+                setErrorMessage(`${error}`);
+              }
             }}
           >
             {({
@@ -140,6 +217,7 @@ export default function Checkout() {
               handleBlur,
               handleSubmit,
               setFieldValue,
+              ...rest
             }) => (
               <Box component="form" ref={formRef} onSubmit={handleSubmit}>
                 {errorMessage && (
@@ -224,16 +302,14 @@ export default function Checkout() {
                       }}
                       variant="standard"
                       required
-                      name="phone_number"
+                      name="phoneNumber"
                       fullWidth
                       type="number"
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      value={values.phone_number}
-                      error={Boolean(
-                        touched.phone_number && errors.phone_number
-                      )}
-                      helperText={touched.phone_number && errors.phone_number}
+                      value={values.phoneNumber}
+                      error={Boolean(touched.phoneNumber && errors.phoneNumber)}
+                      helperText={touched.phoneNumber && errors.phoneNumber}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -250,57 +326,233 @@ export default function Checkout() {
                       helperText={touched.address && errors.address}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Autocomplete
-                      disablePortal
-                      options={[{ label: "Jakarta", id: 1994 }]}
-                      onChange={(_, v) => {
-                        setFieldValue("province", v?.id);
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Provinsi"
-                          variant="standard"
-                          name="province"
-                          fullWidth
-                          onBlur={handleBlur}
-                          value={values.province}
-                          error={Boolean(touched.province && errors.province)}
-                          helperText={touched.province && errors.province}
-                        />
-                      )}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Autocomplete
-                      disablePortal
-                      options={[{ label: "Jakarta", id: 1994 }]}
-                      onChange={(_, v) => {
-                        setFieldValue("city", v?.id);
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Kota / Kabupaten"
-                          variant="standard"
-                          name="city"
-                          fullWidth
-                          onBlur={handleBlur}
-                          value={values.city}
-                          error={Boolean(touched.city && errors.city)}
-                          helperText={touched.city && errors.city}
-                        />
-                      )}
-                    />
-                  </Grid>
+                  {findManyProvince && (
+                    <Grid item xs={12} sm={6}>
+                      <Autocomplete
+                        disablePortal
+                        options={findManyProvince.map((e) => ({
+                          label: e.name,
+                          value: e.id,
+                        }))}
+                        onChange={(_, v) => {
+                          setFieldValue("provinceId", v?.value);
+                          setFieldValue("regencyId", "");
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Provinsi"
+                            variant="standard"
+                            name="provinceId"
+                            fullWidth
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            value={values.provinceId}
+                            error={Boolean(
+                              touched.provinceId && errors.provinceId
+                            )}
+                            helperText={touched.provinceId && errors.provinceId}
+                          />
+                        )}
+                      />
+                    </Grid>
+                  )}
+
+                  {provinceIdMap[values.provinceId] && (
+                    <Grid item xs={12} sm={6}>
+                      <Autocomplete
+                        disablePortal
+                        options={provinceIdMap[values.provinceId].map((e) => ({
+                          label: e.name,
+                          value: e.id,
+                        }))}
+                        onChange={(_, v) => {
+                          setFieldValue("regencyId", v?.value);
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Kota / Kabupaten"
+                            variant="standard"
+                            name="regencyId"
+                            fullWidth
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            value={values.regencyId}
+                            error={Boolean(
+                              touched.regencyId && errors.regencyId
+                            )}
+                            helperText={touched.regencyId && errors.regencyId}
+                          />
+                        )}
+                      />
+                    </Grid>
+                  )}
                 </Grid>
               </Box>
             )}
           </Formik>
         );
       case 2:
-        return <></>;
+        return (
+          <Formik
+            initialValues={{
+              name: "",
+              email: "",
+              identityNumber: "",
+              identityFile: "",
+              schoolId: "",
+              nrg: "",
+              nisn: "",
+            }}
+            validationSchema={Yup.object({
+              name: Yup.string().required("Harus di isi").max(15, "Max 15"),
+              email: Yup.string()
+                .required("Harus di isi")
+                .email("Email tidak valid"),
+            })}
+            onSubmit={(values, { setSubmitting }) => {
+              handleRegister(values);
+            }}
+          >
+            {({
+              values,
+              errors,
+              touched,
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              setFieldValue,
+            }) => (
+              <Box component="form" ref={formRef} onSubmit={handleSubmit}>
+                {errorMessage && (
+                  <Typography variant="h6" color="error" textAlign={"center"}>
+                    {errorMessage}
+                  </Typography>
+                )}
+                <Grid container spacing={3}>
+                  {["GURU", "SISWA"].includes(registeredAs) && findManySchool && (
+                    <Grid item xs={12} sm={6}>
+                      <Autocomplete
+                        disablePortal
+                        options={findManySchool.map((e) => ({
+                          label: e.name,
+                          value: e.id,
+                        }))}
+                        onChange={(_, v) => {
+                          setFieldValue("schoolId", v?.value);
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Sekolah"
+                            variant="standard"
+                            name="schoolId"
+                            fullWidth
+                            onBlur={handleBlur}
+                            onChange={handleChange}
+                            value={values.schoolId}
+                            error={Boolean(touched.schoolId && errors.schoolId)}
+                            helperText={touched.schoolId && errors.schoolId}
+                          />
+                        )}
+                      />
+                    </Grid>
+                  )}
+
+                  {registeredAs == "SISWA" && (
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Nomor Induk Siswa Nasioanl"
+                        variant="standard"
+                        fullWidth
+                        required
+                        name="nisn"
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        value={values.nisn}
+                        error={Boolean(touched.nisn && errors.nisn)}
+                        helperText={touched.nisn && errors.nisn}
+                      />
+                    </Grid>
+                  )}
+
+                  {registeredAs == "GURU" && (
+                    <>
+                      <Grid item xs={12}>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={asBimbel}
+                              onChange={(e) => setAsBimbel(e.target.checked)}
+                            />
+                          }
+                          label="Daftar sebagai guru bimbel"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          label="Nomor Registrasi Guru"
+                          variant="standard"
+                          fullWidth
+                          required
+                          name="nrg"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          value={values.nrg}
+                          error={Boolean(touched.nrg && errors.nrg)}
+                          helperText={touched.nrg && errors.nrg}
+                        />
+                      </Grid>
+                      {asBimbel && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              label="Nomor KTP"
+                              variant="standard"
+                              fullWidth
+                              required
+                              name="identityNumber"
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              value={values.identityNumber}
+                              error={Boolean(
+                                touched.identityNumber && errors.identityNumber
+                              )}
+                              helperText={
+                                touched.identityNumber && errors.identityNumber
+                              }
+                            />
+                          </Grid>
+
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              label="Upload KTP"
+                              variant="standard"
+                              fullWidth
+                              required
+                              name="identityFile"
+                              type="file"
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              value={values.identityFile}
+                              error={Boolean(
+                                touched.identityFile && errors.identityFile
+                              )}
+                              helperText={
+                                touched.identityFile && errors.identityFile
+                              }
+                            />
+                          </Grid>
+                        </>
+                      )}
+                    </>
+                  )}
+                </Grid>
+              </Box>
+            )}
+          </Formik>
+        );
       default:
         throw new Error("Unknown step");
     }
@@ -349,7 +601,7 @@ export default function Checkout() {
                   disabled={activeStep == 0 && registeredAs.length == 0}
                   sx={{ mt: 3, ml: 1 }}
                 >
-                  {activeStep === steps.length - 1 ? "Place order" : "Next"}
+                  {activeStep === steps.length - 1 ? "DAFTAR AKUN" : "Next"}
                 </Button>
               </Box>
             </Fragment>
