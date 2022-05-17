@@ -12,16 +12,16 @@ import Grid from "@mui/material/Grid";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Copyright from "components/Copyright";
+import { useUserStore } from "../stores/user";
+import { Formik } from "formik";
+import * as Yup from "yup";
+import { useState } from "react";
+import { useRouter } from "next/router";
 
-export default function SignInSide() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
-  };
+export default function Login() {
+  const { login } = useUserStore();
+  const { push } = useRouter();
+  const [errorMessage, setErrorMessage] = useState("");
 
   return (
     <Grid container component="main" sx={{ height: "100vh" }}>
@@ -58,58 +58,104 @@ export default function SignInSide() {
           <Typography component="h1" variant="h5">
             Masuk
           </Typography>
-          <Box
-            component="form"
-            noValidate
-            onSubmit={handleSubmit}
-            sx={{ mt: 1 }}
+          <Formik
+            initialValues={{
+              email: "",
+              password: "",
+            }}
+            validationSchema={Yup.object({
+              email: Yup.string()
+                .required("Harus di isi")
+                .email("Email tidak valid"),
+              password: Yup.string().required("Harus di isi").min(8, "Min 8"),
+            })}
+            onSubmit={async (data) => {
+              try {
+                await login(data);
+
+                push("/");
+              } catch (error) {
+                setErrorMessage(`${error}`);
+              }
+            }}
           >
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-            />
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
-              Sign In
-            </Button>
-            <Grid container>
-              <Grid item xs>
-                <Link href="#" variant="body2">
-                  Forgot password?
-                </Link>
-              </Grid>
-              <Grid item>
-                <Link href="/register" variant="body2">
-                  {"Don't have an account? Sign Up"}
-                </Link>
-              </Grid>
-            </Grid>
-            <Copyright sx={{ mt: 5 }} />
-          </Box>
+            {({
+              values,
+              errors,
+              touched,
+              handleChange,
+              handleBlur,
+              handleSubmit,
+            }) => (
+              <Box
+                component="form"
+                noValidate
+                onSubmit={handleSubmit}
+                sx={{ mt: 1 }}
+              >
+                {errorMessage && (
+                  <Typography variant="h6" color="error" textAlign={"center"}>
+                    {errorMessage}
+                  </Typography>
+                )}
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="email"
+                  label="Email Address"
+                  name="email"
+                  autoComplete="email"
+                  autoFocus
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.email}
+                  error={Boolean(touched.email && errors.email)}
+                  helperText={touched.email && errors.email}
+                />
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="password"
+                  label="Password"
+                  type="password"
+                  id="password"
+                  autoComplete="password"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.password}
+                  error={Boolean(touched.password && errors.password)}
+                  helperText={touched.password && errors.password}
+                />
+                <FormControlLabel
+                  control={<Checkbox value="remember" color="primary" />}
+                  label="Remember me"
+                />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
+                >
+                  Sign In
+                </Button>
+                <Grid container>
+                  <Grid item xs>
+                    <Link href="#" variant="body2">
+                      Forgot password?
+                    </Link>
+                  </Grid>
+                  <Grid item>
+                    <Link href="/register" variant="body2">
+                      {"Don't have an account? Sign Up"}
+                    </Link>
+                  </Grid>
+                </Grid>
+                <Copyright sx={{ mt: 5 }} />
+              </Box>
+            )}
+          </Formik>
         </Box>
       </Grid>
     </Grid>

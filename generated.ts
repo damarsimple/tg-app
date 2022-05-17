@@ -93,50 +93,6 @@ export interface PrivateChat {
   updatedAt: undefined;
 }
 
-export interface ClassroomStudent {
-  id: string;
-  userId: string;
-  user: User;
-  classroom: Maybe<Classroom>;
-  classroomId: Maybe<string>;
-  status: ClassroomStudentStatus;
-  createdAt: undefined;
-  updatedAt: undefined;
-}
-
-export interface Classroom {
-  id: string;
-  name: string;
-  schoolId: Maybe<string>;
-  school: Maybe<School>;
-  userId: string;
-  user: User;
-  students: ClassroomStudent[];
-  level: number;
-  createdAt: undefined;
-  updatedAt: undefined;
-  _count: ClassroomCountOutputType;
-}
-
-export interface School {
-  id: string;
-  name: string;
-  npsn: Maybe<string>;
-  createdAt: undefined;
-  updatedAt: undefined;
-  classrooms: Classroom[];
-  levels: number[];
-  type: string;
-  address: string;
-  logoPath: Maybe<string>;
-  bannerPath: Maybe<string>;
-  provinceId: string;
-  province: Province;
-  cityId: string;
-  city: City;
-  _count: SchoolCountOutputType;
-}
-
 export interface Notification {
   id: string;
   picturePath: Maybe<string>;
@@ -156,8 +112,8 @@ export interface User {
   name: string;
   email: string;
   password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber: Maybe<string>;
+  address: Maybe<string>;
   profilePicturePath: Maybe<string>;
   createdAt: undefined;
   updatedAt: undefined;
@@ -165,25 +121,45 @@ export interface User {
   nrg: Maybe<string>;
   provinceId: string;
   province: Province;
-  cityId: string;
-  city: City;
+  regencyId: string;
+  regency: Regency;
   isAdmin: boolean;
-  isBimbel: boolean;
   role: Roles;
   balance: number;
   emailVerifiedAt: Maybe<undefined>;
   phoneNumberVerifiedAt: Maybe<undefined>;
-  bimbelApprovedAt: Maybe<undefined>;
+  identityNumberVerifiedAt: Maybe<undefined>;
+  verifykey: Maybe<string>;
+  verifyType: VerifyType;
   identityFiles: IdentityFile[];
   questions: Question[];
   examinations: Exam[];
   examsessions: ExamSession[];
   privateChats: PrivateChat[];
   myPrivateChats: PrivateChat[];
-  classrooms: Classroom[];
-  classroomStudents: ClassroomStudent[];
   notifications: Notification[];
+  myTokens: Token[];
+  tokenClaims: TokenClaim[];
   _count: UserCountOutputType;
+}
+
+export interface TokenClaim {
+  id: string;
+  tokenId: string;
+  token: Token;
+  userId: string;
+  claimer: User;
+  expiredAt: Maybe<undefined>;
+}
+
+export interface Token {
+  id: string;
+  token: string;
+  userId: string;
+  owner: User;
+  tokenClaims: TokenClaim[];
+  maxClaim: Maybe<number>;
+  _count: TokenCountOutputType;
 }
 
 export interface IdentityFile {
@@ -196,25 +172,36 @@ export interface IdentityFile {
   user: User;
 }
 
-export interface City {
+export interface Regency {
   id: string;
   name: string;
   provinceId: string;
   province: Province;
   users: User[];
-  School: School[];
-  _count: CityCountOutputType;
+  _count: RegencyCountOutputType;
 }
 
 export interface Province {
   id: string;
   name: string;
-  cities: City[];
+  regencies: Regency[];
   createdAt: undefined;
   updatedAt: undefined;
   users: User[];
-  School: School[];
   _count: ProvinceCountOutputType;
+}
+
+export interface Auth {
+  /** JWT token*/
+  token: Maybe<string>;
+  success: Maybe<boolean>;
+  message: Maybe<string>;
+  user: Maybe<User>;
+}
+
+export interface VerificationResponse {
+  success: Maybe<boolean>;
+  message: Maybe<string>;
 }
 
 export interface BatchPayload {
@@ -227,7 +214,7 @@ export enum ProvinceScalarFieldEnum {
   Createdat = 'createdAt',
   Updatedat = 'updatedAt',
 }
-export enum CityScalarFieldEnum {
+export enum RegencyScalarFieldEnum {
   Id = 'id',
   Name = 'name',
   Provinceid = 'provinceId',
@@ -239,6 +226,18 @@ export enum IdentityFileScalarFieldEnum {
   Type = 'type',
   Number = 'number',
   Userid = 'userId',
+}
+export enum TokenScalarFieldEnum {
+  Id = 'id',
+  Token = 'token',
+  Userid = 'userId',
+  Maxclaim = 'maxClaim',
+}
+export enum TokenClaimScalarFieldEnum {
+  Id = 'id',
+  Tokenid = 'tokenId',
+  Userid = 'userId',
+  Expiredat = 'expiredAt',
 }
 export enum UserScalarFieldEnum {
   Id = 'id',
@@ -253,14 +252,15 @@ export enum UserScalarFieldEnum {
   Nisn = 'nisn',
   Nrg = 'nrg',
   Provinceid = 'provinceId',
-  Cityid = 'cityId',
+  Regencyid = 'regencyId',
   Isadmin = 'isAdmin',
-  Isbimbel = 'isBimbel',
   Role = 'role',
   Balance = 'balance',
   Emailverifiedat = 'emailVerifiedAt',
   Phonenumberverifiedat = 'phoneNumberVerifiedAt',
-  Bimbelapprovedat = 'bimbelApprovedAt',
+  Identitynumberverifiedat = 'identityNumberVerifiedAt',
+  Verifykey = 'verifykey',
+  Verifytype = 'verifyType',
 }
 export enum NotificationScalarFieldEnum {
   Id = 'id',
@@ -271,37 +271,6 @@ export enum NotificationScalarFieldEnum {
   Followupcontext = 'followUpContext',
   Followupdata = 'followUpData',
   Userid = 'userId',
-  Createdat = 'createdAt',
-  Updatedat = 'updatedAt',
-}
-export enum SchoolScalarFieldEnum {
-  Id = 'id',
-  Name = 'name',
-  Npsn = 'npsn',
-  Createdat = 'createdAt',
-  Updatedat = 'updatedAt',
-  Levels = 'levels',
-  Type = 'type',
-  Address = 'address',
-  Logopath = 'logoPath',
-  Bannerpath = 'bannerPath',
-  Provinceid = 'provinceId',
-  Cityid = 'cityId',
-}
-export enum ClassroomScalarFieldEnum {
-  Id = 'id',
-  Name = 'name',
-  Schoolid = 'schoolId',
-  Userid = 'userId',
-  Level = 'level',
-  Createdat = 'createdAt',
-  Updatedat = 'updatedAt',
-}
-export enum ClassroomStudentScalarFieldEnum {
-  Id = 'id',
-  Userid = 'userId',
-  Classroomid = 'classroomId',
-  Status = 'status',
   Createdat = 'createdAt',
   Updatedat = 'updatedAt',
 }
@@ -375,9 +344,10 @@ export enum Roles {
   Teacher = 'TEACHER',
   Parent = 'PARENT',
 }
-export enum ClassroomStudentStatus {
-  Active = 'ACTIVE',
-  Banned = 'BANNED',
+export enum VerifyType {
+  Phone = 'PHONE',
+  Mail = 'MAIL',
+  Identity = 'IDENTITY',
 }
 export enum ContentType {
   Text = 'TEXT',
@@ -397,21 +367,19 @@ export interface ProvinceWhereInput {
   NOT?: ProvinceWhereInput[];
   id?: StringFilter;
   name?: StringFilter;
-  cities?: CityListRelationFilter;
+  regencies?: RegencyListRelationFilter;
   createdAt?: DateTimeFilter;
   updatedAt?: DateTimeFilter;
   users?: UserListRelationFilter;
-  School?: SchoolListRelationFilter;
 }
 
 export interface ProvinceOrderByWithRelationInput {
   id?: SortOrder;
   name?: SortOrder;
-  cities?: CityOrderByRelationAggregateInput;
+  regencies?: RegencyOrderByRelationAggregateInput;
   createdAt?: SortOrder;
   updatedAt?: SortOrder;
   users?: UserOrderByRelationAggregateInput;
-  School?: SchoolOrderByRelationAggregateInput;
 }
 
 export interface ProvinceWhereUniqueInput {
@@ -438,44 +406,42 @@ export interface ProvinceScalarWhereWithAggregatesInput {
   updatedAt?: DateTimeWithAggregatesFilter;
 }
 
-export interface CityWhereInput {
-  AND?: CityWhereInput[];
-  OR?: CityWhereInput[];
-  NOT?: CityWhereInput[];
+export interface RegencyWhereInput {
+  AND?: RegencyWhereInput[];
+  OR?: RegencyWhereInput[];
+  NOT?: RegencyWhereInput[];
   id?: StringFilter;
   name?: StringFilter;
   provinceId?: StringFilter;
   province?: ProvinceWhereInput;
   users?: UserListRelationFilter;
-  School?: SchoolListRelationFilter;
 }
 
-export interface CityOrderByWithRelationInput {
+export interface RegencyOrderByWithRelationInput {
   id?: SortOrder;
   name?: SortOrder;
   provinceId?: SortOrder;
   province?: ProvinceOrderByWithRelationInput;
   users?: UserOrderByRelationAggregateInput;
-  School?: SchoolOrderByRelationAggregateInput;
 }
 
-export interface CityWhereUniqueInput {
+export interface RegencyWhereUniqueInput {
   id?: string;
 }
 
-export interface CityOrderByWithAggregationInput {
+export interface RegencyOrderByWithAggregationInput {
   id?: SortOrder;
   name?: SortOrder;
   provinceId?: SortOrder;
-  _count?: CityCountOrderByAggregateInput;
-  _max?: CityMaxOrderByAggregateInput;
-  _min?: CityMinOrderByAggregateInput;
+  _count?: RegencyCountOrderByAggregateInput;
+  _max?: RegencyMaxOrderByAggregateInput;
+  _min?: RegencyMinOrderByAggregateInput;
 }
 
-export interface CityScalarWhereWithAggregatesInput {
-  AND?: CityScalarWhereWithAggregatesInput[];
-  OR?: CityScalarWhereWithAggregatesInput[];
-  NOT?: CityScalarWhereWithAggregatesInput[];
+export interface RegencyScalarWhereWithAggregatesInput {
+  AND?: RegencyScalarWhereWithAggregatesInput[];
+  OR?: RegencyScalarWhereWithAggregatesInput[];
+  NOT?: RegencyScalarWhereWithAggregatesInput[];
   id?: StringWithAggregatesFilter;
   name?: StringWithAggregatesFilter;
   provinceId?: StringWithAggregatesFilter;
@@ -532,6 +498,98 @@ export interface IdentityFileScalarWhereWithAggregatesInput {
   userId?: StringWithAggregatesFilter;
 }
 
+export interface TokenWhereInput {
+  AND?: TokenWhereInput[];
+  OR?: TokenWhereInput[];
+  NOT?: TokenWhereInput[];
+  id?: StringFilter;
+  token?: StringFilter;
+  userId?: StringFilter;
+  owner?: UserWhereInput;
+  tokenClaims?: TokenClaimListRelationFilter;
+  maxClaim?: IntNullableFilter;
+}
+
+export interface TokenOrderByWithRelationInput {
+  id?: SortOrder;
+  token?: SortOrder;
+  userId?: SortOrder;
+  owner?: UserOrderByWithRelationInput;
+  tokenClaims?: TokenClaimOrderByRelationAggregateInput;
+  maxClaim?: SortOrder;
+}
+
+export interface TokenWhereUniqueInput {
+  id?: string;
+}
+
+export interface TokenOrderByWithAggregationInput {
+  id?: SortOrder;
+  token?: SortOrder;
+  userId?: SortOrder;
+  maxClaim?: SortOrder;
+  _count?: TokenCountOrderByAggregateInput;
+  _avg?: TokenAvgOrderByAggregateInput;
+  _max?: TokenMaxOrderByAggregateInput;
+  _min?: TokenMinOrderByAggregateInput;
+  _sum?: TokenSumOrderByAggregateInput;
+}
+
+export interface TokenScalarWhereWithAggregatesInput {
+  AND?: TokenScalarWhereWithAggregatesInput[];
+  OR?: TokenScalarWhereWithAggregatesInput[];
+  NOT?: TokenScalarWhereWithAggregatesInput[];
+  id?: StringWithAggregatesFilter;
+  token?: StringWithAggregatesFilter;
+  userId?: StringWithAggregatesFilter;
+  maxClaim?: IntNullableWithAggregatesFilter;
+}
+
+export interface TokenClaimWhereInput {
+  AND?: TokenClaimWhereInput[];
+  OR?: TokenClaimWhereInput[];
+  NOT?: TokenClaimWhereInput[];
+  id?: StringFilter;
+  tokenId?: StringFilter;
+  token?: TokenWhereInput;
+  userId?: StringFilter;
+  claimer?: UserWhereInput;
+  expiredAt?: DateTimeNullableFilter;
+}
+
+export interface TokenClaimOrderByWithRelationInput {
+  id?: SortOrder;
+  tokenId?: SortOrder;
+  token?: TokenOrderByWithRelationInput;
+  userId?: SortOrder;
+  claimer?: UserOrderByWithRelationInput;
+  expiredAt?: SortOrder;
+}
+
+export interface TokenClaimWhereUniqueInput {
+  id?: string;
+}
+
+export interface TokenClaimOrderByWithAggregationInput {
+  id?: SortOrder;
+  tokenId?: SortOrder;
+  userId?: SortOrder;
+  expiredAt?: SortOrder;
+  _count?: TokenClaimCountOrderByAggregateInput;
+  _max?: TokenClaimMaxOrderByAggregateInput;
+  _min?: TokenClaimMinOrderByAggregateInput;
+}
+
+export interface TokenClaimScalarWhereWithAggregatesInput {
+  AND?: TokenClaimScalarWhereWithAggregatesInput[];
+  OR?: TokenClaimScalarWhereWithAggregatesInput[];
+  NOT?: TokenClaimScalarWhereWithAggregatesInput[];
+  id?: StringWithAggregatesFilter;
+  tokenId?: StringWithAggregatesFilter;
+  userId?: StringWithAggregatesFilter;
+  expiredAt?: DateTimeNullableWithAggregatesFilter;
+}
+
 export interface UserWhereInput {
   AND?: UserWhereInput[];
   OR?: UserWhereInput[];
@@ -539,9 +597,8 @@ export interface UserWhereInput {
   id?: StringFilter;
   name?: StringFilter;
   email?: StringFilter;
-  password?: StringFilter;
-  phoneNumber?: StringFilter;
-  address?: StringFilter;
+  phoneNumber?: StringNullableFilter;
+  address?: StringNullableFilter;
   profilePicturePath?: StringNullableFilter;
   createdAt?: DateTimeFilter;
   updatedAt?: DateTimeFilter;
@@ -549,31 +606,31 @@ export interface UserWhereInput {
   nrg?: StringNullableFilter;
   provinceId?: StringFilter;
   province?: ProvinceWhereInput;
-  cityId?: StringFilter;
-  city?: CityWhereInput;
+  regencyId?: StringFilter;
+  regency?: RegencyWhereInput;
   isAdmin?: BoolFilter;
-  isBimbel?: BoolFilter;
   role?: EnumRolesFilter;
   balance?: FloatFilter;
   emailVerifiedAt?: DateTimeNullableFilter;
   phoneNumberVerifiedAt?: DateTimeNullableFilter;
-  bimbelApprovedAt?: DateTimeNullableFilter;
+  identityNumberVerifiedAt?: DateTimeNullableFilter;
+  verifykey?: StringNullableFilter;
+  verifyType?: EnumVerifyTypeFilter;
   identityFiles?: IdentityFileListRelationFilter;
   questions?: QuestionListRelationFilter;
   examinations?: ExamListRelationFilter;
   examsessions?: ExamSessionListRelationFilter;
   privateChats?: PrivateChatListRelationFilter;
   myPrivateChats?: PrivateChatListRelationFilter;
-  classrooms?: ClassroomListRelationFilter;
-  classroomStudents?: ClassroomStudentListRelationFilter;
   notifications?: NotificationListRelationFilter;
+  myTokens?: TokenListRelationFilter;
+  tokenClaims?: TokenClaimListRelationFilter;
 }
 
 export interface UserOrderByWithRelationInput {
   id?: SortOrder;
   name?: SortOrder;
   email?: SortOrder;
-  password?: SortOrder;
   phoneNumber?: SortOrder;
   address?: SortOrder;
   profilePicturePath?: SortOrder;
@@ -583,35 +640,36 @@ export interface UserOrderByWithRelationInput {
   nrg?: SortOrder;
   provinceId?: SortOrder;
   province?: ProvinceOrderByWithRelationInput;
-  cityId?: SortOrder;
-  city?: CityOrderByWithRelationInput;
+  regencyId?: SortOrder;
+  regency?: RegencyOrderByWithRelationInput;
   isAdmin?: SortOrder;
-  isBimbel?: SortOrder;
   role?: SortOrder;
   balance?: SortOrder;
   emailVerifiedAt?: SortOrder;
   phoneNumberVerifiedAt?: SortOrder;
-  bimbelApprovedAt?: SortOrder;
+  identityNumberVerifiedAt?: SortOrder;
+  verifykey?: SortOrder;
+  verifyType?: SortOrder;
   identityFiles?: IdentityFileOrderByRelationAggregateInput;
   questions?: QuestionOrderByRelationAggregateInput;
   examinations?: ExamOrderByRelationAggregateInput;
   examsessions?: ExamSessionOrderByRelationAggregateInput;
   privateChats?: PrivateChatOrderByRelationAggregateInput;
   myPrivateChats?: PrivateChatOrderByRelationAggregateInput;
-  classrooms?: ClassroomOrderByRelationAggregateInput;
-  classroomStudents?: ClassroomStudentOrderByRelationAggregateInput;
   notifications?: NotificationOrderByRelationAggregateInput;
+  myTokens?: TokenOrderByRelationAggregateInput;
+  tokenClaims?: TokenClaimOrderByRelationAggregateInput;
 }
 
 export interface UserWhereUniqueInput {
   id?: string;
+  verifykey?: string;
 }
 
 export interface UserOrderByWithAggregationInput {
   id?: SortOrder;
   name?: SortOrder;
   email?: SortOrder;
-  password?: SortOrder;
   phoneNumber?: SortOrder;
   address?: SortOrder;
   profilePicturePath?: SortOrder;
@@ -620,14 +678,15 @@ export interface UserOrderByWithAggregationInput {
   nisn?: SortOrder;
   nrg?: SortOrder;
   provinceId?: SortOrder;
-  cityId?: SortOrder;
+  regencyId?: SortOrder;
   isAdmin?: SortOrder;
-  isBimbel?: SortOrder;
   role?: SortOrder;
   balance?: SortOrder;
   emailVerifiedAt?: SortOrder;
   phoneNumberVerifiedAt?: SortOrder;
-  bimbelApprovedAt?: SortOrder;
+  identityNumberVerifiedAt?: SortOrder;
+  verifykey?: SortOrder;
+  verifyType?: SortOrder;
   _count?: UserCountOrderByAggregateInput;
   _avg?: UserAvgOrderByAggregateInput;
   _max?: UserMaxOrderByAggregateInput;
@@ -642,23 +701,23 @@ export interface UserScalarWhereWithAggregatesInput {
   id?: StringWithAggregatesFilter;
   name?: StringWithAggregatesFilter;
   email?: StringWithAggregatesFilter;
-  password?: StringWithAggregatesFilter;
-  phoneNumber?: StringWithAggregatesFilter;
-  address?: StringWithAggregatesFilter;
+  phoneNumber?: StringNullableWithAggregatesFilter;
+  address?: StringNullableWithAggregatesFilter;
   profilePicturePath?: StringNullableWithAggregatesFilter;
   createdAt?: DateTimeWithAggregatesFilter;
   updatedAt?: DateTimeWithAggregatesFilter;
   nisn?: StringNullableWithAggregatesFilter;
   nrg?: StringNullableWithAggregatesFilter;
   provinceId?: StringWithAggregatesFilter;
-  cityId?: StringWithAggregatesFilter;
+  regencyId?: StringWithAggregatesFilter;
   isAdmin?: BoolWithAggregatesFilter;
-  isBimbel?: BoolWithAggregatesFilter;
   role?: EnumRolesWithAggregatesFilter;
   balance?: FloatWithAggregatesFilter;
   emailVerifiedAt?: DateTimeNullableWithAggregatesFilter;
   phoneNumberVerifiedAt?: DateTimeNullableWithAggregatesFilter;
-  bimbelApprovedAt?: DateTimeNullableWithAggregatesFilter;
+  identityNumberVerifiedAt?: DateTimeNullableWithAggregatesFilter;
+  verifykey?: StringNullableWithAggregatesFilter;
+  verifyType?: EnumVerifyTypeWithAggregatesFilter;
 }
 
 export interface NotificationWhereInput {
@@ -724,201 +783,6 @@ export interface NotificationScalarWhereWithAggregatesInput {
   followUpContext?: StringNullableWithAggregatesFilter;
   followUpData?: StringNullableWithAggregatesFilter;
   userId?: StringWithAggregatesFilter;
-  createdAt?: DateTimeWithAggregatesFilter;
-  updatedAt?: DateTimeWithAggregatesFilter;
-}
-
-export interface SchoolWhereInput {
-  AND?: SchoolWhereInput[];
-  OR?: SchoolWhereInput[];
-  NOT?: SchoolWhereInput[];
-  id?: StringFilter;
-  name?: StringFilter;
-  npsn?: StringNullableFilter;
-  createdAt?: DateTimeFilter;
-  updatedAt?: DateTimeFilter;
-  classrooms?: ClassroomListRelationFilter;
-  levels?: IntNullableListFilter;
-  type?: StringFilter;
-  address?: StringFilter;
-  logoPath?: StringNullableFilter;
-  bannerPath?: StringNullableFilter;
-  provinceId?: StringFilter;
-  province?: ProvinceWhereInput;
-  cityId?: StringFilter;
-  city?: CityWhereInput;
-}
-
-export interface SchoolOrderByWithRelationInput {
-  id?: SortOrder;
-  name?: SortOrder;
-  npsn?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-  classrooms?: ClassroomOrderByRelationAggregateInput;
-  levels?: SortOrder;
-  type?: SortOrder;
-  address?: SortOrder;
-  logoPath?: SortOrder;
-  bannerPath?: SortOrder;
-  provinceId?: SortOrder;
-  province?: ProvinceOrderByWithRelationInput;
-  cityId?: SortOrder;
-  city?: CityOrderByWithRelationInput;
-}
-
-export interface SchoolWhereUniqueInput {
-  id?: string;
-}
-
-export interface SchoolOrderByWithAggregationInput {
-  id?: SortOrder;
-  name?: SortOrder;
-  npsn?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-  levels?: SortOrder;
-  type?: SortOrder;
-  address?: SortOrder;
-  logoPath?: SortOrder;
-  bannerPath?: SortOrder;
-  provinceId?: SortOrder;
-  cityId?: SortOrder;
-  _count?: SchoolCountOrderByAggregateInput;
-  _avg?: SchoolAvgOrderByAggregateInput;
-  _max?: SchoolMaxOrderByAggregateInput;
-  _min?: SchoolMinOrderByAggregateInput;
-  _sum?: SchoolSumOrderByAggregateInput;
-}
-
-export interface SchoolScalarWhereWithAggregatesInput {
-  AND?: SchoolScalarWhereWithAggregatesInput[];
-  OR?: SchoolScalarWhereWithAggregatesInput[];
-  NOT?: SchoolScalarWhereWithAggregatesInput[];
-  id?: StringWithAggregatesFilter;
-  name?: StringWithAggregatesFilter;
-  npsn?: StringNullableWithAggregatesFilter;
-  createdAt?: DateTimeWithAggregatesFilter;
-  updatedAt?: DateTimeWithAggregatesFilter;
-  levels?: IntNullableListFilter;
-  type?: StringWithAggregatesFilter;
-  address?: StringWithAggregatesFilter;
-  logoPath?: StringNullableWithAggregatesFilter;
-  bannerPath?: StringNullableWithAggregatesFilter;
-  provinceId?: StringWithAggregatesFilter;
-  cityId?: StringWithAggregatesFilter;
-}
-
-export interface ClassroomWhereInput {
-  AND?: ClassroomWhereInput[];
-  OR?: ClassroomWhereInput[];
-  NOT?: ClassroomWhereInput[];
-  id?: StringFilter;
-  name?: StringFilter;
-  schoolId?: StringNullableFilter;
-  school?: SchoolWhereInput;
-  userId?: StringFilter;
-  user?: UserWhereInput;
-  students?: ClassroomStudentListRelationFilter;
-  level?: IntFilter;
-  createdAt?: DateTimeFilter;
-  updatedAt?: DateTimeFilter;
-}
-
-export interface ClassroomOrderByWithRelationInput {
-  id?: SortOrder;
-  name?: SortOrder;
-  schoolId?: SortOrder;
-  school?: SchoolOrderByWithRelationInput;
-  userId?: SortOrder;
-  user?: UserOrderByWithRelationInput;
-  students?: ClassroomStudentOrderByRelationAggregateInput;
-  level?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-}
-
-export interface ClassroomWhereUniqueInput {
-  id?: string;
-}
-
-export interface ClassroomOrderByWithAggregationInput {
-  id?: SortOrder;
-  name?: SortOrder;
-  schoolId?: SortOrder;
-  userId?: SortOrder;
-  level?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-  _count?: ClassroomCountOrderByAggregateInput;
-  _avg?: ClassroomAvgOrderByAggregateInput;
-  _max?: ClassroomMaxOrderByAggregateInput;
-  _min?: ClassroomMinOrderByAggregateInput;
-  _sum?: ClassroomSumOrderByAggregateInput;
-}
-
-export interface ClassroomScalarWhereWithAggregatesInput {
-  AND?: ClassroomScalarWhereWithAggregatesInput[];
-  OR?: ClassroomScalarWhereWithAggregatesInput[];
-  NOT?: ClassroomScalarWhereWithAggregatesInput[];
-  id?: StringWithAggregatesFilter;
-  name?: StringWithAggregatesFilter;
-  schoolId?: StringNullableWithAggregatesFilter;
-  userId?: StringWithAggregatesFilter;
-  level?: IntWithAggregatesFilter;
-  createdAt?: DateTimeWithAggregatesFilter;
-  updatedAt?: DateTimeWithAggregatesFilter;
-}
-
-export interface ClassroomStudentWhereInput {
-  AND?: ClassroomStudentWhereInput[];
-  OR?: ClassroomStudentWhereInput[];
-  NOT?: ClassroomStudentWhereInput[];
-  id?: StringFilter;
-  userId?: StringFilter;
-  user?: UserWhereInput;
-  classroom?: ClassroomWhereInput;
-  classroomId?: StringNullableFilter;
-  status?: EnumClassroomStudentStatusFilter;
-  createdAt?: DateTimeFilter;
-  updatedAt?: DateTimeFilter;
-}
-
-export interface ClassroomStudentOrderByWithRelationInput {
-  id?: SortOrder;
-  userId?: SortOrder;
-  user?: UserOrderByWithRelationInput;
-  classroom?: ClassroomOrderByWithRelationInput;
-  classroomId?: SortOrder;
-  status?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-}
-
-export interface ClassroomStudentWhereUniqueInput {
-  id?: string;
-}
-
-export interface ClassroomStudentOrderByWithAggregationInput {
-  id?: SortOrder;
-  userId?: SortOrder;
-  classroomId?: SortOrder;
-  status?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-  _count?: ClassroomStudentCountOrderByAggregateInput;
-  _max?: ClassroomStudentMaxOrderByAggregateInput;
-  _min?: ClassroomStudentMinOrderByAggregateInput;
-}
-
-export interface ClassroomStudentScalarWhereWithAggregatesInput {
-  AND?: ClassroomStudentScalarWhereWithAggregatesInput[];
-  OR?: ClassroomStudentScalarWhereWithAggregatesInput[];
-  NOT?: ClassroomStudentScalarWhereWithAggregatesInput[];
-  id?: StringWithAggregatesFilter;
-  userId?: StringWithAggregatesFilter;
-  classroomId?: StringNullableWithAggregatesFilter;
-  status?: EnumClassroomStudentStatusWithAggregatesFilter;
   createdAt?: DateTimeWithAggregatesFilter;
   updatedAt?: DateTimeWithAggregatesFilter;
 }
@@ -1040,7 +904,6 @@ export interface ExamSessionWhereInput {
   openAt?: DateTimeNullableFilter;
   closeAt?: DateTimeNullableFilter;
   maxPlayer?: IntNullableFilter;
-  password?: StringNullableFilter;
   userId?: StringFilter;
   user?: UserWhereInput;
   examAnswers?: ExamAnswerListRelationFilter;
@@ -1052,7 +915,6 @@ export interface ExamSessionOrderByWithRelationInput {
   openAt?: SortOrder;
   closeAt?: SortOrder;
   maxPlayer?: SortOrder;
-  password?: SortOrder;
   userId?: SortOrder;
   user?: UserOrderByWithRelationInput;
   examAnswers?: ExamAnswerOrderByRelationAggregateInput;
@@ -1068,7 +930,6 @@ export interface ExamSessionOrderByWithAggregationInput {
   openAt?: SortOrder;
   closeAt?: SortOrder;
   maxPlayer?: SortOrder;
-  password?: SortOrder;
   userId?: SortOrder;
   _count?: ExamSessionCountOrderByAggregateInput;
   _avg?: ExamSessionAvgOrderByAggregateInput;
@@ -1086,7 +947,6 @@ export interface ExamSessionScalarWhereWithAggregatesInput {
   openAt?: DateTimeNullableWithAggregatesFilter;
   closeAt?: DateTimeNullableWithAggregatesFilter;
   maxPlayer?: IntNullableWithAggregatesFilter;
-  password?: StringNullableWithAggregatesFilter;
   userId?: StringWithAggregatesFilter;
 }
 
@@ -1278,41 +1138,37 @@ export interface QuestionScalarWhereWithAggregatesInput {
 export interface ProvinceCreateInput {
   id?: string;
   name: string;
-  cities?: CityCreateNestedManyWithoutProvinceInput;
+  regencies?: RegencyCreateNestedManyWithoutProvinceInput;
   createdAt?: undefined;
   updatedAt?: undefined;
   users?: UserCreateNestedManyWithoutProvinceInput;
-  School?: SchoolCreateNestedManyWithoutProvinceInput;
 }
 
 export interface ProvinceUncheckedCreateInput {
   id?: string;
   name: string;
-  cities?: CityUncheckedCreateNestedManyWithoutProvinceInput;
+  regencies?: RegencyUncheckedCreateNestedManyWithoutProvinceInput;
   createdAt?: undefined;
   updatedAt?: undefined;
   users?: UserUncheckedCreateNestedManyWithoutProvinceInput;
-  School?: SchoolUncheckedCreateNestedManyWithoutProvinceInput;
 }
 
 export interface ProvinceUpdateInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
-  cities?: CityUpdateManyWithoutProvinceInput;
+  regencies?: RegencyUpdateManyWithoutProvinceInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   users?: UserUpdateManyWithoutProvinceInput;
-  School?: SchoolUpdateManyWithoutProvinceInput;
 }
 
 export interface ProvinceUncheckedUpdateInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
-  cities?: CityUncheckedUpdateManyWithoutProvinceInput;
+  regencies?: RegencyUncheckedUpdateManyWithoutProvinceInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   users?: UserUncheckedUpdateManyWithoutProvinceInput;
-  School?: SchoolUncheckedUpdateManyWithoutProvinceInput;
 }
 
 export interface ProvinceCreateManyInput {
@@ -1329,45 +1185,41 @@ export interface ProvinceUncheckedUpdateManyInput {
   updatedAt?: DateTimeFieldUpdateOperationsInput;
 }
 
-export interface CityCreateInput {
+export interface RegencyCreateInput {
   id?: string;
   name: string;
-  province: ProvinceCreateNestedOneWithoutCitiesInput;
-  users?: UserCreateNestedManyWithoutCityInput;
-  School?: SchoolCreateNestedManyWithoutCityInput;
+  province: ProvinceCreateNestedOneWithoutRegenciesInput;
+  users?: UserCreateNestedManyWithoutRegencyInput;
 }
 
-export interface CityUncheckedCreateInput {
+export interface RegencyUncheckedCreateInput {
   id?: string;
   name: string;
   provinceId: string;
-  users?: UserUncheckedCreateNestedManyWithoutCityInput;
-  School?: SchoolUncheckedCreateNestedManyWithoutCityInput;
+  users?: UserUncheckedCreateNestedManyWithoutRegencyInput;
 }
 
-export interface CityUpdateInput {
+export interface RegencyUpdateInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
-  province?: ProvinceUpdateOneRequiredWithoutCitiesInput;
-  users?: UserUpdateManyWithoutCityInput;
-  School?: SchoolUpdateManyWithoutCityInput;
+  province?: ProvinceUpdateOneRequiredWithoutRegenciesInput;
+  users?: UserUpdateManyWithoutRegencyInput;
 }
 
-export interface CityUncheckedUpdateInput {
+export interface RegencyUncheckedUpdateInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
-  users?: UserUncheckedUpdateManyWithoutCityInput;
-  School?: SchoolUncheckedUpdateManyWithoutCityInput;
+  users?: UserUncheckedUpdateManyWithoutRegencyInput;
 }
 
-export interface CityCreateManyInput {
+export interface RegencyCreateManyInput {
   id?: string;
   name: string;
   provinceId: string;
 }
 
-export interface CityUncheckedUpdateManyInput {
+export interface RegencyUncheckedUpdateManyInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
@@ -1427,178 +1279,266 @@ export interface IdentityFileUncheckedUpdateManyInput {
   userId?: StringFieldUpdateOperationsInput;
 }
 
+export interface TokenCreateInput {
+  id?: string;
+  token: string;
+  owner: UserCreateNestedOneWithoutMyTokensInput;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutTokenInput;
+  maxClaim?: number;
+}
+
+export interface TokenUncheckedCreateInput {
+  id?: string;
+  token: string;
+  userId: string;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutTokenInput;
+  maxClaim?: number;
+}
+
+export interface TokenUpdateInput {
+  id?: StringFieldUpdateOperationsInput;
+  token?: StringFieldUpdateOperationsInput;
+  owner?: UserUpdateOneRequiredWithoutMyTokensInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutTokenInput;
+  maxClaim?: NullableIntFieldUpdateOperationsInput;
+}
+
+export interface TokenUncheckedUpdateInput {
+  id?: StringFieldUpdateOperationsInput;
+  token?: StringFieldUpdateOperationsInput;
+  userId?: StringFieldUpdateOperationsInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutTokenInput;
+  maxClaim?: NullableIntFieldUpdateOperationsInput;
+}
+
+export interface TokenCreateManyInput {
+  id?: string;
+  token: string;
+  userId: string;
+  maxClaim?: number;
+}
+
+export interface TokenUncheckedUpdateManyInput {
+  id?: StringFieldUpdateOperationsInput;
+  token?: StringFieldUpdateOperationsInput;
+  userId?: StringFieldUpdateOperationsInput;
+  maxClaim?: NullableIntFieldUpdateOperationsInput;
+}
+
+export interface TokenClaimCreateInput {
+  id?: string;
+  token: TokenCreateNestedOneWithoutTokenClaimsInput;
+  claimer: UserCreateNestedOneWithoutTokenClaimsInput;
+  expiredAt?: undefined;
+}
+
+export interface TokenClaimUncheckedCreateInput {
+  id?: string;
+  tokenId: string;
+  userId: string;
+  expiredAt?: undefined;
+}
+
+export interface TokenClaimUpdateInput {
+  id?: StringFieldUpdateOperationsInput;
+  token?: TokenUpdateOneRequiredWithoutTokenClaimsInput;
+  claimer?: UserUpdateOneRequiredWithoutTokenClaimsInput;
+  expiredAt?: NullableDateTimeFieldUpdateOperationsInput;
+}
+
+export interface TokenClaimUncheckedUpdateInput {
+  id?: StringFieldUpdateOperationsInput;
+  tokenId?: StringFieldUpdateOperationsInput;
+  userId?: StringFieldUpdateOperationsInput;
+  expiredAt?: NullableDateTimeFieldUpdateOperationsInput;
+}
+
+export interface TokenClaimCreateManyInput {
+  id?: string;
+  tokenId: string;
+  userId: string;
+  expiredAt?: undefined;
+}
+
+export interface TokenClaimUncheckedUpdateManyInput {
+  id?: StringFieldUpdateOperationsInput;
+  tokenId?: StringFieldUpdateOperationsInput;
+  userId?: StringFieldUpdateOperationsInput;
+  expiredAt?: NullableDateTimeFieldUpdateOperationsInput;
+}
+
 export interface UserCreateInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   province: ProvinceCreateNestedOneWithoutUsersInput;
-  city: CityCreateNestedOneWithoutUsersInput;
+  regency: RegencyCreateNestedOneWithoutUsersInput;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
+  myTokens?: TokenCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedCreateInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   provinceId: string;
-  cityId: string;
+  regencyId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
+  myTokens?: TokenUncheckedCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserUpdateInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  city?: CityUpdateOneRequiredWithoutUsersInput;
+  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUpdateManyWithoutUserInput;
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
+  myTokens?: TokenUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedUpdateInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
+  myTokens?: TokenUncheckedUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutClaimerInput;
 }
 
 export interface UserCreateManyInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   provinceId: string;
-  cityId: string;
+  regencyId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
 }
 
 export interface UserUncheckedUpdateManyInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
 }
 
 export interface NotificationCreateInput {
@@ -1675,218 +1615,6 @@ export interface NotificationUncheckedUpdateManyInput {
   followUpContext?: NullableStringFieldUpdateOperationsInput;
   followUpData?: NullableStringFieldUpdateOperationsInput;
   userId?: StringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface SchoolCreateInput {
-  id?: string;
-  name: string;
-  npsn?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  classrooms?: ClassroomCreateNestedManyWithoutSchoolInput;
-  levels?: number[];
-  type: string;
-  address: string;
-  logoPath?: string;
-  bannerPath?: string;
-  province: ProvinceCreateNestedOneWithoutSchoolInput;
-  city: CityCreateNestedOneWithoutSchoolInput;
-}
-
-export interface SchoolUncheckedCreateInput {
-  id?: string;
-  name: string;
-  npsn?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutSchoolInput;
-  levels?: number[];
-  type: string;
-  address: string;
-  logoPath?: string;
-  bannerPath?: string;
-  provinceId: string;
-  cityId: string;
-}
-
-export interface SchoolUpdateInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  npsn?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  classrooms?: ClassroomUpdateManyWithoutSchoolInput;
-  levels?: number[];
-  type?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  logoPath?: NullableStringFieldUpdateOperationsInput;
-  bannerPath?: NullableStringFieldUpdateOperationsInput;
-  province?: ProvinceUpdateOneRequiredWithoutSchoolInput;
-  city?: CityUpdateOneRequiredWithoutSchoolInput;
-}
-
-export interface SchoolUncheckedUpdateInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  npsn?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutSchoolInput;
-  levels?: number[];
-  type?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  logoPath?: NullableStringFieldUpdateOperationsInput;
-  bannerPath?: NullableStringFieldUpdateOperationsInput;
-  provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
-}
-
-export interface SchoolCreateManyInput {
-  id?: string;
-  name: string;
-  npsn?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  levels?: number[];
-  type: string;
-  address: string;
-  logoPath?: string;
-  bannerPath?: string;
-  provinceId: string;
-  cityId: string;
-}
-
-export interface SchoolUncheckedUpdateManyInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  npsn?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  levels?: number[];
-  type?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  logoPath?: NullableStringFieldUpdateOperationsInput;
-  bannerPath?: NullableStringFieldUpdateOperationsInput;
-  provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
-}
-
-export interface ClassroomCreateInput {
-  id?: string;
-  name: string;
-  school?: SchoolCreateNestedOneWithoutClassroomsInput;
-  user: UserCreateNestedOneWithoutClassroomsInput;
-  students?: ClassroomStudentCreateNestedManyWithoutClassroomInput;
-  level?: number;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomUncheckedCreateInput {
-  id?: string;
-  name: string;
-  schoolId?: string;
-  userId: string;
-  students?: ClassroomStudentUncheckedCreateNestedManyWithoutClassroomInput;
-  level?: number;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomUpdateInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  school?: SchoolUpdateOneWithoutClassroomsInput;
-  user?: UserUpdateOneRequiredWithoutClassroomsInput;
-  students?: ClassroomStudentUpdateManyWithoutClassroomInput;
-  level?: IntFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface ClassroomUncheckedUpdateInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  schoolId?: NullableStringFieldUpdateOperationsInput;
-  userId?: StringFieldUpdateOperationsInput;
-  students?: ClassroomStudentUncheckedUpdateManyWithoutClassroomInput;
-  level?: IntFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface ClassroomCreateManyInput {
-  id?: string;
-  name: string;
-  schoolId?: string;
-  userId: string;
-  level?: number;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomUncheckedUpdateManyInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  schoolId?: NullableStringFieldUpdateOperationsInput;
-  userId?: StringFieldUpdateOperationsInput;
-  level?: IntFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface ClassroomStudentCreateInput {
-  id?: string;
-  user: UserCreateNestedOneWithoutClassroomStudentsInput;
-  classroom?: ClassroomCreateNestedOneWithoutStudentsInput;
-  status?: ClassroomStudentStatus;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomStudentUncheckedCreateInput {
-  id?: string;
-  userId: string;
-  classroomId?: string;
-  status?: ClassroomStudentStatus;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomStudentUpdateInput {
-  id?: StringFieldUpdateOperationsInput;
-  user?: UserUpdateOneRequiredWithoutClassroomStudentsInput;
-  classroom?: ClassroomUpdateOneWithoutStudentsInput;
-  status?: EnumClassroomStudentStatusFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface ClassroomStudentUncheckedUpdateInput {
-  id?: StringFieldUpdateOperationsInput;
-  userId?: StringFieldUpdateOperationsInput;
-  classroomId?: NullableStringFieldUpdateOperationsInput;
-  status?: EnumClassroomStudentStatusFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface ClassroomStudentCreateManyInput {
-  id?: string;
-  userId: string;
-  classroomId?: string;
-  status?: ClassroomStudentStatus;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomStudentUncheckedUpdateManyInput {
-  id?: StringFieldUpdateOperationsInput;
-  userId?: StringFieldUpdateOperationsInput;
-  classroomId?: NullableStringFieldUpdateOperationsInput;
-  status?: EnumClassroomStudentStatusFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
 }
@@ -2013,7 +1741,6 @@ export interface ExamSessionCreateInput {
   openAt?: undefined;
   closeAt?: undefined;
   maxPlayer?: number;
-  password?: string;
   user: UserCreateNestedOneWithoutExamsessionsInput;
   examAnswers?: ExamAnswerCreateNestedManyWithoutExamSessionInput;
 }
@@ -2024,7 +1751,6 @@ export interface ExamSessionUncheckedCreateInput {
   openAt?: undefined;
   closeAt?: undefined;
   maxPlayer?: number;
-  password?: string;
   userId: string;
   examAnswers?: ExamAnswerUncheckedCreateNestedManyWithoutExamSessionInput;
 }
@@ -2035,7 +1761,6 @@ export interface ExamSessionUpdateInput {
   openAt?: NullableDateTimeFieldUpdateOperationsInput;
   closeAt?: NullableDateTimeFieldUpdateOperationsInput;
   maxPlayer?: NullableIntFieldUpdateOperationsInput;
-  password?: NullableStringFieldUpdateOperationsInput;
   user?: UserUpdateOneRequiredWithoutExamsessionsInput;
   examAnswers?: ExamAnswerUpdateManyWithoutExamSessionInput;
 }
@@ -2046,7 +1771,6 @@ export interface ExamSessionUncheckedUpdateInput {
   openAt?: NullableDateTimeFieldUpdateOperationsInput;
   closeAt?: NullableDateTimeFieldUpdateOperationsInput;
   maxPlayer?: NullableIntFieldUpdateOperationsInput;
-  password?: NullableStringFieldUpdateOperationsInput;
   userId?: StringFieldUpdateOperationsInput;
   examAnswers?: ExamAnswerUncheckedUpdateManyWithoutExamSessionInput;
 }
@@ -2057,7 +1781,6 @@ export interface ExamSessionCreateManyInput {
   openAt?: undefined;
   closeAt?: undefined;
   maxPlayer?: number;
-  password?: string;
   userId: string;
 }
 
@@ -2067,7 +1790,6 @@ export interface ExamSessionUncheckedUpdateManyInput {
   openAt?: NullableDateTimeFieldUpdateOperationsInput;
   closeAt?: NullableDateTimeFieldUpdateOperationsInput;
   maxPlayer?: NullableIntFieldUpdateOperationsInput;
-  password?: NullableStringFieldUpdateOperationsInput;
   userId?: StringFieldUpdateOperationsInput;
 }
 
@@ -2286,10 +2008,10 @@ export interface StringFilter {
   not?: NestedStringFilter;
 }
 
-export interface CityListRelationFilter {
-  every?: CityWhereInput;
-  some?: CityWhereInput;
-  none?: CityWhereInput;
+export interface RegencyListRelationFilter {
+  every?: RegencyWhereInput;
+  some?: RegencyWhereInput;
+  none?: RegencyWhereInput;
 }
 
 export interface DateTimeFilter {
@@ -2309,21 +2031,11 @@ export interface UserListRelationFilter {
   none?: UserWhereInput;
 }
 
-export interface SchoolListRelationFilter {
-  every?: SchoolWhereInput;
-  some?: SchoolWhereInput;
-  none?: SchoolWhereInput;
-}
-
-export interface CityOrderByRelationAggregateInput {
+export interface RegencyOrderByRelationAggregateInput {
   _count?: SortOrder;
 }
 
 export interface UserOrderByRelationAggregateInput {
-  _count?: SortOrder;
-}
-
-export interface SchoolOrderByRelationAggregateInput {
   _count?: SortOrder;
 }
 
@@ -2385,19 +2097,19 @@ export interface ProvinceRelationFilter {
   isNot?: ProvinceWhereInput;
 }
 
-export interface CityCountOrderByAggregateInput {
+export interface RegencyCountOrderByAggregateInput {
   id?: SortOrder;
   name?: SortOrder;
   provinceId?: SortOrder;
 }
 
-export interface CityMaxOrderByAggregateInput {
+export interface RegencyMaxOrderByAggregateInput {
   id?: SortOrder;
   name?: SortOrder;
   provinceId?: SortOrder;
 }
 
-export interface CityMinOrderByAggregateInput {
+export interface RegencyMinOrderByAggregateInput {
   id?: SortOrder;
   name?: SortOrder;
   provinceId?: SortOrder;
@@ -2452,6 +2164,123 @@ export interface EnumIdentityFileTypeWithAggregatesFilter {
   _max?: NestedEnumIdentityFileTypeFilter;
 }
 
+export interface TokenClaimListRelationFilter {
+  every?: TokenClaimWhereInput;
+  some?: TokenClaimWhereInput;
+  none?: TokenClaimWhereInput;
+}
+
+export interface IntNullableFilter {
+  equals?: number;
+  in?: number[];
+  notIn?: number[];
+  lt?: number;
+  lte?: number;
+  gt?: number;
+  gte?: number;
+  not?: NestedIntNullableFilter;
+}
+
+export interface TokenClaimOrderByRelationAggregateInput {
+  _count?: SortOrder;
+}
+
+export interface TokenCountOrderByAggregateInput {
+  id?: SortOrder;
+  token?: SortOrder;
+  userId?: SortOrder;
+  maxClaim?: SortOrder;
+}
+
+export interface TokenAvgOrderByAggregateInput {
+  maxClaim?: SortOrder;
+}
+
+export interface TokenMaxOrderByAggregateInput {
+  id?: SortOrder;
+  token?: SortOrder;
+  userId?: SortOrder;
+  maxClaim?: SortOrder;
+}
+
+export interface TokenMinOrderByAggregateInput {
+  id?: SortOrder;
+  token?: SortOrder;
+  userId?: SortOrder;
+  maxClaim?: SortOrder;
+}
+
+export interface TokenSumOrderByAggregateInput {
+  maxClaim?: SortOrder;
+}
+
+export interface IntNullableWithAggregatesFilter {
+  equals?: number;
+  in?: number[];
+  notIn?: number[];
+  lt?: number;
+  lte?: number;
+  gt?: number;
+  gte?: number;
+  not?: NestedIntNullableWithAggregatesFilter;
+  _count?: NestedIntNullableFilter;
+  _avg?: NestedFloatNullableFilter;
+  _sum?: NestedIntNullableFilter;
+  _min?: NestedIntNullableFilter;
+  _max?: NestedIntNullableFilter;
+}
+
+export interface TokenRelationFilter {
+  is?: TokenWhereInput;
+  isNot?: TokenWhereInput;
+}
+
+export interface DateTimeNullableFilter {
+  equals?: undefined;
+  in?: undefined[];
+  notIn?: undefined[];
+  lt?: undefined;
+  lte?: undefined;
+  gt?: undefined;
+  gte?: undefined;
+  not?: NestedDateTimeNullableFilter;
+}
+
+export interface TokenClaimCountOrderByAggregateInput {
+  id?: SortOrder;
+  tokenId?: SortOrder;
+  userId?: SortOrder;
+  expiredAt?: SortOrder;
+}
+
+export interface TokenClaimMaxOrderByAggregateInput {
+  id?: SortOrder;
+  tokenId?: SortOrder;
+  userId?: SortOrder;
+  expiredAt?: SortOrder;
+}
+
+export interface TokenClaimMinOrderByAggregateInput {
+  id?: SortOrder;
+  tokenId?: SortOrder;
+  userId?: SortOrder;
+  expiredAt?: SortOrder;
+}
+
+export interface DateTimeNullableWithAggregatesFilter {
+  equals?: undefined;
+  in?: undefined[];
+  notIn?: undefined[];
+  lt?: undefined;
+  lte?: undefined;
+  gt?: undefined;
+  gte?: undefined;
+  not?: NestedDateTimeNullableWithAggregatesFilter;
+  _count?: NestedIntNullableFilter;
+  _min?: NestedDateTimeNullableFilter;
+  _max?: NestedDateTimeNullableFilter;
+}
+
 export interface StringNullableFilter {
   equals?: string;
   in?: string[];
@@ -2467,9 +2296,9 @@ export interface StringNullableFilter {
   not?: NestedStringNullableFilter;
 }
 
-export interface CityRelationFilter {
-  is?: CityWhereInput;
-  isNot?: CityWhereInput;
+export interface RegencyRelationFilter {
+  is?: RegencyWhereInput;
+  isNot?: RegencyWhereInput;
 }
 
 export interface BoolFilter {
@@ -2495,15 +2324,11 @@ export interface FloatFilter {
   not?: NestedFloatFilter;
 }
 
-export interface DateTimeNullableFilter {
-  equals?: undefined;
-  in?: undefined[];
-  notIn?: undefined[];
-  lt?: undefined;
-  lte?: undefined;
-  gt?: undefined;
-  gte?: undefined;
-  not?: NestedDateTimeNullableFilter;
+export interface EnumVerifyTypeFilter {
+  equals?: VerifyType;
+  in?: VerifyType[];
+  notIn?: VerifyType[];
+  not?: NestedEnumVerifyTypeFilter;
 }
 
 export interface IdentityFileListRelationFilter {
@@ -2536,22 +2361,16 @@ export interface PrivateChatListRelationFilter {
   none?: PrivateChatWhereInput;
 }
 
-export interface ClassroomListRelationFilter {
-  every?: ClassroomWhereInput;
-  some?: ClassroomWhereInput;
-  none?: ClassroomWhereInput;
-}
-
-export interface ClassroomStudentListRelationFilter {
-  every?: ClassroomStudentWhereInput;
-  some?: ClassroomStudentWhereInput;
-  none?: ClassroomStudentWhereInput;
-}
-
 export interface NotificationListRelationFilter {
   every?: NotificationWhereInput;
   some?: NotificationWhereInput;
   none?: NotificationWhereInput;
+}
+
+export interface TokenListRelationFilter {
+  every?: TokenWhereInput;
+  some?: TokenWhereInput;
+  none?: TokenWhereInput;
 }
 
 export interface IdentityFileOrderByRelationAggregateInput {
@@ -2574,15 +2393,11 @@ export interface PrivateChatOrderByRelationAggregateInput {
   _count?: SortOrder;
 }
 
-export interface ClassroomOrderByRelationAggregateInput {
-  _count?: SortOrder;
-}
-
-export interface ClassroomStudentOrderByRelationAggregateInput {
-  _count?: SortOrder;
-}
-
 export interface NotificationOrderByRelationAggregateInput {
+  _count?: SortOrder;
+}
+
+export interface TokenOrderByRelationAggregateInput {
   _count?: SortOrder;
 }
 
@@ -2590,7 +2405,6 @@ export interface UserCountOrderByAggregateInput {
   id?: SortOrder;
   name?: SortOrder;
   email?: SortOrder;
-  password?: SortOrder;
   phoneNumber?: SortOrder;
   address?: SortOrder;
   profilePicturePath?: SortOrder;
@@ -2599,14 +2413,15 @@ export interface UserCountOrderByAggregateInput {
   nisn?: SortOrder;
   nrg?: SortOrder;
   provinceId?: SortOrder;
-  cityId?: SortOrder;
+  regencyId?: SortOrder;
   isAdmin?: SortOrder;
-  isBimbel?: SortOrder;
   role?: SortOrder;
   balance?: SortOrder;
   emailVerifiedAt?: SortOrder;
   phoneNumberVerifiedAt?: SortOrder;
-  bimbelApprovedAt?: SortOrder;
+  identityNumberVerifiedAt?: SortOrder;
+  verifykey?: SortOrder;
+  verifyType?: SortOrder;
 }
 
 export interface UserAvgOrderByAggregateInput {
@@ -2617,7 +2432,6 @@ export interface UserMaxOrderByAggregateInput {
   id?: SortOrder;
   name?: SortOrder;
   email?: SortOrder;
-  password?: SortOrder;
   phoneNumber?: SortOrder;
   address?: SortOrder;
   profilePicturePath?: SortOrder;
@@ -2626,21 +2440,21 @@ export interface UserMaxOrderByAggregateInput {
   nisn?: SortOrder;
   nrg?: SortOrder;
   provinceId?: SortOrder;
-  cityId?: SortOrder;
+  regencyId?: SortOrder;
   isAdmin?: SortOrder;
-  isBimbel?: SortOrder;
   role?: SortOrder;
   balance?: SortOrder;
   emailVerifiedAt?: SortOrder;
   phoneNumberVerifiedAt?: SortOrder;
-  bimbelApprovedAt?: SortOrder;
+  identityNumberVerifiedAt?: SortOrder;
+  verifykey?: SortOrder;
+  verifyType?: SortOrder;
 }
 
 export interface UserMinOrderByAggregateInput {
   id?: SortOrder;
   name?: SortOrder;
   email?: SortOrder;
-  password?: SortOrder;
   phoneNumber?: SortOrder;
   address?: SortOrder;
   profilePicturePath?: SortOrder;
@@ -2649,14 +2463,15 @@ export interface UserMinOrderByAggregateInput {
   nisn?: SortOrder;
   nrg?: SortOrder;
   provinceId?: SortOrder;
-  cityId?: SortOrder;
+  regencyId?: SortOrder;
   isAdmin?: SortOrder;
-  isBimbel?: SortOrder;
   role?: SortOrder;
   balance?: SortOrder;
   emailVerifiedAt?: SortOrder;
   phoneNumberVerifiedAt?: SortOrder;
-  bimbelApprovedAt?: SortOrder;
+  identityNumberVerifiedAt?: SortOrder;
+  verifykey?: SortOrder;
+  verifyType?: SortOrder;
 }
 
 export interface UserSumOrderByAggregateInput {
@@ -2715,18 +2530,14 @@ export interface FloatWithAggregatesFilter {
   _max?: NestedFloatFilter;
 }
 
-export interface DateTimeNullableWithAggregatesFilter {
-  equals?: undefined;
-  in?: undefined[];
-  notIn?: undefined[];
-  lt?: undefined;
-  lte?: undefined;
-  gt?: undefined;
-  gte?: undefined;
-  not?: NestedDateTimeNullableWithAggregatesFilter;
-  _count?: NestedIntNullableFilter;
-  _min?: NestedDateTimeNullableFilter;
-  _max?: NestedDateTimeNullableFilter;
+export interface EnumVerifyTypeWithAggregatesFilter {
+  equals?: VerifyType;
+  in?: VerifyType[];
+  notIn?: VerifyType[];
+  not?: NestedEnumVerifyTypeWithAggregatesFilter;
+  _count?: NestedIntFilter;
+  _min?: NestedEnumVerifyTypeFilter;
+  _max?: NestedEnumVerifyTypeFilter;
 }
 
 export interface NotificationCountOrderByAggregateInput {
@@ -2766,184 +2577,6 @@ export interface NotificationMinOrderByAggregateInput {
   userId?: SortOrder;
   createdAt?: SortOrder;
   updatedAt?: SortOrder;
-}
-
-export interface IntNullableListFilter {
-  equals?: number[];
-  has?: number;
-  hasEvery?: number[];
-  hasSome?: number[];
-  isEmpty?: boolean;
-}
-
-export interface SchoolCountOrderByAggregateInput {
-  id?: SortOrder;
-  name?: SortOrder;
-  npsn?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-  levels?: SortOrder;
-  type?: SortOrder;
-  address?: SortOrder;
-  logoPath?: SortOrder;
-  bannerPath?: SortOrder;
-  provinceId?: SortOrder;
-  cityId?: SortOrder;
-}
-
-export interface SchoolAvgOrderByAggregateInput {
-  levels?: SortOrder;
-}
-
-export interface SchoolMaxOrderByAggregateInput {
-  id?: SortOrder;
-  name?: SortOrder;
-  npsn?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-  type?: SortOrder;
-  address?: SortOrder;
-  logoPath?: SortOrder;
-  bannerPath?: SortOrder;
-  provinceId?: SortOrder;
-  cityId?: SortOrder;
-}
-
-export interface SchoolMinOrderByAggregateInput {
-  id?: SortOrder;
-  name?: SortOrder;
-  npsn?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-  type?: SortOrder;
-  address?: SortOrder;
-  logoPath?: SortOrder;
-  bannerPath?: SortOrder;
-  provinceId?: SortOrder;
-  cityId?: SortOrder;
-}
-
-export interface SchoolSumOrderByAggregateInput {
-  levels?: SortOrder;
-}
-
-export interface SchoolRelationFilter {
-  is?: SchoolWhereInput;
-  isNot?: SchoolWhereInput;
-}
-
-export interface IntFilter {
-  equals?: number;
-  in?: number[];
-  notIn?: number[];
-  lt?: number;
-  lte?: number;
-  gt?: number;
-  gte?: number;
-  not?: NestedIntFilter;
-}
-
-export interface ClassroomCountOrderByAggregateInput {
-  id?: SortOrder;
-  name?: SortOrder;
-  schoolId?: SortOrder;
-  userId?: SortOrder;
-  level?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-}
-
-export interface ClassroomAvgOrderByAggregateInput {
-  level?: SortOrder;
-}
-
-export interface ClassroomMaxOrderByAggregateInput {
-  id?: SortOrder;
-  name?: SortOrder;
-  schoolId?: SortOrder;
-  userId?: SortOrder;
-  level?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-}
-
-export interface ClassroomMinOrderByAggregateInput {
-  id?: SortOrder;
-  name?: SortOrder;
-  schoolId?: SortOrder;
-  userId?: SortOrder;
-  level?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-}
-
-export interface ClassroomSumOrderByAggregateInput {
-  level?: SortOrder;
-}
-
-export interface IntWithAggregatesFilter {
-  equals?: number;
-  in?: number[];
-  notIn?: number[];
-  lt?: number;
-  lte?: number;
-  gt?: number;
-  gte?: number;
-  not?: NestedIntWithAggregatesFilter;
-  _count?: NestedIntFilter;
-  _avg?: NestedFloatFilter;
-  _sum?: NestedIntFilter;
-  _min?: NestedIntFilter;
-  _max?: NestedIntFilter;
-}
-
-export interface ClassroomRelationFilter {
-  is?: ClassroomWhereInput;
-  isNot?: ClassroomWhereInput;
-}
-
-export interface EnumClassroomStudentStatusFilter {
-  equals?: ClassroomStudentStatus;
-  in?: ClassroomStudentStatus[];
-  notIn?: ClassroomStudentStatus[];
-  not?: NestedEnumClassroomStudentStatusFilter;
-}
-
-export interface ClassroomStudentCountOrderByAggregateInput {
-  id?: SortOrder;
-  userId?: SortOrder;
-  classroomId?: SortOrder;
-  status?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-}
-
-export interface ClassroomStudentMaxOrderByAggregateInput {
-  id?: SortOrder;
-  userId?: SortOrder;
-  classroomId?: SortOrder;
-  status?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-}
-
-export interface ClassroomStudentMinOrderByAggregateInput {
-  id?: SortOrder;
-  userId?: SortOrder;
-  classroomId?: SortOrder;
-  status?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
-}
-
-export interface EnumClassroomStudentStatusWithAggregatesFilter {
-  equals?: ClassroomStudentStatus;
-  in?: ClassroomStudentStatus[];
-  notIn?: ClassroomStudentStatus[];
-  not?: NestedEnumClassroomStudentStatusWithAggregatesFilter;
-  _count?: NestedIntFilter;
-  _min?: NestedEnumClassroomStudentStatusFilter;
-  _max?: NestedEnumClassroomStudentStatusFilter;
 }
 
 export interface EnumContentTypeFilter {
@@ -3037,24 +2670,12 @@ export interface ExamMinOrderByAggregateInput {
   updatedAt?: SortOrder;
 }
 
-export interface IntNullableFilter {
-  equals?: number;
-  in?: number[];
-  notIn?: number[];
-  lt?: number;
-  lte?: number;
-  gt?: number;
-  gte?: number;
-  not?: NestedIntNullableFilter;
-}
-
 export interface ExamSessionCountOrderByAggregateInput {
   id?: SortOrder;
   name?: SortOrder;
   openAt?: SortOrder;
   closeAt?: SortOrder;
   maxPlayer?: SortOrder;
-  password?: SortOrder;
   userId?: SortOrder;
 }
 
@@ -3068,7 +2689,6 @@ export interface ExamSessionMaxOrderByAggregateInput {
   openAt?: SortOrder;
   closeAt?: SortOrder;
   maxPlayer?: SortOrder;
-  password?: SortOrder;
   userId?: SortOrder;
 }
 
@@ -3078,28 +2698,11 @@ export interface ExamSessionMinOrderByAggregateInput {
   openAt?: SortOrder;
   closeAt?: SortOrder;
   maxPlayer?: SortOrder;
-  password?: SortOrder;
   userId?: SortOrder;
 }
 
 export interface ExamSessionSumOrderByAggregateInput {
   maxPlayer?: SortOrder;
-}
-
-export interface IntNullableWithAggregatesFilter {
-  equals?: number;
-  in?: number[];
-  notIn?: number[];
-  lt?: number;
-  lte?: number;
-  gt?: number;
-  gte?: number;
-  not?: NestedIntNullableWithAggregatesFilter;
-  _count?: NestedIntNullableFilter;
-  _avg?: NestedFloatNullableFilter;
-  _sum?: NestedIntNullableFilter;
-  _min?: NestedIntNullableFilter;
-  _max?: NestedIntNullableFilter;
 }
 
 export interface QuestionRelationFilter {
@@ -3244,11 +2847,11 @@ export interface EnumQuestionTypeWithAggregatesFilter {
   _max?: NestedEnumQuestionTypeFilter;
 }
 
-export interface CityCreateNestedManyWithoutProvinceInput {
-  create?: CityCreateWithoutProvinceInput[];
-  connectOrCreate?: CityCreateOrConnectWithoutProvinceInput[];
-  createMany?: CityCreateManyProvinceInputEnvelope;
-  connect?: CityWhereUniqueInput[];
+export interface RegencyCreateNestedManyWithoutProvinceInput {
+  create?: RegencyCreateWithoutProvinceInput[];
+  connectOrCreate?: RegencyCreateOrConnectWithoutProvinceInput[];
+  createMany?: RegencyCreateManyProvinceInputEnvelope;
+  connect?: RegencyWhereUniqueInput[];
 }
 
 export interface UserCreateNestedManyWithoutProvinceInput {
@@ -3258,18 +2861,11 @@ export interface UserCreateNestedManyWithoutProvinceInput {
   connect?: UserWhereUniqueInput[];
 }
 
-export interface SchoolCreateNestedManyWithoutProvinceInput {
-  create?: SchoolCreateWithoutProvinceInput[];
-  connectOrCreate?: SchoolCreateOrConnectWithoutProvinceInput[];
-  createMany?: SchoolCreateManyProvinceInputEnvelope;
-  connect?: SchoolWhereUniqueInput[];
-}
-
-export interface CityUncheckedCreateNestedManyWithoutProvinceInput {
-  create?: CityCreateWithoutProvinceInput[];
-  connectOrCreate?: CityCreateOrConnectWithoutProvinceInput[];
-  createMany?: CityCreateManyProvinceInputEnvelope;
-  connect?: CityWhereUniqueInput[];
+export interface RegencyUncheckedCreateNestedManyWithoutProvinceInput {
+  create?: RegencyCreateWithoutProvinceInput[];
+  connectOrCreate?: RegencyCreateOrConnectWithoutProvinceInput[];
+  createMany?: RegencyCreateManyProvinceInputEnvelope;
+  connect?: RegencyWhereUniqueInput[];
 }
 
 export interface UserUncheckedCreateNestedManyWithoutProvinceInput {
@@ -3279,29 +2875,22 @@ export interface UserUncheckedCreateNestedManyWithoutProvinceInput {
   connect?: UserWhereUniqueInput[];
 }
 
-export interface SchoolUncheckedCreateNestedManyWithoutProvinceInput {
-  create?: SchoolCreateWithoutProvinceInput[];
-  connectOrCreate?: SchoolCreateOrConnectWithoutProvinceInput[];
-  createMany?: SchoolCreateManyProvinceInputEnvelope;
-  connect?: SchoolWhereUniqueInput[];
-}
-
 export interface StringFieldUpdateOperationsInput {
   set?: string;
 }
 
-export interface CityUpdateManyWithoutProvinceInput {
-  create?: CityCreateWithoutProvinceInput[];
-  connectOrCreate?: CityCreateOrConnectWithoutProvinceInput[];
-  upsert?: CityUpsertWithWhereUniqueWithoutProvinceInput[];
-  createMany?: CityCreateManyProvinceInputEnvelope;
-  set?: CityWhereUniqueInput[];
-  disconnect?: CityWhereUniqueInput[];
-  delete?: CityWhereUniqueInput[];
-  connect?: CityWhereUniqueInput[];
-  update?: CityUpdateWithWhereUniqueWithoutProvinceInput[];
-  updateMany?: CityUpdateManyWithWhereWithoutProvinceInput[];
-  deleteMany?: CityScalarWhereInput[];
+export interface RegencyUpdateManyWithoutProvinceInput {
+  create?: RegencyCreateWithoutProvinceInput[];
+  connectOrCreate?: RegencyCreateOrConnectWithoutProvinceInput[];
+  upsert?: RegencyUpsertWithWhereUniqueWithoutProvinceInput[];
+  createMany?: RegencyCreateManyProvinceInputEnvelope;
+  set?: RegencyWhereUniqueInput[];
+  disconnect?: RegencyWhereUniqueInput[];
+  delete?: RegencyWhereUniqueInput[];
+  connect?: RegencyWhereUniqueInput[];
+  update?: RegencyUpdateWithWhereUniqueWithoutProvinceInput[];
+  updateMany?: RegencyUpdateManyWithWhereWithoutProvinceInput[];
+  deleteMany?: RegencyScalarWhereInput[];
 }
 
 export interface DateTimeFieldUpdateOperationsInput {
@@ -3322,32 +2911,18 @@ export interface UserUpdateManyWithoutProvinceInput {
   deleteMany?: UserScalarWhereInput[];
 }
 
-export interface SchoolUpdateManyWithoutProvinceInput {
-  create?: SchoolCreateWithoutProvinceInput[];
-  connectOrCreate?: SchoolCreateOrConnectWithoutProvinceInput[];
-  upsert?: SchoolUpsertWithWhereUniqueWithoutProvinceInput[];
-  createMany?: SchoolCreateManyProvinceInputEnvelope;
-  set?: SchoolWhereUniqueInput[];
-  disconnect?: SchoolWhereUniqueInput[];
-  delete?: SchoolWhereUniqueInput[];
-  connect?: SchoolWhereUniqueInput[];
-  update?: SchoolUpdateWithWhereUniqueWithoutProvinceInput[];
-  updateMany?: SchoolUpdateManyWithWhereWithoutProvinceInput[];
-  deleteMany?: SchoolScalarWhereInput[];
-}
-
-export interface CityUncheckedUpdateManyWithoutProvinceInput {
-  create?: CityCreateWithoutProvinceInput[];
-  connectOrCreate?: CityCreateOrConnectWithoutProvinceInput[];
-  upsert?: CityUpsertWithWhereUniqueWithoutProvinceInput[];
-  createMany?: CityCreateManyProvinceInputEnvelope;
-  set?: CityWhereUniqueInput[];
-  disconnect?: CityWhereUniqueInput[];
-  delete?: CityWhereUniqueInput[];
-  connect?: CityWhereUniqueInput[];
-  update?: CityUpdateWithWhereUniqueWithoutProvinceInput[];
-  updateMany?: CityUpdateManyWithWhereWithoutProvinceInput[];
-  deleteMany?: CityScalarWhereInput[];
+export interface RegencyUncheckedUpdateManyWithoutProvinceInput {
+  create?: RegencyCreateWithoutProvinceInput[];
+  connectOrCreate?: RegencyCreateOrConnectWithoutProvinceInput[];
+  upsert?: RegencyUpsertWithWhereUniqueWithoutProvinceInput[];
+  createMany?: RegencyCreateManyProvinceInputEnvelope;
+  set?: RegencyWhereUniqueInput[];
+  disconnect?: RegencyWhereUniqueInput[];
+  delete?: RegencyWhereUniqueInput[];
+  connect?: RegencyWhereUniqueInput[];
+  update?: RegencyUpdateWithWhereUniqueWithoutProvinceInput[];
+  updateMany?: RegencyUpdateManyWithWhereWithoutProvinceInput[];
+  deleteMany?: RegencyScalarWhereInput[];
 }
 
 export interface UserUncheckedUpdateManyWithoutProvinceInput {
@@ -3364,116 +2939,60 @@ export interface UserUncheckedUpdateManyWithoutProvinceInput {
   deleteMany?: UserScalarWhereInput[];
 }
 
-export interface SchoolUncheckedUpdateManyWithoutProvinceInput {
-  create?: SchoolCreateWithoutProvinceInput[];
-  connectOrCreate?: SchoolCreateOrConnectWithoutProvinceInput[];
-  upsert?: SchoolUpsertWithWhereUniqueWithoutProvinceInput[];
-  createMany?: SchoolCreateManyProvinceInputEnvelope;
-  set?: SchoolWhereUniqueInput[];
-  disconnect?: SchoolWhereUniqueInput[];
-  delete?: SchoolWhereUniqueInput[];
-  connect?: SchoolWhereUniqueInput[];
-  update?: SchoolUpdateWithWhereUniqueWithoutProvinceInput[];
-  updateMany?: SchoolUpdateManyWithWhereWithoutProvinceInput[];
-  deleteMany?: SchoolScalarWhereInput[];
-}
-
-export interface ProvinceCreateNestedOneWithoutCitiesInput {
-  create?: ProvinceUncheckedCreateWithoutCitiesInput;
-  connectOrCreate?: ProvinceCreateOrConnectWithoutCitiesInput;
+export interface ProvinceCreateNestedOneWithoutRegenciesInput {
+  create?: ProvinceUncheckedCreateWithoutRegenciesInput;
+  connectOrCreate?: ProvinceCreateOrConnectWithoutRegenciesInput;
   connect?: ProvinceWhereUniqueInput;
 }
 
-export interface UserCreateNestedManyWithoutCityInput {
-  create?: UserCreateWithoutCityInput[];
-  connectOrCreate?: UserCreateOrConnectWithoutCityInput[];
-  createMany?: UserCreateManyCityInputEnvelope;
+export interface UserCreateNestedManyWithoutRegencyInput {
+  create?: UserCreateWithoutRegencyInput[];
+  connectOrCreate?: UserCreateOrConnectWithoutRegencyInput[];
+  createMany?: UserCreateManyRegencyInputEnvelope;
   connect?: UserWhereUniqueInput[];
 }
 
-export interface SchoolCreateNestedManyWithoutCityInput {
-  create?: SchoolCreateWithoutCityInput[];
-  connectOrCreate?: SchoolCreateOrConnectWithoutCityInput[];
-  createMany?: SchoolCreateManyCityInputEnvelope;
-  connect?: SchoolWhereUniqueInput[];
-}
-
-export interface UserUncheckedCreateNestedManyWithoutCityInput {
-  create?: UserCreateWithoutCityInput[];
-  connectOrCreate?: UserCreateOrConnectWithoutCityInput[];
-  createMany?: UserCreateManyCityInputEnvelope;
+export interface UserUncheckedCreateNestedManyWithoutRegencyInput {
+  create?: UserCreateWithoutRegencyInput[];
+  connectOrCreate?: UserCreateOrConnectWithoutRegencyInput[];
+  createMany?: UserCreateManyRegencyInputEnvelope;
   connect?: UserWhereUniqueInput[];
 }
 
-export interface SchoolUncheckedCreateNestedManyWithoutCityInput {
-  create?: SchoolCreateWithoutCityInput[];
-  connectOrCreate?: SchoolCreateOrConnectWithoutCityInput[];
-  createMany?: SchoolCreateManyCityInputEnvelope;
-  connect?: SchoolWhereUniqueInput[];
-}
-
-export interface ProvinceUpdateOneRequiredWithoutCitiesInput {
-  create?: ProvinceUncheckedCreateWithoutCitiesInput;
-  connectOrCreate?: ProvinceCreateOrConnectWithoutCitiesInput;
-  upsert?: ProvinceUpsertWithoutCitiesInput;
+export interface ProvinceUpdateOneRequiredWithoutRegenciesInput {
+  create?: ProvinceUncheckedCreateWithoutRegenciesInput;
+  connectOrCreate?: ProvinceCreateOrConnectWithoutRegenciesInput;
+  upsert?: ProvinceUpsertWithoutRegenciesInput;
   connect?: ProvinceWhereUniqueInput;
-  update?: ProvinceUncheckedUpdateWithoutCitiesInput;
+  update?: ProvinceUncheckedUpdateWithoutRegenciesInput;
 }
 
-export interface UserUpdateManyWithoutCityInput {
-  create?: UserCreateWithoutCityInput[];
-  connectOrCreate?: UserCreateOrConnectWithoutCityInput[];
-  upsert?: UserUpsertWithWhereUniqueWithoutCityInput[];
-  createMany?: UserCreateManyCityInputEnvelope;
+export interface UserUpdateManyWithoutRegencyInput {
+  create?: UserCreateWithoutRegencyInput[];
+  connectOrCreate?: UserCreateOrConnectWithoutRegencyInput[];
+  upsert?: UserUpsertWithWhereUniqueWithoutRegencyInput[];
+  createMany?: UserCreateManyRegencyInputEnvelope;
   set?: UserWhereUniqueInput[];
   disconnect?: UserWhereUniqueInput[];
   delete?: UserWhereUniqueInput[];
   connect?: UserWhereUniqueInput[];
-  update?: UserUpdateWithWhereUniqueWithoutCityInput[];
-  updateMany?: UserUpdateManyWithWhereWithoutCityInput[];
+  update?: UserUpdateWithWhereUniqueWithoutRegencyInput[];
+  updateMany?: UserUpdateManyWithWhereWithoutRegencyInput[];
   deleteMany?: UserScalarWhereInput[];
 }
 
-export interface SchoolUpdateManyWithoutCityInput {
-  create?: SchoolCreateWithoutCityInput[];
-  connectOrCreate?: SchoolCreateOrConnectWithoutCityInput[];
-  upsert?: SchoolUpsertWithWhereUniqueWithoutCityInput[];
-  createMany?: SchoolCreateManyCityInputEnvelope;
-  set?: SchoolWhereUniqueInput[];
-  disconnect?: SchoolWhereUniqueInput[];
-  delete?: SchoolWhereUniqueInput[];
-  connect?: SchoolWhereUniqueInput[];
-  update?: SchoolUpdateWithWhereUniqueWithoutCityInput[];
-  updateMany?: SchoolUpdateManyWithWhereWithoutCityInput[];
-  deleteMany?: SchoolScalarWhereInput[];
-}
-
-export interface UserUncheckedUpdateManyWithoutCityInput {
-  create?: UserCreateWithoutCityInput[];
-  connectOrCreate?: UserCreateOrConnectWithoutCityInput[];
-  upsert?: UserUpsertWithWhereUniqueWithoutCityInput[];
-  createMany?: UserCreateManyCityInputEnvelope;
+export interface UserUncheckedUpdateManyWithoutRegencyInput {
+  create?: UserCreateWithoutRegencyInput[];
+  connectOrCreate?: UserCreateOrConnectWithoutRegencyInput[];
+  upsert?: UserUpsertWithWhereUniqueWithoutRegencyInput[];
+  createMany?: UserCreateManyRegencyInputEnvelope;
   set?: UserWhereUniqueInput[];
   disconnect?: UserWhereUniqueInput[];
   delete?: UserWhereUniqueInput[];
   connect?: UserWhereUniqueInput[];
-  update?: UserUpdateWithWhereUniqueWithoutCityInput[];
-  updateMany?: UserUpdateManyWithWhereWithoutCityInput[];
+  update?: UserUpdateWithWhereUniqueWithoutRegencyInput[];
+  updateMany?: UserUpdateManyWithWhereWithoutRegencyInput[];
   deleteMany?: UserScalarWhereInput[];
-}
-
-export interface SchoolUncheckedUpdateManyWithoutCityInput {
-  create?: SchoolCreateWithoutCityInput[];
-  connectOrCreate?: SchoolCreateOrConnectWithoutCityInput[];
-  upsert?: SchoolUpsertWithWhereUniqueWithoutCityInput[];
-  createMany?: SchoolCreateManyCityInputEnvelope;
-  set?: SchoolWhereUniqueInput[];
-  disconnect?: SchoolWhereUniqueInput[];
-  delete?: SchoolWhereUniqueInput[];
-  connect?: SchoolWhereUniqueInput[];
-  update?: SchoolUpdateWithWhereUniqueWithoutCityInput[];
-  updateMany?: SchoolUpdateManyWithWhereWithoutCityInput[];
-  deleteMany?: SchoolScalarWhereInput[];
 }
 
 export interface UserCreateNestedOneWithoutIdentityFilesInput {
@@ -3494,16 +3013,112 @@ export interface UserUpdateOneRequiredWithoutIdentityFilesInput {
   update?: UserUncheckedUpdateWithoutIdentityFilesInput;
 }
 
+export interface UserCreateNestedOneWithoutMyTokensInput {
+  create?: UserUncheckedCreateWithoutMyTokensInput;
+  connectOrCreate?: UserCreateOrConnectWithoutMyTokensInput;
+  connect?: UserWhereUniqueInput;
+}
+
+export interface TokenClaimCreateNestedManyWithoutTokenInput {
+  create?: TokenClaimCreateWithoutTokenInput[];
+  connectOrCreate?: TokenClaimCreateOrConnectWithoutTokenInput[];
+  createMany?: TokenClaimCreateManyTokenInputEnvelope;
+  connect?: TokenClaimWhereUniqueInput[];
+}
+
+export interface TokenClaimUncheckedCreateNestedManyWithoutTokenInput {
+  create?: TokenClaimCreateWithoutTokenInput[];
+  connectOrCreate?: TokenClaimCreateOrConnectWithoutTokenInput[];
+  createMany?: TokenClaimCreateManyTokenInputEnvelope;
+  connect?: TokenClaimWhereUniqueInput[];
+}
+
+export interface UserUpdateOneRequiredWithoutMyTokensInput {
+  create?: UserUncheckedCreateWithoutMyTokensInput;
+  connectOrCreate?: UserCreateOrConnectWithoutMyTokensInput;
+  upsert?: UserUpsertWithoutMyTokensInput;
+  connect?: UserWhereUniqueInput;
+  update?: UserUncheckedUpdateWithoutMyTokensInput;
+}
+
+export interface TokenClaimUpdateManyWithoutTokenInput {
+  create?: TokenClaimCreateWithoutTokenInput[];
+  connectOrCreate?: TokenClaimCreateOrConnectWithoutTokenInput[];
+  upsert?: TokenClaimUpsertWithWhereUniqueWithoutTokenInput[];
+  createMany?: TokenClaimCreateManyTokenInputEnvelope;
+  set?: TokenClaimWhereUniqueInput[];
+  disconnect?: TokenClaimWhereUniqueInput[];
+  delete?: TokenClaimWhereUniqueInput[];
+  connect?: TokenClaimWhereUniqueInput[];
+  update?: TokenClaimUpdateWithWhereUniqueWithoutTokenInput[];
+  updateMany?: TokenClaimUpdateManyWithWhereWithoutTokenInput[];
+  deleteMany?: TokenClaimScalarWhereInput[];
+}
+
+export interface NullableIntFieldUpdateOperationsInput {
+  set?: number;
+  increment?: number;
+  decrement?: number;
+  multiply?: number;
+  divide?: number;
+}
+
+export interface TokenClaimUncheckedUpdateManyWithoutTokenInput {
+  create?: TokenClaimCreateWithoutTokenInput[];
+  connectOrCreate?: TokenClaimCreateOrConnectWithoutTokenInput[];
+  upsert?: TokenClaimUpsertWithWhereUniqueWithoutTokenInput[];
+  createMany?: TokenClaimCreateManyTokenInputEnvelope;
+  set?: TokenClaimWhereUniqueInput[];
+  disconnect?: TokenClaimWhereUniqueInput[];
+  delete?: TokenClaimWhereUniqueInput[];
+  connect?: TokenClaimWhereUniqueInput[];
+  update?: TokenClaimUpdateWithWhereUniqueWithoutTokenInput[];
+  updateMany?: TokenClaimUpdateManyWithWhereWithoutTokenInput[];
+  deleteMany?: TokenClaimScalarWhereInput[];
+}
+
+export interface TokenCreateNestedOneWithoutTokenClaimsInput {
+  create?: TokenUncheckedCreateWithoutTokenClaimsInput;
+  connectOrCreate?: TokenCreateOrConnectWithoutTokenClaimsInput;
+  connect?: TokenWhereUniqueInput;
+}
+
+export interface UserCreateNestedOneWithoutTokenClaimsInput {
+  create?: UserUncheckedCreateWithoutTokenClaimsInput;
+  connectOrCreate?: UserCreateOrConnectWithoutTokenClaimsInput;
+  connect?: UserWhereUniqueInput;
+}
+
+export interface TokenUpdateOneRequiredWithoutTokenClaimsInput {
+  create?: TokenUncheckedCreateWithoutTokenClaimsInput;
+  connectOrCreate?: TokenCreateOrConnectWithoutTokenClaimsInput;
+  upsert?: TokenUpsertWithoutTokenClaimsInput;
+  connect?: TokenWhereUniqueInput;
+  update?: TokenUncheckedUpdateWithoutTokenClaimsInput;
+}
+
+export interface UserUpdateOneRequiredWithoutTokenClaimsInput {
+  create?: UserUncheckedCreateWithoutTokenClaimsInput;
+  connectOrCreate?: UserCreateOrConnectWithoutTokenClaimsInput;
+  upsert?: UserUpsertWithoutTokenClaimsInput;
+  connect?: UserWhereUniqueInput;
+  update?: UserUncheckedUpdateWithoutTokenClaimsInput;
+}
+
+export interface NullableDateTimeFieldUpdateOperationsInput {
+  set?: undefined;
+}
+
 export interface ProvinceCreateNestedOneWithoutUsersInput {
   create?: ProvinceUncheckedCreateWithoutUsersInput;
   connectOrCreate?: ProvinceCreateOrConnectWithoutUsersInput;
   connect?: ProvinceWhereUniqueInput;
 }
 
-export interface CityCreateNestedOneWithoutUsersInput {
-  create?: CityUncheckedCreateWithoutUsersInput;
-  connectOrCreate?: CityCreateOrConnectWithoutUsersInput;
-  connect?: CityWhereUniqueInput;
+export interface RegencyCreateNestedOneWithoutUsersInput {
+  create?: RegencyUncheckedCreateWithoutUsersInput;
+  connectOrCreate?: RegencyCreateOrConnectWithoutUsersInput;
+  connect?: RegencyWhereUniqueInput;
 }
 
 export interface IdentityFileCreateNestedManyWithoutUserInput {
@@ -3548,25 +3163,25 @@ export interface PrivateChatCreateNestedManyWithoutFromInput {
   connect?: PrivateChatWhereUniqueInput[];
 }
 
-export interface ClassroomCreateNestedManyWithoutUserInput {
-  create?: ClassroomCreateWithoutUserInput[];
-  connectOrCreate?: ClassroomCreateOrConnectWithoutUserInput[];
-  createMany?: ClassroomCreateManyUserInputEnvelope;
-  connect?: ClassroomWhereUniqueInput[];
-}
-
-export interface ClassroomStudentCreateNestedManyWithoutUserInput {
-  create?: ClassroomStudentCreateWithoutUserInput[];
-  connectOrCreate?: ClassroomStudentCreateOrConnectWithoutUserInput[];
-  createMany?: ClassroomStudentCreateManyUserInputEnvelope;
-  connect?: ClassroomStudentWhereUniqueInput[];
-}
-
 export interface NotificationCreateNestedManyWithoutUserInput {
   create?: NotificationCreateWithoutUserInput[];
   connectOrCreate?: NotificationCreateOrConnectWithoutUserInput[];
   createMany?: NotificationCreateManyUserInputEnvelope;
   connect?: NotificationWhereUniqueInput[];
+}
+
+export interface TokenCreateNestedManyWithoutOwnerInput {
+  create?: TokenCreateWithoutOwnerInput[];
+  connectOrCreate?: TokenCreateOrConnectWithoutOwnerInput[];
+  createMany?: TokenCreateManyOwnerInputEnvelope;
+  connect?: TokenWhereUniqueInput[];
+}
+
+export interface TokenClaimCreateNestedManyWithoutClaimerInput {
+  create?: TokenClaimCreateWithoutClaimerInput[];
+  connectOrCreate?: TokenClaimCreateOrConnectWithoutClaimerInput[];
+  createMany?: TokenClaimCreateManyClaimerInputEnvelope;
+  connect?: TokenClaimWhereUniqueInput[];
 }
 
 export interface IdentityFileUncheckedCreateNestedManyWithoutUserInput {
@@ -3611,25 +3226,25 @@ export interface PrivateChatUncheckedCreateNestedManyWithoutFromInput {
   connect?: PrivateChatWhereUniqueInput[];
 }
 
-export interface ClassroomUncheckedCreateNestedManyWithoutUserInput {
-  create?: ClassroomCreateWithoutUserInput[];
-  connectOrCreate?: ClassroomCreateOrConnectWithoutUserInput[];
-  createMany?: ClassroomCreateManyUserInputEnvelope;
-  connect?: ClassroomWhereUniqueInput[];
-}
-
-export interface ClassroomStudentUncheckedCreateNestedManyWithoutUserInput {
-  create?: ClassroomStudentCreateWithoutUserInput[];
-  connectOrCreate?: ClassroomStudentCreateOrConnectWithoutUserInput[];
-  createMany?: ClassroomStudentCreateManyUserInputEnvelope;
-  connect?: ClassroomStudentWhereUniqueInput[];
-}
-
 export interface NotificationUncheckedCreateNestedManyWithoutUserInput {
   create?: NotificationCreateWithoutUserInput[];
   connectOrCreate?: NotificationCreateOrConnectWithoutUserInput[];
   createMany?: NotificationCreateManyUserInputEnvelope;
   connect?: NotificationWhereUniqueInput[];
+}
+
+export interface TokenUncheckedCreateNestedManyWithoutOwnerInput {
+  create?: TokenCreateWithoutOwnerInput[];
+  connectOrCreate?: TokenCreateOrConnectWithoutOwnerInput[];
+  createMany?: TokenCreateManyOwnerInputEnvelope;
+  connect?: TokenWhereUniqueInput[];
+}
+
+export interface TokenClaimUncheckedCreateNestedManyWithoutClaimerInput {
+  create?: TokenClaimCreateWithoutClaimerInput[];
+  connectOrCreate?: TokenClaimCreateOrConnectWithoutClaimerInput[];
+  createMany?: TokenClaimCreateManyClaimerInputEnvelope;
+  connect?: TokenClaimWhereUniqueInput[];
 }
 
 export interface NullableStringFieldUpdateOperationsInput {
@@ -3644,12 +3259,12 @@ export interface ProvinceUpdateOneRequiredWithoutUsersInput {
   update?: ProvinceUncheckedUpdateWithoutUsersInput;
 }
 
-export interface CityUpdateOneRequiredWithoutUsersInput {
-  create?: CityUncheckedCreateWithoutUsersInput;
-  connectOrCreate?: CityCreateOrConnectWithoutUsersInput;
-  upsert?: CityUpsertWithoutUsersInput;
-  connect?: CityWhereUniqueInput;
-  update?: CityUncheckedUpdateWithoutUsersInput;
+export interface RegencyUpdateOneRequiredWithoutUsersInput {
+  create?: RegencyUncheckedCreateWithoutUsersInput;
+  connectOrCreate?: RegencyCreateOrConnectWithoutUsersInput;
+  upsert?: RegencyUpsertWithoutUsersInput;
+  connect?: RegencyWhereUniqueInput;
+  update?: RegencyUncheckedUpdateWithoutUsersInput;
 }
 
 export interface BoolFieldUpdateOperationsInput {
@@ -3668,8 +3283,8 @@ export interface FloatFieldUpdateOperationsInput {
   divide?: number;
 }
 
-export interface NullableDateTimeFieldUpdateOperationsInput {
-  set?: undefined;
+export interface EnumVerifyTypeFieldUpdateOperationsInput {
+  set?: VerifyType;
 }
 
 export interface IdentityFileUpdateManyWithoutUserInput {
@@ -3756,34 +3371,6 @@ export interface PrivateChatUpdateManyWithoutFromInput {
   deleteMany?: PrivateChatScalarWhereInput[];
 }
 
-export interface ClassroomUpdateManyWithoutUserInput {
-  create?: ClassroomCreateWithoutUserInput[];
-  connectOrCreate?: ClassroomCreateOrConnectWithoutUserInput[];
-  upsert?: ClassroomUpsertWithWhereUniqueWithoutUserInput[];
-  createMany?: ClassroomCreateManyUserInputEnvelope;
-  set?: ClassroomWhereUniqueInput[];
-  disconnect?: ClassroomWhereUniqueInput[];
-  delete?: ClassroomWhereUniqueInput[];
-  connect?: ClassroomWhereUniqueInput[];
-  update?: ClassroomUpdateWithWhereUniqueWithoutUserInput[];
-  updateMany?: ClassroomUpdateManyWithWhereWithoutUserInput[];
-  deleteMany?: ClassroomScalarWhereInput[];
-}
-
-export interface ClassroomStudentUpdateManyWithoutUserInput {
-  create?: ClassroomStudentCreateWithoutUserInput[];
-  connectOrCreate?: ClassroomStudentCreateOrConnectWithoutUserInput[];
-  upsert?: ClassroomStudentUpsertWithWhereUniqueWithoutUserInput[];
-  createMany?: ClassroomStudentCreateManyUserInputEnvelope;
-  set?: ClassroomStudentWhereUniqueInput[];
-  disconnect?: ClassroomStudentWhereUniqueInput[];
-  delete?: ClassroomStudentWhereUniqueInput[];
-  connect?: ClassroomStudentWhereUniqueInput[];
-  update?: ClassroomStudentUpdateWithWhereUniqueWithoutUserInput[];
-  updateMany?: ClassroomStudentUpdateManyWithWhereWithoutUserInput[];
-  deleteMany?: ClassroomStudentScalarWhereInput[];
-}
-
 export interface NotificationUpdateManyWithoutUserInput {
   create?: NotificationCreateWithoutUserInput[];
   connectOrCreate?: NotificationCreateOrConnectWithoutUserInput[];
@@ -3796,6 +3383,34 @@ export interface NotificationUpdateManyWithoutUserInput {
   update?: NotificationUpdateWithWhereUniqueWithoutUserInput[];
   updateMany?: NotificationUpdateManyWithWhereWithoutUserInput[];
   deleteMany?: NotificationScalarWhereInput[];
+}
+
+export interface TokenUpdateManyWithoutOwnerInput {
+  create?: TokenCreateWithoutOwnerInput[];
+  connectOrCreate?: TokenCreateOrConnectWithoutOwnerInput[];
+  upsert?: TokenUpsertWithWhereUniqueWithoutOwnerInput[];
+  createMany?: TokenCreateManyOwnerInputEnvelope;
+  set?: TokenWhereUniqueInput[];
+  disconnect?: TokenWhereUniqueInput[];
+  delete?: TokenWhereUniqueInput[];
+  connect?: TokenWhereUniqueInput[];
+  update?: TokenUpdateWithWhereUniqueWithoutOwnerInput[];
+  updateMany?: TokenUpdateManyWithWhereWithoutOwnerInput[];
+  deleteMany?: TokenScalarWhereInput[];
+}
+
+export interface TokenClaimUpdateManyWithoutClaimerInput {
+  create?: TokenClaimCreateWithoutClaimerInput[];
+  connectOrCreate?: TokenClaimCreateOrConnectWithoutClaimerInput[];
+  upsert?: TokenClaimUpsertWithWhereUniqueWithoutClaimerInput[];
+  createMany?: TokenClaimCreateManyClaimerInputEnvelope;
+  set?: TokenClaimWhereUniqueInput[];
+  disconnect?: TokenClaimWhereUniqueInput[];
+  delete?: TokenClaimWhereUniqueInput[];
+  connect?: TokenClaimWhereUniqueInput[];
+  update?: TokenClaimUpdateWithWhereUniqueWithoutClaimerInput[];
+  updateMany?: TokenClaimUpdateManyWithWhereWithoutClaimerInput[];
+  deleteMany?: TokenClaimScalarWhereInput[];
 }
 
 export interface IdentityFileUncheckedUpdateManyWithoutUserInput {
@@ -3882,34 +3497,6 @@ export interface PrivateChatUncheckedUpdateManyWithoutFromInput {
   deleteMany?: PrivateChatScalarWhereInput[];
 }
 
-export interface ClassroomUncheckedUpdateManyWithoutUserInput {
-  create?: ClassroomCreateWithoutUserInput[];
-  connectOrCreate?: ClassroomCreateOrConnectWithoutUserInput[];
-  upsert?: ClassroomUpsertWithWhereUniqueWithoutUserInput[];
-  createMany?: ClassroomCreateManyUserInputEnvelope;
-  set?: ClassroomWhereUniqueInput[];
-  disconnect?: ClassroomWhereUniqueInput[];
-  delete?: ClassroomWhereUniqueInput[];
-  connect?: ClassroomWhereUniqueInput[];
-  update?: ClassroomUpdateWithWhereUniqueWithoutUserInput[];
-  updateMany?: ClassroomUpdateManyWithWhereWithoutUserInput[];
-  deleteMany?: ClassroomScalarWhereInput[];
-}
-
-export interface ClassroomStudentUncheckedUpdateManyWithoutUserInput {
-  create?: ClassroomStudentCreateWithoutUserInput[];
-  connectOrCreate?: ClassroomStudentCreateOrConnectWithoutUserInput[];
-  upsert?: ClassroomStudentUpsertWithWhereUniqueWithoutUserInput[];
-  createMany?: ClassroomStudentCreateManyUserInputEnvelope;
-  set?: ClassroomStudentWhereUniqueInput[];
-  disconnect?: ClassroomStudentWhereUniqueInput[];
-  delete?: ClassroomStudentWhereUniqueInput[];
-  connect?: ClassroomStudentWhereUniqueInput[];
-  update?: ClassroomStudentUpdateWithWhereUniqueWithoutUserInput[];
-  updateMany?: ClassroomStudentUpdateManyWithWhereWithoutUserInput[];
-  deleteMany?: ClassroomStudentScalarWhereInput[];
-}
-
 export interface NotificationUncheckedUpdateManyWithoutUserInput {
   create?: NotificationCreateWithoutUserInput[];
   connectOrCreate?: NotificationCreateOrConnectWithoutUserInput[];
@@ -3924,6 +3511,34 @@ export interface NotificationUncheckedUpdateManyWithoutUserInput {
   deleteMany?: NotificationScalarWhereInput[];
 }
 
+export interface TokenUncheckedUpdateManyWithoutOwnerInput {
+  create?: TokenCreateWithoutOwnerInput[];
+  connectOrCreate?: TokenCreateOrConnectWithoutOwnerInput[];
+  upsert?: TokenUpsertWithWhereUniqueWithoutOwnerInput[];
+  createMany?: TokenCreateManyOwnerInputEnvelope;
+  set?: TokenWhereUniqueInput[];
+  disconnect?: TokenWhereUniqueInput[];
+  delete?: TokenWhereUniqueInput[];
+  connect?: TokenWhereUniqueInput[];
+  update?: TokenUpdateWithWhereUniqueWithoutOwnerInput[];
+  updateMany?: TokenUpdateManyWithWhereWithoutOwnerInput[];
+  deleteMany?: TokenScalarWhereInput[];
+}
+
+export interface TokenClaimUncheckedUpdateManyWithoutClaimerInput {
+  create?: TokenClaimCreateWithoutClaimerInput[];
+  connectOrCreate?: TokenClaimCreateOrConnectWithoutClaimerInput[];
+  upsert?: TokenClaimUpsertWithWhereUniqueWithoutClaimerInput[];
+  createMany?: TokenClaimCreateManyClaimerInputEnvelope;
+  set?: TokenClaimWhereUniqueInput[];
+  disconnect?: TokenClaimWhereUniqueInput[];
+  delete?: TokenClaimWhereUniqueInput[];
+  connect?: TokenClaimWhereUniqueInput[];
+  update?: TokenClaimUpdateWithWhereUniqueWithoutClaimerInput[];
+  updateMany?: TokenClaimUpdateManyWithWhereWithoutClaimerInput[];
+  deleteMany?: TokenClaimScalarWhereInput[];
+}
+
 export interface UserCreateNestedOneWithoutNotificationsInput {
   create?: UserUncheckedCreateWithoutNotificationsInput;
   connectOrCreate?: UserCreateOrConnectWithoutNotificationsInput;
@@ -3936,199 +3551,6 @@ export interface UserUpdateOneRequiredWithoutNotificationsInput {
   upsert?: UserUpsertWithoutNotificationsInput;
   connect?: UserWhereUniqueInput;
   update?: UserUncheckedUpdateWithoutNotificationsInput;
-}
-
-export interface ClassroomCreateNestedManyWithoutSchoolInput {
-  create?: ClassroomCreateWithoutSchoolInput[];
-  connectOrCreate?: ClassroomCreateOrConnectWithoutSchoolInput[];
-  createMany?: ClassroomCreateManySchoolInputEnvelope;
-  connect?: ClassroomWhereUniqueInput[];
-}
-
-export interface SchoolCreatelevelsInput {
-  set: number;
-}
-
-export interface ProvinceCreateNestedOneWithoutSchoolInput {
-  create?: ProvinceUncheckedCreateWithoutSchoolInput;
-  connectOrCreate?: ProvinceCreateOrConnectWithoutSchoolInput;
-  connect?: ProvinceWhereUniqueInput;
-}
-
-export interface CityCreateNestedOneWithoutSchoolInput {
-  create?: CityUncheckedCreateWithoutSchoolInput;
-  connectOrCreate?: CityCreateOrConnectWithoutSchoolInput;
-  connect?: CityWhereUniqueInput;
-}
-
-export interface ClassroomUncheckedCreateNestedManyWithoutSchoolInput {
-  create?: ClassroomCreateWithoutSchoolInput[];
-  connectOrCreate?: ClassroomCreateOrConnectWithoutSchoolInput[];
-  createMany?: ClassroomCreateManySchoolInputEnvelope;
-  connect?: ClassroomWhereUniqueInput[];
-}
-
-export interface ClassroomUpdateManyWithoutSchoolInput {
-  create?: ClassroomCreateWithoutSchoolInput[];
-  connectOrCreate?: ClassroomCreateOrConnectWithoutSchoolInput[];
-  upsert?: ClassroomUpsertWithWhereUniqueWithoutSchoolInput[];
-  createMany?: ClassroomCreateManySchoolInputEnvelope;
-  set?: ClassroomWhereUniqueInput[];
-  disconnect?: ClassroomWhereUniqueInput[];
-  delete?: ClassroomWhereUniqueInput[];
-  connect?: ClassroomWhereUniqueInput[];
-  update?: ClassroomUpdateWithWhereUniqueWithoutSchoolInput[];
-  updateMany?: ClassroomUpdateManyWithWhereWithoutSchoolInput[];
-  deleteMany?: ClassroomScalarWhereInput[];
-}
-
-export interface SchoolUpdatelevelsInput {
-  set?: number[];
-  push?: number[];
-}
-
-export interface ProvinceUpdateOneRequiredWithoutSchoolInput {
-  create?: ProvinceUncheckedCreateWithoutSchoolInput;
-  connectOrCreate?: ProvinceCreateOrConnectWithoutSchoolInput;
-  upsert?: ProvinceUpsertWithoutSchoolInput;
-  connect?: ProvinceWhereUniqueInput;
-  update?: ProvinceUncheckedUpdateWithoutSchoolInput;
-}
-
-export interface CityUpdateOneRequiredWithoutSchoolInput {
-  create?: CityUncheckedCreateWithoutSchoolInput;
-  connectOrCreate?: CityCreateOrConnectWithoutSchoolInput;
-  upsert?: CityUpsertWithoutSchoolInput;
-  connect?: CityWhereUniqueInput;
-  update?: CityUncheckedUpdateWithoutSchoolInput;
-}
-
-export interface ClassroomUncheckedUpdateManyWithoutSchoolInput {
-  create?: ClassroomCreateWithoutSchoolInput[];
-  connectOrCreate?: ClassroomCreateOrConnectWithoutSchoolInput[];
-  upsert?: ClassroomUpsertWithWhereUniqueWithoutSchoolInput[];
-  createMany?: ClassroomCreateManySchoolInputEnvelope;
-  set?: ClassroomWhereUniqueInput[];
-  disconnect?: ClassroomWhereUniqueInput[];
-  delete?: ClassroomWhereUniqueInput[];
-  connect?: ClassroomWhereUniqueInput[];
-  update?: ClassroomUpdateWithWhereUniqueWithoutSchoolInput[];
-  updateMany?: ClassroomUpdateManyWithWhereWithoutSchoolInput[];
-  deleteMany?: ClassroomScalarWhereInput[];
-}
-
-export interface SchoolCreateNestedOneWithoutClassroomsInput {
-  create?: SchoolUncheckedCreateWithoutClassroomsInput;
-  connectOrCreate?: SchoolCreateOrConnectWithoutClassroomsInput;
-  connect?: SchoolWhereUniqueInput;
-}
-
-export interface UserCreateNestedOneWithoutClassroomsInput {
-  create?: UserUncheckedCreateWithoutClassroomsInput;
-  connectOrCreate?: UserCreateOrConnectWithoutClassroomsInput;
-  connect?: UserWhereUniqueInput;
-}
-
-export interface ClassroomStudentCreateNestedManyWithoutClassroomInput {
-  create?: ClassroomStudentCreateWithoutClassroomInput[];
-  connectOrCreate?: ClassroomStudentCreateOrConnectWithoutClassroomInput[];
-  createMany?: ClassroomStudentCreateManyClassroomInputEnvelope;
-  connect?: ClassroomStudentWhereUniqueInput[];
-}
-
-export interface ClassroomStudentUncheckedCreateNestedManyWithoutClassroomInput {
-  create?: ClassroomStudentCreateWithoutClassroomInput[];
-  connectOrCreate?: ClassroomStudentCreateOrConnectWithoutClassroomInput[];
-  createMany?: ClassroomStudentCreateManyClassroomInputEnvelope;
-  connect?: ClassroomStudentWhereUniqueInput[];
-}
-
-export interface SchoolUpdateOneWithoutClassroomsInput {
-  create?: SchoolUncheckedCreateWithoutClassroomsInput;
-  connectOrCreate?: SchoolCreateOrConnectWithoutClassroomsInput;
-  upsert?: SchoolUpsertWithoutClassroomsInput;
-  disconnect?: boolean;
-  delete?: boolean;
-  connect?: SchoolWhereUniqueInput;
-  update?: SchoolUncheckedUpdateWithoutClassroomsInput;
-}
-
-export interface UserUpdateOneRequiredWithoutClassroomsInput {
-  create?: UserUncheckedCreateWithoutClassroomsInput;
-  connectOrCreate?: UserCreateOrConnectWithoutClassroomsInput;
-  upsert?: UserUpsertWithoutClassroomsInput;
-  connect?: UserWhereUniqueInput;
-  update?: UserUncheckedUpdateWithoutClassroomsInput;
-}
-
-export interface ClassroomStudentUpdateManyWithoutClassroomInput {
-  create?: ClassroomStudentCreateWithoutClassroomInput[];
-  connectOrCreate?: ClassroomStudentCreateOrConnectWithoutClassroomInput[];
-  upsert?: ClassroomStudentUpsertWithWhereUniqueWithoutClassroomInput[];
-  createMany?: ClassroomStudentCreateManyClassroomInputEnvelope;
-  set?: ClassroomStudentWhereUniqueInput[];
-  disconnect?: ClassroomStudentWhereUniqueInput[];
-  delete?: ClassroomStudentWhereUniqueInput[];
-  connect?: ClassroomStudentWhereUniqueInput[];
-  update?: ClassroomStudentUpdateWithWhereUniqueWithoutClassroomInput[];
-  updateMany?: ClassroomStudentUpdateManyWithWhereWithoutClassroomInput[];
-  deleteMany?: ClassroomStudentScalarWhereInput[];
-}
-
-export interface IntFieldUpdateOperationsInput {
-  set?: number;
-  increment?: number;
-  decrement?: number;
-  multiply?: number;
-  divide?: number;
-}
-
-export interface ClassroomStudentUncheckedUpdateManyWithoutClassroomInput {
-  create?: ClassroomStudentCreateWithoutClassroomInput[];
-  connectOrCreate?: ClassroomStudentCreateOrConnectWithoutClassroomInput[];
-  upsert?: ClassroomStudentUpsertWithWhereUniqueWithoutClassroomInput[];
-  createMany?: ClassroomStudentCreateManyClassroomInputEnvelope;
-  set?: ClassroomStudentWhereUniqueInput[];
-  disconnect?: ClassroomStudentWhereUniqueInput[];
-  delete?: ClassroomStudentWhereUniqueInput[];
-  connect?: ClassroomStudentWhereUniqueInput[];
-  update?: ClassroomStudentUpdateWithWhereUniqueWithoutClassroomInput[];
-  updateMany?: ClassroomStudentUpdateManyWithWhereWithoutClassroomInput[];
-  deleteMany?: ClassroomStudentScalarWhereInput[];
-}
-
-export interface UserCreateNestedOneWithoutClassroomStudentsInput {
-  create?: UserUncheckedCreateWithoutClassroomStudentsInput;
-  connectOrCreate?: UserCreateOrConnectWithoutClassroomStudentsInput;
-  connect?: UserWhereUniqueInput;
-}
-
-export interface ClassroomCreateNestedOneWithoutStudentsInput {
-  create?: ClassroomUncheckedCreateWithoutStudentsInput;
-  connectOrCreate?: ClassroomCreateOrConnectWithoutStudentsInput;
-  connect?: ClassroomWhereUniqueInput;
-}
-
-export interface UserUpdateOneRequiredWithoutClassroomStudentsInput {
-  create?: UserUncheckedCreateWithoutClassroomStudentsInput;
-  connectOrCreate?: UserCreateOrConnectWithoutClassroomStudentsInput;
-  upsert?: UserUpsertWithoutClassroomStudentsInput;
-  connect?: UserWhereUniqueInput;
-  update?: UserUncheckedUpdateWithoutClassroomStudentsInput;
-}
-
-export interface ClassroomUpdateOneWithoutStudentsInput {
-  create?: ClassroomUncheckedCreateWithoutStudentsInput;
-  connectOrCreate?: ClassroomCreateOrConnectWithoutStudentsInput;
-  upsert?: ClassroomUpsertWithoutStudentsInput;
-  disconnect?: boolean;
-  delete?: boolean;
-  connect?: ClassroomWhereUniqueInput;
-  update?: ClassroomUncheckedUpdateWithoutStudentsInput;
-}
-
-export interface EnumClassroomStudentStatusFieldUpdateOperationsInput {
-  set?: ClassroomStudentStatus;
 }
 
 export interface UserCreateNestedOneWithoutMyPrivateChatsInput {
@@ -4279,14 +3701,6 @@ export interface ExamAnswerUncheckedCreateNestedManyWithoutExamSessionInput {
   connectOrCreate?: ExamAnswerCreateOrConnectWithoutExamSessionInput[];
   createMany?: ExamAnswerCreateManyExamSessionInputEnvelope;
   connect?: ExamAnswerWhereUniqueInput[];
-}
-
-export interface NullableIntFieldUpdateOperationsInput {
-  set?: number;
-  increment?: number;
-  decrement?: number;
-  multiply?: number;
-  divide?: number;
 }
 
 export interface UserUpdateOneRequiredWithoutExamsessionsInput {
@@ -4594,6 +4008,69 @@ export interface NestedEnumIdentityFileTypeWithAggregatesFilter {
   _max?: NestedEnumIdentityFileTypeFilter;
 }
 
+export interface NestedIntNullableFilter {
+  equals?: number;
+  in?: number[];
+  notIn?: number[];
+  lt?: number;
+  lte?: number;
+  gt?: number;
+  gte?: number;
+  not?: NestedIntNullableFilter;
+}
+
+export interface NestedIntNullableWithAggregatesFilter {
+  equals?: number;
+  in?: number[];
+  notIn?: number[];
+  lt?: number;
+  lte?: number;
+  gt?: number;
+  gte?: number;
+  not?: NestedIntNullableWithAggregatesFilter;
+  _count?: NestedIntNullableFilter;
+  _avg?: NestedFloatNullableFilter;
+  _sum?: NestedIntNullableFilter;
+  _min?: NestedIntNullableFilter;
+  _max?: NestedIntNullableFilter;
+}
+
+export interface NestedFloatNullableFilter {
+  equals?: number;
+  in?: number[];
+  notIn?: number[];
+  lt?: number;
+  lte?: number;
+  gt?: number;
+  gte?: number;
+  not?: NestedFloatNullableFilter;
+}
+
+export interface NestedDateTimeNullableFilter {
+  equals?: undefined;
+  in?: undefined[];
+  notIn?: undefined[];
+  lt?: undefined;
+  lte?: undefined;
+  gt?: undefined;
+  gte?: undefined;
+  not?: NestedDateTimeNullableFilter;
+}
+
+export interface NestedDateTimeNullableWithAggregatesFilter {
+  equals?: undefined;
+  in?: undefined[];
+  notIn?: undefined[];
+  lt?: undefined;
+  lte?: undefined;
+  gt?: undefined;
+  gte?: undefined;
+  not?: NestedDateTimeNullableWithAggregatesFilter;
+  _count?: NestedIntNullableFilter;
+  _min?: NestedDateTimeNullableFilter;
+  _max?: NestedDateTimeNullableFilter;
+}
+
 export interface NestedStringNullableFilter {
   equals?: string;
   in?: string[];
@@ -4631,15 +4108,11 @@ export interface NestedFloatFilter {
   not?: NestedFloatFilter;
 }
 
-export interface NestedDateTimeNullableFilter {
-  equals?: undefined;
-  in?: undefined[];
-  notIn?: undefined[];
-  lt?: undefined;
-  lte?: undefined;
-  gt?: undefined;
-  gte?: undefined;
-  not?: NestedDateTimeNullableFilter;
+export interface NestedEnumVerifyTypeFilter {
+  equals?: VerifyType;
+  in?: VerifyType[];
+  notIn?: VerifyType[];
+  not?: NestedEnumVerifyTypeFilter;
 }
 
 export interface NestedStringNullableWithAggregatesFilter {
@@ -4657,17 +4130,6 @@ export interface NestedStringNullableWithAggregatesFilter {
   _count?: NestedIntNullableFilter;
   _min?: NestedStringNullableFilter;
   _max?: NestedStringNullableFilter;
-}
-
-export interface NestedIntNullableFilter {
-  equals?: number;
-  in?: number[];
-  notIn?: number[];
-  lt?: number;
-  lte?: number;
-  gt?: number;
-  gte?: number;
-  not?: NestedIntNullableFilter;
 }
 
 export interface NestedBoolWithAggregatesFilter {
@@ -4704,51 +4166,14 @@ export interface NestedFloatWithAggregatesFilter {
   _max?: NestedFloatFilter;
 }
 
-export interface NestedDateTimeNullableWithAggregatesFilter {
-  equals?: undefined;
-  in?: undefined[];
-  notIn?: undefined[];
-  lt?: undefined;
-  lte?: undefined;
-  gt?: undefined;
-  gte?: undefined;
-  not?: NestedDateTimeNullableWithAggregatesFilter;
-  _count?: NestedIntNullableFilter;
-  _min?: NestedDateTimeNullableFilter;
-  _max?: NestedDateTimeNullableFilter;
-}
-
-export interface NestedIntWithAggregatesFilter {
-  equals?: number;
-  in?: number[];
-  notIn?: number[];
-  lt?: number;
-  lte?: number;
-  gt?: number;
-  gte?: number;
-  not?: NestedIntWithAggregatesFilter;
+export interface NestedEnumVerifyTypeWithAggregatesFilter {
+  equals?: VerifyType;
+  in?: VerifyType[];
+  notIn?: VerifyType[];
+  not?: NestedEnumVerifyTypeWithAggregatesFilter;
   _count?: NestedIntFilter;
-  _avg?: NestedFloatFilter;
-  _sum?: NestedIntFilter;
-  _min?: NestedIntFilter;
-  _max?: NestedIntFilter;
-}
-
-export interface NestedEnumClassroomStudentStatusFilter {
-  equals?: ClassroomStudentStatus;
-  in?: ClassroomStudentStatus[];
-  notIn?: ClassroomStudentStatus[];
-  not?: NestedEnumClassroomStudentStatusFilter;
-}
-
-export interface NestedEnumClassroomStudentStatusWithAggregatesFilter {
-  equals?: ClassroomStudentStatus;
-  in?: ClassroomStudentStatus[];
-  notIn?: ClassroomStudentStatus[];
-  not?: NestedEnumClassroomStudentStatusWithAggregatesFilter;
-  _count?: NestedIntFilter;
-  _min?: NestedEnumClassroomStudentStatusFilter;
-  _max?: NestedEnumClassroomStudentStatusFilter;
+  _min?: NestedEnumVerifyTypeFilter;
+  _max?: NestedEnumVerifyTypeFilter;
 }
 
 export interface NestedEnumContentTypeFilter {
@@ -4768,33 +4193,6 @@ export interface NestedEnumContentTypeWithAggregatesFilter {
   _max?: NestedEnumContentTypeFilter;
 }
 
-export interface NestedIntNullableWithAggregatesFilter {
-  equals?: number;
-  in?: number[];
-  notIn?: number[];
-  lt?: number;
-  lte?: number;
-  gt?: number;
-  gte?: number;
-  not?: NestedIntNullableWithAggregatesFilter;
-  _count?: NestedIntNullableFilter;
-  _avg?: NestedFloatNullableFilter;
-  _sum?: NestedIntNullableFilter;
-  _min?: NestedIntNullableFilter;
-  _max?: NestedIntNullableFilter;
-}
-
-export interface NestedFloatNullableFilter {
-  equals?: number;
-  in?: number[];
-  notIn?: number[];
-  lt?: number;
-  lte?: number;
-  gt?: number;
-  gte?: number;
-  not?: NestedFloatNullableFilter;
-}
-
 export interface NestedEnumQuestionTypeFilter {
   equals?: QuestionType;
   in?: QuestionType[];
@@ -4812,27 +4210,25 @@ export interface NestedEnumQuestionTypeWithAggregatesFilter {
   _max?: NestedEnumQuestionTypeFilter;
 }
 
-export interface CityCreateWithoutProvinceInput {
+export interface RegencyCreateWithoutProvinceInput {
   id?: string;
   name: string;
-  users?: UserCreateNestedManyWithoutCityInput;
-  School?: SchoolCreateNestedManyWithoutCityInput;
+  users?: UserCreateNestedManyWithoutRegencyInput;
 }
 
-export interface CityUncheckedCreateWithoutProvinceInput {
+export interface RegencyUncheckedCreateWithoutProvinceInput {
   id?: string;
   name: string;
-  users?: UserUncheckedCreateNestedManyWithoutCityInput;
-  School?: SchoolUncheckedCreateNestedManyWithoutCityInput;
+  users?: UserUncheckedCreateNestedManyWithoutRegencyInput;
 }
 
-export interface CityCreateOrConnectWithoutProvinceInput {
-  where: CityWhereUniqueInput;
-  create: CityUncheckedCreateWithoutProvinceInput;
+export interface RegencyCreateOrConnectWithoutProvinceInput {
+  where: RegencyWhereUniqueInput;
+  create: RegencyUncheckedCreateWithoutProvinceInput;
 }
 
-export interface CityCreateManyProvinceInputEnvelope {
-  data: CityCreateManyProvinceInput;
+export interface RegencyCreateManyProvinceInputEnvelope {
+  data: RegencyCreateManyProvinceInput;
   skipDuplicates?: boolean;
 }
 
@@ -4840,62 +4236,62 @@ export interface UserCreateWithoutProvinceInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
-  city: CityCreateNestedOneWithoutUsersInput;
+  regency: RegencyCreateNestedOneWithoutUsersInput;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
+  myTokens?: TokenCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedCreateWithoutProvinceInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
-  cityId: string;
+  regencyId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
+  myTokens?: TokenUncheckedCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserCreateOrConnectWithoutProvinceInput {
@@ -4908,66 +4304,26 @@ export interface UserCreateManyProvinceInputEnvelope {
   skipDuplicates?: boolean;
 }
 
-export interface SchoolCreateWithoutProvinceInput {
-  id?: string;
-  name: string;
-  npsn?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  classrooms?: ClassroomCreateNestedManyWithoutSchoolInput;
-  levels?: number[];
-  type: string;
-  address: string;
-  logoPath?: string;
-  bannerPath?: string;
-  city: CityCreateNestedOneWithoutSchoolInput;
+export interface RegencyUpsertWithWhereUniqueWithoutProvinceInput {
+  where: RegencyWhereUniqueInput;
+  update: RegencyUncheckedUpdateWithoutProvinceInput;
+  create: RegencyUncheckedCreateWithoutProvinceInput;
 }
 
-export interface SchoolUncheckedCreateWithoutProvinceInput {
-  id?: string;
-  name: string;
-  npsn?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutSchoolInput;
-  levels?: number[];
-  type: string;
-  address: string;
-  logoPath?: string;
-  bannerPath?: string;
-  cityId: string;
+export interface RegencyUpdateWithWhereUniqueWithoutProvinceInput {
+  where: RegencyWhereUniqueInput;
+  data: RegencyUncheckedUpdateWithoutProvinceInput;
 }
 
-export interface SchoolCreateOrConnectWithoutProvinceInput {
-  where: SchoolWhereUniqueInput;
-  create: SchoolUncheckedCreateWithoutProvinceInput;
+export interface RegencyUpdateManyWithWhereWithoutProvinceInput {
+  where: RegencyScalarWhereInput;
+  data: RegencyUncheckedUpdateManyWithoutRegenciesInput;
 }
 
-export interface SchoolCreateManyProvinceInputEnvelope {
-  data: SchoolCreateManyProvinceInput;
-  skipDuplicates?: boolean;
-}
-
-export interface CityUpsertWithWhereUniqueWithoutProvinceInput {
-  where: CityWhereUniqueInput;
-  update: CityUncheckedUpdateWithoutProvinceInput;
-  create: CityUncheckedCreateWithoutProvinceInput;
-}
-
-export interface CityUpdateWithWhereUniqueWithoutProvinceInput {
-  where: CityWhereUniqueInput;
-  data: CityUncheckedUpdateWithoutProvinceInput;
-}
-
-export interface CityUpdateManyWithWhereWithoutProvinceInput {
-  where: CityScalarWhereInput;
-  data: CityUncheckedUpdateManyWithoutCitiesInput;
-}
-
-export interface CityScalarWhereInput {
-  AND?: CityScalarWhereInput[];
-  OR?: CityScalarWhereInput[];
-  NOT?: CityScalarWhereInput[];
+export interface RegencyScalarWhereInput {
+  AND?: RegencyScalarWhereInput[];
+  OR?: RegencyScalarWhereInput[];
+  NOT?: RegencyScalarWhereInput[];
   id?: StringFilter;
   name?: StringFilter;
   provinceId?: StringFilter;
@@ -4996,89 +4352,52 @@ export interface UserScalarWhereInput {
   id?: StringFilter;
   name?: StringFilter;
   email?: StringFilter;
-  password?: StringFilter;
-  phoneNumber?: StringFilter;
-  address?: StringFilter;
+  phoneNumber?: StringNullableFilter;
+  address?: StringNullableFilter;
   profilePicturePath?: StringNullableFilter;
   createdAt?: DateTimeFilter;
   updatedAt?: DateTimeFilter;
   nisn?: StringNullableFilter;
   nrg?: StringNullableFilter;
   provinceId?: StringFilter;
-  cityId?: StringFilter;
+  regencyId?: StringFilter;
   isAdmin?: BoolFilter;
-  isBimbel?: BoolFilter;
   role?: EnumRolesFilter;
   balance?: FloatFilter;
   emailVerifiedAt?: DateTimeNullableFilter;
   phoneNumberVerifiedAt?: DateTimeNullableFilter;
-  bimbelApprovedAt?: DateTimeNullableFilter;
+  identityNumberVerifiedAt?: DateTimeNullableFilter;
+  verifykey?: StringNullableFilter;
+  verifyType?: EnumVerifyTypeFilter;
 }
 
-export interface SchoolUpsertWithWhereUniqueWithoutProvinceInput {
-  where: SchoolWhereUniqueInput;
-  update: SchoolUncheckedUpdateWithoutProvinceInput;
-  create: SchoolUncheckedCreateWithoutProvinceInput;
-}
-
-export interface SchoolUpdateWithWhereUniqueWithoutProvinceInput {
-  where: SchoolWhereUniqueInput;
-  data: SchoolUncheckedUpdateWithoutProvinceInput;
-}
-
-export interface SchoolUpdateManyWithWhereWithoutProvinceInput {
-  where: SchoolScalarWhereInput;
-  data: SchoolUncheckedUpdateManyWithoutSchoolInput;
-}
-
-export interface SchoolScalarWhereInput {
-  AND?: SchoolScalarWhereInput[];
-  OR?: SchoolScalarWhereInput[];
-  NOT?: SchoolScalarWhereInput[];
-  id?: StringFilter;
-  name?: StringFilter;
-  npsn?: StringNullableFilter;
-  createdAt?: DateTimeFilter;
-  updatedAt?: DateTimeFilter;
-  levels?: IntNullableListFilter;
-  type?: StringFilter;
-  address?: StringFilter;
-  logoPath?: StringNullableFilter;
-  bannerPath?: StringNullableFilter;
-  provinceId?: StringFilter;
-  cityId?: StringFilter;
-}
-
-export interface ProvinceCreateWithoutCitiesInput {
+export interface ProvinceCreateWithoutRegenciesInput {
   id?: string;
   name: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   users?: UserCreateNestedManyWithoutProvinceInput;
-  School?: SchoolCreateNestedManyWithoutProvinceInput;
 }
 
-export interface ProvinceUncheckedCreateWithoutCitiesInput {
+export interface ProvinceUncheckedCreateWithoutRegenciesInput {
   id?: string;
   name: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   users?: UserUncheckedCreateNestedManyWithoutProvinceInput;
-  School?: SchoolUncheckedCreateNestedManyWithoutProvinceInput;
 }
 
-export interface ProvinceCreateOrConnectWithoutCitiesInput {
+export interface ProvinceCreateOrConnectWithoutRegenciesInput {
   where: ProvinceWhereUniqueInput;
-  create: ProvinceUncheckedCreateWithoutCitiesInput;
+  create: ProvinceUncheckedCreateWithoutRegenciesInput;
 }
 
-export interface UserCreateWithoutCityInput {
+export interface UserCreateWithoutRegencyInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
@@ -5086,30 +4405,30 @@ export interface UserCreateWithoutCityInput {
   nrg?: string;
   province: ProvinceCreateNestedOneWithoutUsersInput;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
+  myTokens?: TokenCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutClaimerInput;
 }
 
-export interface UserUncheckedCreateWithoutCityInput {
+export interface UserUncheckedCreateWithoutRegencyInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
@@ -5117,188 +4436,131 @@ export interface UserUncheckedCreateWithoutCityInput {
   nrg?: string;
   provinceId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
+  myTokens?: TokenUncheckedCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutClaimerInput;
 }
 
-export interface UserCreateOrConnectWithoutCityInput {
+export interface UserCreateOrConnectWithoutRegencyInput {
   where: UserWhereUniqueInput;
-  create: UserUncheckedCreateWithoutCityInput;
+  create: UserUncheckedCreateWithoutRegencyInput;
 }
 
-export interface UserCreateManyCityInputEnvelope {
-  data: UserCreateManyCityInput;
+export interface UserCreateManyRegencyInputEnvelope {
+  data: UserCreateManyRegencyInput;
   skipDuplicates?: boolean;
 }
 
-export interface SchoolCreateWithoutCityInput {
-  id?: string;
-  name: string;
-  npsn?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  classrooms?: ClassroomCreateNestedManyWithoutSchoolInput;
-  levels?: number[];
-  type: string;
-  address: string;
-  logoPath?: string;
-  bannerPath?: string;
-  province: ProvinceCreateNestedOneWithoutSchoolInput;
+export interface ProvinceUpsertWithoutRegenciesInput {
+  update: ProvinceUncheckedUpdateWithoutRegenciesInput;
+  create: ProvinceUncheckedCreateWithoutRegenciesInput;
 }
 
-export interface SchoolUncheckedCreateWithoutCityInput {
-  id?: string;
-  name: string;
-  npsn?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutSchoolInput;
-  levels?: number[];
-  type: string;
-  address: string;
-  logoPath?: string;
-  bannerPath?: string;
-  provinceId: string;
-}
-
-export interface SchoolCreateOrConnectWithoutCityInput {
-  where: SchoolWhereUniqueInput;
-  create: SchoolUncheckedCreateWithoutCityInput;
-}
-
-export interface SchoolCreateManyCityInputEnvelope {
-  data: SchoolCreateManyCityInput;
-  skipDuplicates?: boolean;
-}
-
-export interface ProvinceUpsertWithoutCitiesInput {
-  update: ProvinceUncheckedUpdateWithoutCitiesInput;
-  create: ProvinceUncheckedCreateWithoutCitiesInput;
-}
-
-export interface ProvinceUpdateWithoutCitiesInput {
+export interface ProvinceUpdateWithoutRegenciesInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   users?: UserUpdateManyWithoutProvinceInput;
-  School?: SchoolUpdateManyWithoutProvinceInput;
 }
 
-export interface ProvinceUncheckedUpdateWithoutCitiesInput {
+export interface ProvinceUncheckedUpdateWithoutRegenciesInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   users?: UserUncheckedUpdateManyWithoutProvinceInput;
-  School?: SchoolUncheckedUpdateManyWithoutProvinceInput;
 }
 
-export interface UserUpsertWithWhereUniqueWithoutCityInput {
+export interface UserUpsertWithWhereUniqueWithoutRegencyInput {
   where: UserWhereUniqueInput;
-  update: UserUncheckedUpdateWithoutCityInput;
-  create: UserUncheckedCreateWithoutCityInput;
+  update: UserUncheckedUpdateWithoutRegencyInput;
+  create: UserUncheckedCreateWithoutRegencyInput;
 }
 
-export interface UserUpdateWithWhereUniqueWithoutCityInput {
+export interface UserUpdateWithWhereUniqueWithoutRegencyInput {
   where: UserWhereUniqueInput;
-  data: UserUncheckedUpdateWithoutCityInput;
+  data: UserUncheckedUpdateWithoutRegencyInput;
 }
 
-export interface UserUpdateManyWithWhereWithoutCityInput {
+export interface UserUpdateManyWithWhereWithoutRegencyInput {
   where: UserScalarWhereInput;
   data: UserUncheckedUpdateManyWithoutUsersInput;
-}
-
-export interface SchoolUpsertWithWhereUniqueWithoutCityInput {
-  where: SchoolWhereUniqueInput;
-  update: SchoolUncheckedUpdateWithoutCityInput;
-  create: SchoolUncheckedCreateWithoutCityInput;
-}
-
-export interface SchoolUpdateWithWhereUniqueWithoutCityInput {
-  where: SchoolWhereUniqueInput;
-  data: SchoolUncheckedUpdateWithoutCityInput;
-}
-
-export interface SchoolUpdateManyWithWhereWithoutCityInput {
-  where: SchoolScalarWhereInput;
-  data: SchoolUncheckedUpdateManyWithoutSchoolInput;
 }
 
 export interface UserCreateWithoutIdentityFilesInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   province: ProvinceCreateNestedOneWithoutUsersInput;
-  city: CityCreateNestedOneWithoutUsersInput;
+  regency: RegencyCreateNestedOneWithoutUsersInput;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
+  myTokens?: TokenCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedCreateWithoutIdentityFilesInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   provinceId: string;
-  cityId: string;
+  regencyId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
+  myTokens?: TokenUncheckedCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserCreateOrConnectWithoutIdentityFilesInput {
@@ -5315,80 +4577,432 @@ export interface UserUpdateWithoutIdentityFilesInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  city?: CityUpdateOneRequiredWithoutUsersInput;
+  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
+  myTokens?: TokenUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedUpdateWithoutIdentityFilesInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
+  myTokens?: TokenUncheckedUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutClaimerInput;
+}
+
+export interface UserCreateWithoutMyTokensInput {
+  id?: string;
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  address?: string;
+  profilePicturePath?: string;
+  createdAt?: undefined;
+  updatedAt?: undefined;
+  nisn?: string;
+  nrg?: string;
+  province: ProvinceCreateNestedOneWithoutUsersInput;
+  regency: RegencyCreateNestedOneWithoutUsersInput;
+  isAdmin?: boolean;
+  role: Roles;
+  balance?: number;
+  emailVerifiedAt?: undefined;
+  phoneNumberVerifiedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
+  identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
+  questions?: QuestionCreateNestedManyWithoutUserInput;
+  examinations?: ExamCreateNestedManyWithoutUserInput;
+  examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
+  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
+  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  notifications?: NotificationCreateNestedManyWithoutUserInput;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutClaimerInput;
+}
+
+export interface UserUncheckedCreateWithoutMyTokensInput {
+  id?: string;
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  address?: string;
+  profilePicturePath?: string;
+  createdAt?: undefined;
+  updatedAt?: undefined;
+  nisn?: string;
+  nrg?: string;
+  provinceId: string;
+  regencyId: string;
+  isAdmin?: boolean;
+  role: Roles;
+  balance?: number;
+  emailVerifiedAt?: undefined;
+  phoneNumberVerifiedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
+  identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
+  questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
+  examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
+  examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
+  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
+  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutClaimerInput;
+}
+
+export interface UserCreateOrConnectWithoutMyTokensInput {
+  where: UserWhereUniqueInput;
+  create: UserUncheckedCreateWithoutMyTokensInput;
+}
+
+export interface TokenClaimCreateWithoutTokenInput {
+  id?: string;
+  claimer: UserCreateNestedOneWithoutTokenClaimsInput;
+  expiredAt?: undefined;
+}
+
+export interface TokenClaimUncheckedCreateWithoutTokenInput {
+  id?: string;
+  userId: string;
+  expiredAt?: undefined;
+}
+
+export interface TokenClaimCreateOrConnectWithoutTokenInput {
+  where: TokenClaimWhereUniqueInput;
+  create: TokenClaimUncheckedCreateWithoutTokenInput;
+}
+
+export interface TokenClaimCreateManyTokenInputEnvelope {
+  data: TokenClaimCreateManyTokenInput;
+  skipDuplicates?: boolean;
+}
+
+export interface UserUpsertWithoutMyTokensInput {
+  update: UserUncheckedUpdateWithoutMyTokensInput;
+  create: UserUncheckedCreateWithoutMyTokensInput;
+}
+
+export interface UserUpdateWithoutMyTokensInput {
+  id?: StringFieldUpdateOperationsInput;
+  name?: StringFieldUpdateOperationsInput;
+  email?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
+  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
+  createdAt?: DateTimeFieldUpdateOperationsInput;
+  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  nisn?: NullableStringFieldUpdateOperationsInput;
+  nrg?: NullableStringFieldUpdateOperationsInput;
+  province?: ProvinceUpdateOneRequiredWithoutUsersInput;
+  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
+  isAdmin?: BoolFieldUpdateOperationsInput;
+  role?: EnumRolesFieldUpdateOperationsInput;
+  balance?: FloatFieldUpdateOperationsInput;
+  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
+  identityFiles?: IdentityFileUpdateManyWithoutUserInput;
+  questions?: QuestionUpdateManyWithoutUserInput;
+  examinations?: ExamUpdateManyWithoutUserInput;
+  examsessions?: ExamSessionUpdateManyWithoutUserInput;
+  privateChats?: PrivateChatUpdateManyWithoutToInput;
+  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  notifications?: NotificationUpdateManyWithoutUserInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutClaimerInput;
+}
+
+export interface UserUncheckedUpdateWithoutMyTokensInput {
+  id?: StringFieldUpdateOperationsInput;
+  name?: StringFieldUpdateOperationsInput;
+  email?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
+  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
+  createdAt?: DateTimeFieldUpdateOperationsInput;
+  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  nisn?: NullableStringFieldUpdateOperationsInput;
+  nrg?: NullableStringFieldUpdateOperationsInput;
+  provinceId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
+  isAdmin?: BoolFieldUpdateOperationsInput;
+  role?: EnumRolesFieldUpdateOperationsInput;
+  balance?: FloatFieldUpdateOperationsInput;
+  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
+  identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
+  questions?: QuestionUncheckedUpdateManyWithoutUserInput;
+  examinations?: ExamUncheckedUpdateManyWithoutUserInput;
+  examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
+  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
+  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutClaimerInput;
+}
+
+export interface TokenClaimUpsertWithWhereUniqueWithoutTokenInput {
+  where: TokenClaimWhereUniqueInput;
+  update: TokenClaimUncheckedUpdateWithoutTokenInput;
+  create: TokenClaimUncheckedCreateWithoutTokenInput;
+}
+
+export interface TokenClaimUpdateWithWhereUniqueWithoutTokenInput {
+  where: TokenClaimWhereUniqueInput;
+  data: TokenClaimUncheckedUpdateWithoutTokenInput;
+}
+
+export interface TokenClaimUpdateManyWithWhereWithoutTokenInput {
+  where: TokenClaimScalarWhereInput;
+  data: TokenClaimUncheckedUpdateManyWithoutTokenClaimsInput;
+}
+
+export interface TokenClaimScalarWhereInput {
+  AND?: TokenClaimScalarWhereInput[];
+  OR?: TokenClaimScalarWhereInput[];
+  NOT?: TokenClaimScalarWhereInput[];
+  id?: StringFilter;
+  tokenId?: StringFilter;
+  userId?: StringFilter;
+  expiredAt?: DateTimeNullableFilter;
+}
+
+export interface TokenCreateWithoutTokenClaimsInput {
+  id?: string;
+  token: string;
+  owner: UserCreateNestedOneWithoutMyTokensInput;
+  maxClaim?: number;
+}
+
+export interface TokenUncheckedCreateWithoutTokenClaimsInput {
+  id?: string;
+  token: string;
+  userId: string;
+  maxClaim?: number;
+}
+
+export interface TokenCreateOrConnectWithoutTokenClaimsInput {
+  where: TokenWhereUniqueInput;
+  create: TokenUncheckedCreateWithoutTokenClaimsInput;
+}
+
+export interface UserCreateWithoutTokenClaimsInput {
+  id?: string;
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  address?: string;
+  profilePicturePath?: string;
+  createdAt?: undefined;
+  updatedAt?: undefined;
+  nisn?: string;
+  nrg?: string;
+  province: ProvinceCreateNestedOneWithoutUsersInput;
+  regency: RegencyCreateNestedOneWithoutUsersInput;
+  isAdmin?: boolean;
+  role: Roles;
+  balance?: number;
+  emailVerifiedAt?: undefined;
+  phoneNumberVerifiedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
+  identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
+  questions?: QuestionCreateNestedManyWithoutUserInput;
+  examinations?: ExamCreateNestedManyWithoutUserInput;
+  examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
+  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
+  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  notifications?: NotificationCreateNestedManyWithoutUserInput;
+  myTokens?: TokenCreateNestedManyWithoutOwnerInput;
+}
+
+export interface UserUncheckedCreateWithoutTokenClaimsInput {
+  id?: string;
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  address?: string;
+  profilePicturePath?: string;
+  createdAt?: undefined;
+  updatedAt?: undefined;
+  nisn?: string;
+  nrg?: string;
+  provinceId: string;
+  regencyId: string;
+  isAdmin?: boolean;
+  role: Roles;
+  balance?: number;
+  emailVerifiedAt?: undefined;
+  phoneNumberVerifiedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
+  identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
+  questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
+  examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
+  examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
+  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
+  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
+  myTokens?: TokenUncheckedCreateNestedManyWithoutOwnerInput;
+}
+
+export interface UserCreateOrConnectWithoutTokenClaimsInput {
+  where: UserWhereUniqueInput;
+  create: UserUncheckedCreateWithoutTokenClaimsInput;
+}
+
+export interface TokenUpsertWithoutTokenClaimsInput {
+  update: TokenUncheckedUpdateWithoutTokenClaimsInput;
+  create: TokenUncheckedCreateWithoutTokenClaimsInput;
+}
+
+export interface TokenUpdateWithoutTokenClaimsInput {
+  id?: StringFieldUpdateOperationsInput;
+  token?: StringFieldUpdateOperationsInput;
+  owner?: UserUpdateOneRequiredWithoutMyTokensInput;
+  maxClaim?: NullableIntFieldUpdateOperationsInput;
+}
+
+export interface TokenUncheckedUpdateWithoutTokenClaimsInput {
+  id?: StringFieldUpdateOperationsInput;
+  token?: StringFieldUpdateOperationsInput;
+  userId?: StringFieldUpdateOperationsInput;
+  maxClaim?: NullableIntFieldUpdateOperationsInput;
+}
+
+export interface UserUpsertWithoutTokenClaimsInput {
+  update: UserUncheckedUpdateWithoutTokenClaimsInput;
+  create: UserUncheckedCreateWithoutTokenClaimsInput;
+}
+
+export interface UserUpdateWithoutTokenClaimsInput {
+  id?: StringFieldUpdateOperationsInput;
+  name?: StringFieldUpdateOperationsInput;
+  email?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
+  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
+  createdAt?: DateTimeFieldUpdateOperationsInput;
+  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  nisn?: NullableStringFieldUpdateOperationsInput;
+  nrg?: NullableStringFieldUpdateOperationsInput;
+  province?: ProvinceUpdateOneRequiredWithoutUsersInput;
+  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
+  isAdmin?: BoolFieldUpdateOperationsInput;
+  role?: EnumRolesFieldUpdateOperationsInput;
+  balance?: FloatFieldUpdateOperationsInput;
+  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
+  identityFiles?: IdentityFileUpdateManyWithoutUserInput;
+  questions?: QuestionUpdateManyWithoutUserInput;
+  examinations?: ExamUpdateManyWithoutUserInput;
+  examsessions?: ExamSessionUpdateManyWithoutUserInput;
+  privateChats?: PrivateChatUpdateManyWithoutToInput;
+  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  notifications?: NotificationUpdateManyWithoutUserInput;
+  myTokens?: TokenUpdateManyWithoutOwnerInput;
+}
+
+export interface UserUncheckedUpdateWithoutTokenClaimsInput {
+  id?: StringFieldUpdateOperationsInput;
+  name?: StringFieldUpdateOperationsInput;
+  email?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
+  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
+  createdAt?: DateTimeFieldUpdateOperationsInput;
+  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  nisn?: NullableStringFieldUpdateOperationsInput;
+  nrg?: NullableStringFieldUpdateOperationsInput;
+  provinceId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
+  isAdmin?: BoolFieldUpdateOperationsInput;
+  role?: EnumRolesFieldUpdateOperationsInput;
+  balance?: FloatFieldUpdateOperationsInput;
+  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
+  identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
+  questions?: QuestionUncheckedUpdateManyWithoutUserInput;
+  examinations?: ExamUncheckedUpdateManyWithoutUserInput;
+  examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
+  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
+  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
+  myTokens?: TokenUncheckedUpdateManyWithoutOwnerInput;
 }
 
 export interface ProvinceCreateWithoutUsersInput {
   id?: string;
   name: string;
-  cities?: CityCreateNestedManyWithoutProvinceInput;
+  regencies?: RegencyCreateNestedManyWithoutProvinceInput;
   createdAt?: undefined;
   updatedAt?: undefined;
-  School?: SchoolCreateNestedManyWithoutProvinceInput;
 }
 
 export interface ProvinceUncheckedCreateWithoutUsersInput {
   id?: string;
   name: string;
-  cities?: CityUncheckedCreateNestedManyWithoutProvinceInput;
+  regencies?: RegencyUncheckedCreateNestedManyWithoutProvinceInput;
   createdAt?: undefined;
   updatedAt?: undefined;
-  School?: SchoolUncheckedCreateNestedManyWithoutProvinceInput;
 }
 
 export interface ProvinceCreateOrConnectWithoutUsersInput {
@@ -5396,23 +5010,21 @@ export interface ProvinceCreateOrConnectWithoutUsersInput {
   create: ProvinceUncheckedCreateWithoutUsersInput;
 }
 
-export interface CityCreateWithoutUsersInput {
+export interface RegencyCreateWithoutUsersInput {
   id?: string;
   name: string;
-  province: ProvinceCreateNestedOneWithoutCitiesInput;
-  School?: SchoolCreateNestedManyWithoutCityInput;
+  province: ProvinceCreateNestedOneWithoutRegenciesInput;
 }
 
-export interface CityUncheckedCreateWithoutUsersInput {
+export interface RegencyUncheckedCreateWithoutUsersInput {
   id?: string;
   name: string;
   provinceId: string;
-  School?: SchoolUncheckedCreateNestedManyWithoutCityInput;
 }
 
-export interface CityCreateOrConnectWithoutUsersInput {
-  where: CityWhereUniqueInput;
-  create: CityUncheckedCreateWithoutUsersInput;
+export interface RegencyCreateOrConnectWithoutUsersInput {
+  where: RegencyWhereUniqueInput;
+  create: RegencyUncheckedCreateWithoutUsersInput;
 }
 
 export interface IdentityFileCreateWithoutUserInput {
@@ -5515,7 +5127,6 @@ export interface ExamSessionCreateWithoutUserInput {
   openAt?: undefined;
   closeAt?: undefined;
   maxPlayer?: number;
-  password?: string;
   examAnswers?: ExamAnswerCreateNestedManyWithoutExamSessionInput;
 }
 
@@ -5525,7 +5136,6 @@ export interface ExamSessionUncheckedCreateWithoutUserInput {
   openAt?: undefined;
   closeAt?: undefined;
   maxPlayer?: number;
-  password?: string;
   examAnswers?: ExamAnswerUncheckedCreateNestedManyWithoutExamSessionInput;
 }
 
@@ -5595,62 +5205,6 @@ export interface PrivateChatCreateManyFromInputEnvelope {
   skipDuplicates?: boolean;
 }
 
-export interface ClassroomCreateWithoutUserInput {
-  id?: string;
-  name: string;
-  school?: SchoolCreateNestedOneWithoutClassroomsInput;
-  students?: ClassroomStudentCreateNestedManyWithoutClassroomInput;
-  level?: number;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomUncheckedCreateWithoutUserInput {
-  id?: string;
-  name: string;
-  schoolId?: string;
-  students?: ClassroomStudentUncheckedCreateNestedManyWithoutClassroomInput;
-  level?: number;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomCreateOrConnectWithoutUserInput {
-  where: ClassroomWhereUniqueInput;
-  create: ClassroomUncheckedCreateWithoutUserInput;
-}
-
-export interface ClassroomCreateManyUserInputEnvelope {
-  data: ClassroomCreateManyUserInput;
-  skipDuplicates?: boolean;
-}
-
-export interface ClassroomStudentCreateWithoutUserInput {
-  id?: string;
-  classroom?: ClassroomCreateNestedOneWithoutStudentsInput;
-  status?: ClassroomStudentStatus;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomStudentUncheckedCreateWithoutUserInput {
-  id?: string;
-  classroomId?: string;
-  status?: ClassroomStudentStatus;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomStudentCreateOrConnectWithoutUserInput {
-  where: ClassroomStudentWhereUniqueInput;
-  create: ClassroomStudentUncheckedCreateWithoutUserInput;
-}
-
-export interface ClassroomStudentCreateManyUserInputEnvelope {
-  data: ClassroomStudentCreateManyUserInput;
-  skipDuplicates?: boolean;
-}
-
 export interface NotificationCreateWithoutUserInput {
   id?: string;
   picturePath?: string;
@@ -5685,6 +5239,52 @@ export interface NotificationCreateManyUserInputEnvelope {
   skipDuplicates?: boolean;
 }
 
+export interface TokenCreateWithoutOwnerInput {
+  id?: string;
+  token: string;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutTokenInput;
+  maxClaim?: number;
+}
+
+export interface TokenUncheckedCreateWithoutOwnerInput {
+  id?: string;
+  token: string;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutTokenInput;
+  maxClaim?: number;
+}
+
+export interface TokenCreateOrConnectWithoutOwnerInput {
+  where: TokenWhereUniqueInput;
+  create: TokenUncheckedCreateWithoutOwnerInput;
+}
+
+export interface TokenCreateManyOwnerInputEnvelope {
+  data: TokenCreateManyOwnerInput;
+  skipDuplicates?: boolean;
+}
+
+export interface TokenClaimCreateWithoutClaimerInput {
+  id?: string;
+  token: TokenCreateNestedOneWithoutTokenClaimsInput;
+  expiredAt?: undefined;
+}
+
+export interface TokenClaimUncheckedCreateWithoutClaimerInput {
+  id?: string;
+  tokenId: string;
+  expiredAt?: undefined;
+}
+
+export interface TokenClaimCreateOrConnectWithoutClaimerInput {
+  where: TokenClaimWhereUniqueInput;
+  create: TokenClaimUncheckedCreateWithoutClaimerInput;
+}
+
+export interface TokenClaimCreateManyClaimerInputEnvelope {
+  data: TokenClaimCreateManyClaimerInput;
+  skipDuplicates?: boolean;
+}
+
 export interface ProvinceUpsertWithoutUsersInput {
   update: ProvinceUncheckedUpdateWithoutUsersInput;
   create: ProvinceUncheckedCreateWithoutUsersInput;
@@ -5693,38 +5293,34 @@ export interface ProvinceUpsertWithoutUsersInput {
 export interface ProvinceUpdateWithoutUsersInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
-  cities?: CityUpdateManyWithoutProvinceInput;
+  regencies?: RegencyUpdateManyWithoutProvinceInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
-  School?: SchoolUpdateManyWithoutProvinceInput;
 }
 
 export interface ProvinceUncheckedUpdateWithoutUsersInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
-  cities?: CityUncheckedUpdateManyWithoutProvinceInput;
+  regencies?: RegencyUncheckedUpdateManyWithoutProvinceInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
-  School?: SchoolUncheckedUpdateManyWithoutProvinceInput;
 }
 
-export interface CityUpsertWithoutUsersInput {
-  update: CityUncheckedUpdateWithoutUsersInput;
-  create: CityUncheckedCreateWithoutUsersInput;
+export interface RegencyUpsertWithoutUsersInput {
+  update: RegencyUncheckedUpdateWithoutUsersInput;
+  create: RegencyUncheckedCreateWithoutUsersInput;
 }
 
-export interface CityUpdateWithoutUsersInput {
+export interface RegencyUpdateWithoutUsersInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
-  province?: ProvinceUpdateOneRequiredWithoutCitiesInput;
-  School?: SchoolUpdateManyWithoutCityInput;
+  province?: ProvinceUpdateOneRequiredWithoutRegenciesInput;
 }
 
-export interface CityUncheckedUpdateWithoutUsersInput {
+export interface RegencyUncheckedUpdateWithoutUsersInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
-  School?: SchoolUncheckedUpdateManyWithoutCityInput;
 }
 
 export interface IdentityFileUpsertWithWhereUniqueWithoutUserInput {
@@ -5840,7 +5436,6 @@ export interface ExamSessionScalarWhereInput {
   openAt?: DateTimeNullableFilter;
   closeAt?: DateTimeNullableFilter;
   maxPlayer?: IntNullableFilter;
-  password?: StringNullableFilter;
   userId?: StringFilter;
 }
 
@@ -5889,63 +5484,6 @@ export interface PrivateChatUpdateManyWithWhereWithoutFromInput {
   data: PrivateChatUncheckedUpdateManyWithoutMyPrivateChatsInput;
 }
 
-export interface ClassroomUpsertWithWhereUniqueWithoutUserInput {
-  where: ClassroomWhereUniqueInput;
-  update: ClassroomUncheckedUpdateWithoutUserInput;
-  create: ClassroomUncheckedCreateWithoutUserInput;
-}
-
-export interface ClassroomUpdateWithWhereUniqueWithoutUserInput {
-  where: ClassroomWhereUniqueInput;
-  data: ClassroomUncheckedUpdateWithoutUserInput;
-}
-
-export interface ClassroomUpdateManyWithWhereWithoutUserInput {
-  where: ClassroomScalarWhereInput;
-  data: ClassroomUncheckedUpdateManyWithoutClassroomsInput;
-}
-
-export interface ClassroomScalarWhereInput {
-  AND?: ClassroomScalarWhereInput[];
-  OR?: ClassroomScalarWhereInput[];
-  NOT?: ClassroomScalarWhereInput[];
-  id?: StringFilter;
-  name?: StringFilter;
-  schoolId?: StringNullableFilter;
-  userId?: StringFilter;
-  level?: IntFilter;
-  createdAt?: DateTimeFilter;
-  updatedAt?: DateTimeFilter;
-}
-
-export interface ClassroomStudentUpsertWithWhereUniqueWithoutUserInput {
-  where: ClassroomStudentWhereUniqueInput;
-  update: ClassroomStudentUncheckedUpdateWithoutUserInput;
-  create: ClassroomStudentUncheckedCreateWithoutUserInput;
-}
-
-export interface ClassroomStudentUpdateWithWhereUniqueWithoutUserInput {
-  where: ClassroomStudentWhereUniqueInput;
-  data: ClassroomStudentUncheckedUpdateWithoutUserInput;
-}
-
-export interface ClassroomStudentUpdateManyWithWhereWithoutUserInput {
-  where: ClassroomStudentScalarWhereInput;
-  data: ClassroomStudentUncheckedUpdateManyWithoutClassroomStudentsInput;
-}
-
-export interface ClassroomStudentScalarWhereInput {
-  AND?: ClassroomStudentScalarWhereInput[];
-  OR?: ClassroomStudentScalarWhereInput[];
-  NOT?: ClassroomStudentScalarWhereInput[];
-  id?: StringFilter;
-  userId?: StringFilter;
-  classroomId?: StringNullableFilter;
-  status?: EnumClassroomStudentStatusFilter;
-  createdAt?: DateTimeFilter;
-  updatedAt?: DateTimeFilter;
-}
-
 export interface NotificationUpsertWithWhereUniqueWithoutUserInput {
   where: NotificationWhereUniqueInput;
   update: NotificationUncheckedUpdateWithoutUserInput;
@@ -5978,66 +5516,108 @@ export interface NotificationScalarWhereInput {
   updatedAt?: DateTimeFilter;
 }
 
+export interface TokenUpsertWithWhereUniqueWithoutOwnerInput {
+  where: TokenWhereUniqueInput;
+  update: TokenUncheckedUpdateWithoutOwnerInput;
+  create: TokenUncheckedCreateWithoutOwnerInput;
+}
+
+export interface TokenUpdateWithWhereUniqueWithoutOwnerInput {
+  where: TokenWhereUniqueInput;
+  data: TokenUncheckedUpdateWithoutOwnerInput;
+}
+
+export interface TokenUpdateManyWithWhereWithoutOwnerInput {
+  where: TokenScalarWhereInput;
+  data: TokenUncheckedUpdateManyWithoutMyTokensInput;
+}
+
+export interface TokenScalarWhereInput {
+  AND?: TokenScalarWhereInput[];
+  OR?: TokenScalarWhereInput[];
+  NOT?: TokenScalarWhereInput[];
+  id?: StringFilter;
+  token?: StringFilter;
+  userId?: StringFilter;
+  maxClaim?: IntNullableFilter;
+}
+
+export interface TokenClaimUpsertWithWhereUniqueWithoutClaimerInput {
+  where: TokenClaimWhereUniqueInput;
+  update: TokenClaimUncheckedUpdateWithoutClaimerInput;
+  create: TokenClaimUncheckedCreateWithoutClaimerInput;
+}
+
+export interface TokenClaimUpdateWithWhereUniqueWithoutClaimerInput {
+  where: TokenClaimWhereUniqueInput;
+  data: TokenClaimUncheckedUpdateWithoutClaimerInput;
+}
+
+export interface TokenClaimUpdateManyWithWhereWithoutClaimerInput {
+  where: TokenClaimScalarWhereInput;
+  data: TokenClaimUncheckedUpdateManyWithoutTokenClaimsInput;
+}
+
 export interface UserCreateWithoutNotificationsInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   province: ProvinceCreateNestedOneWithoutUsersInput;
-  city: CityCreateNestedOneWithoutUsersInput;
+  regency: RegencyCreateNestedOneWithoutUsersInput;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
+  myTokens?: TokenCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedCreateWithoutNotificationsInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   provinceId: string;
-  cityId: string;
+  regencyId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
+  myTokens?: TokenUncheckedCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserCreateOrConnectWithoutNotificationsInput {
@@ -6054,684 +5634,124 @@ export interface UserUpdateWithoutNotificationsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  city?: CityUpdateOneRequiredWithoutUsersInput;
+  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUpdateManyWithoutUserInput;
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
+  myTokens?: TokenUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedUpdateWithoutNotificationsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
-}
-
-export interface ClassroomCreateWithoutSchoolInput {
-  id?: string;
-  name: string;
-  user: UserCreateNestedOneWithoutClassroomsInput;
-  students?: ClassroomStudentCreateNestedManyWithoutClassroomInput;
-  level?: number;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomUncheckedCreateWithoutSchoolInput {
-  id?: string;
-  name: string;
-  userId: string;
-  students?: ClassroomStudentUncheckedCreateNestedManyWithoutClassroomInput;
-  level?: number;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomCreateOrConnectWithoutSchoolInput {
-  where: ClassroomWhereUniqueInput;
-  create: ClassroomUncheckedCreateWithoutSchoolInput;
-}
-
-export interface ClassroomCreateManySchoolInputEnvelope {
-  data: ClassroomCreateManySchoolInput;
-  skipDuplicates?: boolean;
-}
-
-export interface ProvinceCreateWithoutSchoolInput {
-  id?: string;
-  name: string;
-  cities?: CityCreateNestedManyWithoutProvinceInput;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  users?: UserCreateNestedManyWithoutProvinceInput;
-}
-
-export interface ProvinceUncheckedCreateWithoutSchoolInput {
-  id?: string;
-  name: string;
-  cities?: CityUncheckedCreateNestedManyWithoutProvinceInput;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  users?: UserUncheckedCreateNestedManyWithoutProvinceInput;
-}
-
-export interface ProvinceCreateOrConnectWithoutSchoolInput {
-  where: ProvinceWhereUniqueInput;
-  create: ProvinceUncheckedCreateWithoutSchoolInput;
-}
-
-export interface CityCreateWithoutSchoolInput {
-  id?: string;
-  name: string;
-  province: ProvinceCreateNestedOneWithoutCitiesInput;
-  users?: UserCreateNestedManyWithoutCityInput;
-}
-
-export interface CityUncheckedCreateWithoutSchoolInput {
-  id?: string;
-  name: string;
-  provinceId: string;
-  users?: UserUncheckedCreateNestedManyWithoutCityInput;
-}
-
-export interface CityCreateOrConnectWithoutSchoolInput {
-  where: CityWhereUniqueInput;
-  create: CityUncheckedCreateWithoutSchoolInput;
-}
-
-export interface ClassroomUpsertWithWhereUniqueWithoutSchoolInput {
-  where: ClassroomWhereUniqueInput;
-  update: ClassroomUncheckedUpdateWithoutSchoolInput;
-  create: ClassroomUncheckedCreateWithoutSchoolInput;
-}
-
-export interface ClassroomUpdateWithWhereUniqueWithoutSchoolInput {
-  where: ClassroomWhereUniqueInput;
-  data: ClassroomUncheckedUpdateWithoutSchoolInput;
-}
-
-export interface ClassroomUpdateManyWithWhereWithoutSchoolInput {
-  where: ClassroomScalarWhereInput;
-  data: ClassroomUncheckedUpdateManyWithoutClassroomsInput;
-}
-
-export interface ProvinceUpsertWithoutSchoolInput {
-  update: ProvinceUncheckedUpdateWithoutSchoolInput;
-  create: ProvinceUncheckedCreateWithoutSchoolInput;
-}
-
-export interface ProvinceUpdateWithoutSchoolInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  cities?: CityUpdateManyWithoutProvinceInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  users?: UserUpdateManyWithoutProvinceInput;
-}
-
-export interface ProvinceUncheckedUpdateWithoutSchoolInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  cities?: CityUncheckedUpdateManyWithoutProvinceInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  users?: UserUncheckedUpdateManyWithoutProvinceInput;
-}
-
-export interface CityUpsertWithoutSchoolInput {
-  update: CityUncheckedUpdateWithoutSchoolInput;
-  create: CityUncheckedCreateWithoutSchoolInput;
-}
-
-export interface CityUpdateWithoutSchoolInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  province?: ProvinceUpdateOneRequiredWithoutCitiesInput;
-  users?: UserUpdateManyWithoutCityInput;
-}
-
-export interface CityUncheckedUpdateWithoutSchoolInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  provinceId?: StringFieldUpdateOperationsInput;
-  users?: UserUncheckedUpdateManyWithoutCityInput;
-}
-
-export interface SchoolCreateWithoutClassroomsInput {
-  id?: string;
-  name: string;
-  npsn?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  levels?: number[];
-  type: string;
-  address: string;
-  logoPath?: string;
-  bannerPath?: string;
-  province: ProvinceCreateNestedOneWithoutSchoolInput;
-  city: CityCreateNestedOneWithoutSchoolInput;
-}
-
-export interface SchoolUncheckedCreateWithoutClassroomsInput {
-  id?: string;
-  name: string;
-  npsn?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  levels?: number[];
-  type: string;
-  address: string;
-  logoPath?: string;
-  bannerPath?: string;
-  provinceId: string;
-  cityId: string;
-}
-
-export interface SchoolCreateOrConnectWithoutClassroomsInput {
-  where: SchoolWhereUniqueInput;
-  create: SchoolUncheckedCreateWithoutClassroomsInput;
-}
-
-export interface UserCreateWithoutClassroomsInput {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
-  profilePicturePath?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  nisn?: string;
-  nrg?: string;
-  province: ProvinceCreateNestedOneWithoutUsersInput;
-  city: CityCreateNestedOneWithoutUsersInput;
-  isAdmin?: boolean;
-  isBimbel?: boolean;
-  role: Roles;
-  balance?: number;
-  emailVerifiedAt?: undefined;
-  phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
-  identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
-  questions?: QuestionCreateNestedManyWithoutUserInput;
-  examinations?: ExamCreateNestedManyWithoutUserInput;
-  examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
-  notifications?: NotificationCreateNestedManyWithoutUserInput;
-}
-
-export interface UserUncheckedCreateWithoutClassroomsInput {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
-  profilePicturePath?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  nisn?: string;
-  nrg?: string;
-  provinceId: string;
-  cityId: string;
-  isAdmin?: boolean;
-  isBimbel?: boolean;
-  role: Roles;
-  balance?: number;
-  emailVerifiedAt?: undefined;
-  phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
-  identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
-  questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
-  examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
-  examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
-  notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
-}
-
-export interface UserCreateOrConnectWithoutClassroomsInput {
-  where: UserWhereUniqueInput;
-  create: UserUncheckedCreateWithoutClassroomsInput;
-}
-
-export interface ClassroomStudentCreateWithoutClassroomInput {
-  id?: string;
-  user: UserCreateNestedOneWithoutClassroomStudentsInput;
-  status?: ClassroomStudentStatus;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomStudentUncheckedCreateWithoutClassroomInput {
-  id?: string;
-  userId: string;
-  status?: ClassroomStudentStatus;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomStudentCreateOrConnectWithoutClassroomInput {
-  where: ClassroomStudentWhereUniqueInput;
-  create: ClassroomStudentUncheckedCreateWithoutClassroomInput;
-}
-
-export interface ClassroomStudentCreateManyClassroomInputEnvelope {
-  data: ClassroomStudentCreateManyClassroomInput;
-  skipDuplicates?: boolean;
-}
-
-export interface SchoolUpsertWithoutClassroomsInput {
-  update: SchoolUncheckedUpdateWithoutClassroomsInput;
-  create: SchoolUncheckedCreateWithoutClassroomsInput;
-}
-
-export interface SchoolUpdateWithoutClassroomsInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  npsn?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  levels?: number[];
-  type?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  logoPath?: NullableStringFieldUpdateOperationsInput;
-  bannerPath?: NullableStringFieldUpdateOperationsInput;
-  province?: ProvinceUpdateOneRequiredWithoutSchoolInput;
-  city?: CityUpdateOneRequiredWithoutSchoolInput;
-}
-
-export interface SchoolUncheckedUpdateWithoutClassroomsInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  npsn?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  levels?: number[];
-  type?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  logoPath?: NullableStringFieldUpdateOperationsInput;
-  bannerPath?: NullableStringFieldUpdateOperationsInput;
-  provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
-}
-
-export interface UserUpsertWithoutClassroomsInput {
-  update: UserUncheckedUpdateWithoutClassroomsInput;
-  create: UserUncheckedCreateWithoutClassroomsInput;
-}
-
-export interface UserUpdateWithoutClassroomsInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  nisn?: NullableStringFieldUpdateOperationsInput;
-  nrg?: NullableStringFieldUpdateOperationsInput;
-  province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  city?: CityUpdateOneRequiredWithoutUsersInput;
-  isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
-  role?: EnumRolesFieldUpdateOperationsInput;
-  balance?: FloatFieldUpdateOperationsInput;
-  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityFiles?: IdentityFileUpdateManyWithoutUserInput;
-  questions?: QuestionUpdateManyWithoutUserInput;
-  examinations?: ExamUpdateManyWithoutUserInput;
-  examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
-  notifications?: NotificationUpdateManyWithoutUserInput;
-}
-
-export interface UserUncheckedUpdateWithoutClassroomsInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  nisn?: NullableStringFieldUpdateOperationsInput;
-  nrg?: NullableStringFieldUpdateOperationsInput;
-  provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
-  isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
-  role?: EnumRolesFieldUpdateOperationsInput;
-  balance?: FloatFieldUpdateOperationsInput;
-  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
-  questions?: QuestionUncheckedUpdateManyWithoutUserInput;
-  examinations?: ExamUncheckedUpdateManyWithoutUserInput;
-  examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
-  notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
-}
-
-export interface ClassroomStudentUpsertWithWhereUniqueWithoutClassroomInput {
-  where: ClassroomStudentWhereUniqueInput;
-  update: ClassroomStudentUncheckedUpdateWithoutClassroomInput;
-  create: ClassroomStudentUncheckedCreateWithoutClassroomInput;
-}
-
-export interface ClassroomStudentUpdateWithWhereUniqueWithoutClassroomInput {
-  where: ClassroomStudentWhereUniqueInput;
-  data: ClassroomStudentUncheckedUpdateWithoutClassroomInput;
-}
-
-export interface ClassroomStudentUpdateManyWithWhereWithoutClassroomInput {
-  where: ClassroomStudentScalarWhereInput;
-  data: ClassroomStudentUncheckedUpdateManyWithoutStudentsInput;
-}
-
-export interface UserCreateWithoutClassroomStudentsInput {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
-  profilePicturePath?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  nisn?: string;
-  nrg?: string;
-  province: ProvinceCreateNestedOneWithoutUsersInput;
-  city: CityCreateNestedOneWithoutUsersInput;
-  isAdmin?: boolean;
-  isBimbel?: boolean;
-  role: Roles;
-  balance?: number;
-  emailVerifiedAt?: undefined;
-  phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
-  identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
-  questions?: QuestionCreateNestedManyWithoutUserInput;
-  examinations?: ExamCreateNestedManyWithoutUserInput;
-  examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  notifications?: NotificationCreateNestedManyWithoutUserInput;
-}
-
-export interface UserUncheckedCreateWithoutClassroomStudentsInput {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
-  profilePicturePath?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  nisn?: string;
-  nrg?: string;
-  provinceId: string;
-  cityId: string;
-  isAdmin?: boolean;
-  isBimbel?: boolean;
-  role: Roles;
-  balance?: number;
-  emailVerifiedAt?: undefined;
-  phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
-  identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
-  questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
-  examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
-  examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
-}
-
-export interface UserCreateOrConnectWithoutClassroomStudentsInput {
-  where: UserWhereUniqueInput;
-  create: UserUncheckedCreateWithoutClassroomStudentsInput;
-}
-
-export interface ClassroomCreateWithoutStudentsInput {
-  id?: string;
-  name: string;
-  school?: SchoolCreateNestedOneWithoutClassroomsInput;
-  user: UserCreateNestedOneWithoutClassroomsInput;
-  level?: number;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomUncheckedCreateWithoutStudentsInput {
-  id?: string;
-  name: string;
-  schoolId?: string;
-  userId: string;
-  level?: number;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomCreateOrConnectWithoutStudentsInput {
-  where: ClassroomWhereUniqueInput;
-  create: ClassroomUncheckedCreateWithoutStudentsInput;
-}
-
-export interface UserUpsertWithoutClassroomStudentsInput {
-  update: UserUncheckedUpdateWithoutClassroomStudentsInput;
-  create: UserUncheckedCreateWithoutClassroomStudentsInput;
-}
-
-export interface UserUpdateWithoutClassroomStudentsInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  nisn?: NullableStringFieldUpdateOperationsInput;
-  nrg?: NullableStringFieldUpdateOperationsInput;
-  province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  city?: CityUpdateOneRequiredWithoutUsersInput;
-  isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
-  role?: EnumRolesFieldUpdateOperationsInput;
-  balance?: FloatFieldUpdateOperationsInput;
-  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityFiles?: IdentityFileUpdateManyWithoutUserInput;
-  questions?: QuestionUpdateManyWithoutUserInput;
-  examinations?: ExamUpdateManyWithoutUserInput;
-  examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  notifications?: NotificationUpdateManyWithoutUserInput;
-}
-
-export interface UserUncheckedUpdateWithoutClassroomStudentsInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  nisn?: NullableStringFieldUpdateOperationsInput;
-  nrg?: NullableStringFieldUpdateOperationsInput;
-  provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
-  isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
-  role?: EnumRolesFieldUpdateOperationsInput;
-  balance?: FloatFieldUpdateOperationsInput;
-  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
-  questions?: QuestionUncheckedUpdateManyWithoutUserInput;
-  examinations?: ExamUncheckedUpdateManyWithoutUserInput;
-  examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
-}
-
-export interface ClassroomUpsertWithoutStudentsInput {
-  update: ClassroomUncheckedUpdateWithoutStudentsInput;
-  create: ClassroomUncheckedCreateWithoutStudentsInput;
-}
-
-export interface ClassroomUpdateWithoutStudentsInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  school?: SchoolUpdateOneWithoutClassroomsInput;
-  user?: UserUpdateOneRequiredWithoutClassroomsInput;
-  level?: IntFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface ClassroomUncheckedUpdateWithoutStudentsInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  schoolId?: NullableStringFieldUpdateOperationsInput;
-  userId?: StringFieldUpdateOperationsInput;
-  level?: IntFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  myTokens?: TokenUncheckedUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutClaimerInput;
 }
 
 export interface UserCreateWithoutMyPrivateChatsInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   province: ProvinceCreateNestedOneWithoutUsersInput;
-  city: CityCreateNestedOneWithoutUsersInput;
+  regency: RegencyCreateNestedOneWithoutUsersInput;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
+  myTokens?: TokenCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedCreateWithoutMyPrivateChatsInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   provinceId: string;
-  cityId: string;
+  regencyId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
+  myTokens?: TokenUncheckedCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserCreateOrConnectWithoutMyPrivateChatsInput {
@@ -6743,62 +5763,62 @@ export interface UserCreateWithoutPrivateChatsInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   province: ProvinceCreateNestedOneWithoutUsersInput;
-  city: CityCreateNestedOneWithoutUsersInput;
+  regency: RegencyCreateNestedOneWithoutUsersInput;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
   myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
+  myTokens?: TokenCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedCreateWithoutPrivateChatsInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   provinceId: string;
-  cityId: string;
+  regencyId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
   myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
+  myTokens?: TokenUncheckedCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserCreateOrConnectWithoutPrivateChatsInput {
@@ -6815,62 +5835,62 @@ export interface UserUpdateWithoutMyPrivateChatsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  city?: CityUpdateOneRequiredWithoutUsersInput;
+  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUpdateManyWithoutUserInput;
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUpdateManyWithoutToInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
+  myTokens?: TokenUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedUpdateWithoutMyPrivateChatsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
+  myTokens?: TokenUncheckedUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutClaimerInput;
 }
 
 export interface UserUpsertWithoutPrivateChatsInput {
@@ -6882,124 +5902,124 @@ export interface UserUpdateWithoutPrivateChatsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  city?: CityUpdateOneRequiredWithoutUsersInput;
+  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUpdateManyWithoutUserInput;
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
   myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
+  myTokens?: TokenUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedUpdateWithoutPrivateChatsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
   myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
+  myTokens?: TokenUncheckedUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutClaimerInput;
 }
 
 export interface UserCreateWithoutExaminationsInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   province: ProvinceCreateNestedOneWithoutUsersInput;
-  city: CityCreateNestedOneWithoutUsersInput;
+  regency: RegencyCreateNestedOneWithoutUsersInput;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
+  myTokens?: TokenCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedCreateWithoutExaminationsInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   provinceId: string;
-  cityId: string;
+  regencyId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
+  myTokens?: TokenUncheckedCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserCreateOrConnectWithoutExaminationsInput {
@@ -7068,62 +6088,62 @@ export interface UserUpdateWithoutExaminationsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  city?: CityUpdateOneRequiredWithoutUsersInput;
+  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUpdateManyWithoutUserInput;
   questions?: QuestionUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
+  myTokens?: TokenUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedUpdateWithoutExaminationsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
+  myTokens?: TokenUncheckedUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutClaimerInput;
 }
 
 export interface ExamQuestionUpsertWithWhereUniqueWithoutExamInput {
@@ -7186,62 +6206,62 @@ export interface UserCreateWithoutExamsessionsInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   province: ProvinceCreateNestedOneWithoutUsersInput;
-  city: CityCreateNestedOneWithoutUsersInput;
+  regency: RegencyCreateNestedOneWithoutUsersInput;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
+  myTokens?: TokenCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedCreateWithoutExamsessionsInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   provinceId: string;
-  cityId: string;
+  regencyId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
+  myTokens?: TokenUncheckedCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserCreateOrConnectWithoutExamsessionsInput {
@@ -7286,62 +6306,62 @@ export interface UserUpdateWithoutExamsessionsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  city?: CityUpdateOneRequiredWithoutUsersInput;
+  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUpdateManyWithoutUserInput;
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
+  myTokens?: TokenUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedUpdateWithoutExamsessionsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
+  myTokens?: TokenUncheckedUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutClaimerInput;
 }
 
 export interface ExamAnswerUpsertWithWhereUniqueWithoutExamSessionInput {
@@ -7505,7 +6525,6 @@ export interface ExamSessionCreateWithoutExamAnswersInput {
   openAt?: undefined;
   closeAt?: undefined;
   maxPlayer?: number;
-  password?: string;
   user: UserCreateNestedOneWithoutExamsessionsInput;
 }
 
@@ -7515,7 +6534,6 @@ export interface ExamSessionUncheckedCreateWithoutExamAnswersInput {
   openAt?: undefined;
   closeAt?: undefined;
   maxPlayer?: number;
-  password?: string;
   userId: string;
 }
 
@@ -7558,7 +6576,6 @@ export interface ExamSessionUpdateWithoutExamAnswersInput {
   openAt?: NullableDateTimeFieldUpdateOperationsInput;
   closeAt?: NullableDateTimeFieldUpdateOperationsInput;
   maxPlayer?: NullableIntFieldUpdateOperationsInput;
-  password?: NullableStringFieldUpdateOperationsInput;
   user?: UserUpdateOneRequiredWithoutExamsessionsInput;
 }
 
@@ -7568,7 +6585,6 @@ export interface ExamSessionUncheckedUpdateWithoutExamAnswersInput {
   openAt?: NullableDateTimeFieldUpdateOperationsInput;
   closeAt?: NullableDateTimeFieldUpdateOperationsInput;
   maxPlayer?: NullableIntFieldUpdateOperationsInput;
-  password?: NullableStringFieldUpdateOperationsInput;
   userId?: StringFieldUpdateOperationsInput;
 }
 
@@ -7576,62 +6592,62 @@ export interface UserCreateWithoutQuestionsInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   province: ProvinceCreateNestedOneWithoutUsersInput;
-  city: CityCreateNestedOneWithoutUsersInput;
+  regency: RegencyCreateNestedOneWithoutUsersInput;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
+  myTokens?: TokenCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedCreateWithoutQuestionsInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
   provinceId: string;
-  cityId: string;
+  regencyId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
   identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
+  myTokens?: TokenUncheckedCreateNestedManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedCreateNestedManyWithoutClaimerInput;
 }
 
 export interface UserCreateOrConnectWithoutQuestionsInput {
@@ -7747,62 +6763,62 @@ export interface UserUpdateWithoutQuestionsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  city?: CityUpdateOneRequiredWithoutUsersInput;
+  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
+  myTokens?: TokenUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedUpdateWithoutQuestionsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
+  myTokens?: TokenUncheckedUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutClaimerInput;
 }
 
 export interface QuestionUpsertWithoutChildrensInput {
@@ -7872,7 +6888,7 @@ export interface ExamQuestionUpdateManyWithWhereWithoutQuestionInput {
   data: ExamQuestionUncheckedUpdateManyWithoutExamquestionsInput;
 }
 
-export interface CityCreateManyProvinceInput {
+export interface RegencyCreateManyProvinceInput {
   id?: string;
   name: string;
 }
@@ -7881,53 +6897,37 @@ export interface UserCreateManyProvinceInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
   nisn?: string;
   nrg?: string;
-  cityId: string;
+  regencyId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
 }
 
-export interface SchoolCreateManyProvinceInput {
-  id?: string;
-  name: string;
-  npsn?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  levels?: number[];
-  type: string;
-  address: string;
-  logoPath?: string;
-  bannerPath?: string;
-  cityId: string;
-}
-
-export interface CityUpdateWithoutProvinceInput {
+export interface RegencyUpdateWithoutProvinceInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
-  users?: UserUpdateManyWithoutCityInput;
-  School?: SchoolUpdateManyWithoutCityInput;
+  users?: UserUpdateManyWithoutRegencyInput;
 }
 
-export interface CityUncheckedUpdateWithoutProvinceInput {
+export interface RegencyUncheckedUpdateWithoutProvinceInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
-  users?: UserUncheckedUpdateManyWithoutCityInput;
-  School?: SchoolUncheckedUpdateManyWithoutCityInput;
+  users?: UserUncheckedUpdateManyWithoutRegencyInput;
 }
 
-export interface CityUncheckedUpdateManyWithoutCitiesInput {
+export interface RegencyUncheckedUpdateManyWithoutRegenciesInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
 }
@@ -7936,137 +6936,92 @@ export interface UserUpdateWithoutProvinceInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
-  city?: CityUpdateOneRequiredWithoutUsersInput;
+  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUpdateManyWithoutUserInput;
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
+  myTokens?: TokenUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedUpdateWithoutProvinceInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
+  myTokens?: TokenUncheckedUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutClaimerInput;
 }
 
 export interface UserUncheckedUpdateManyWithoutUsersInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
   nisn?: NullableStringFieldUpdateOperationsInput;
   nrg?: NullableStringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
+  regencyId?: StringFieldUpdateOperationsInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
 }
 
-export interface SchoolUpdateWithoutProvinceInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  npsn?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  classrooms?: ClassroomUpdateManyWithoutSchoolInput;
-  levels?: number[];
-  type?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  logoPath?: NullableStringFieldUpdateOperationsInput;
-  bannerPath?: NullableStringFieldUpdateOperationsInput;
-  city?: CityUpdateOneRequiredWithoutSchoolInput;
-}
-
-export interface SchoolUncheckedUpdateWithoutProvinceInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  npsn?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutSchoolInput;
-  levels?: number[];
-  type?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  logoPath?: NullableStringFieldUpdateOperationsInput;
-  bannerPath?: NullableStringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
-}
-
-export interface SchoolUncheckedUpdateManyWithoutSchoolInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  npsn?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  levels?: number[];
-  type?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  logoPath?: NullableStringFieldUpdateOperationsInput;
-  bannerPath?: NullableStringFieldUpdateOperationsInput;
-  cityId?: StringFieldUpdateOperationsInput;
-}
-
-export interface UserCreateManyCityInput {
+export interface UserCreateManyRegencyInput {
   id?: string;
   name: string;
   email: string;
-  password: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   profilePicturePath?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
@@ -8074,35 +7029,21 @@ export interface UserCreateManyCityInput {
   nrg?: string;
   provinceId: string;
   isAdmin?: boolean;
-  isBimbel?: boolean;
   role: Roles;
   balance?: number;
   emailVerifiedAt?: undefined;
   phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  verifykey?: string;
+  verifyType?: VerifyType;
 }
 
-export interface SchoolCreateManyCityInput {
-  id?: string;
-  name: string;
-  npsn?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  levels?: number[];
-  type: string;
-  address: string;
-  logoPath?: string;
-  bannerPath?: string;
-  provinceId: string;
-}
-
-export interface UserUpdateWithoutCityInput {
+export interface UserUpdateWithoutRegencyInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
@@ -8110,30 +7051,30 @@ export interface UserUpdateWithoutCityInput {
   nrg?: NullableStringFieldUpdateOperationsInput;
   province?: ProvinceUpdateOneRequiredWithoutUsersInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUpdateManyWithoutUserInput;
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
+  myTokens?: TokenUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutClaimerInput;
 }
 
-export interface UserUncheckedUpdateWithoutCityInput {
+export interface UserUncheckedUpdateWithoutRegencyInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
-  password?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
+  phoneNumber?: NullableStringFieldUpdateOperationsInput;
+  address?: NullableStringFieldUpdateOperationsInput;
   profilePicturePath?: NullableStringFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
@@ -8141,51 +7082,46 @@ export interface UserUncheckedUpdateWithoutCityInput {
   nrg?: NullableStringFieldUpdateOperationsInput;
   provinceId?: StringFieldUpdateOperationsInput;
   isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
   role?: EnumRolesFieldUpdateOperationsInput;
   balance?: FloatFieldUpdateOperationsInput;
   emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
   phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
+  verifykey?: NullableStringFieldUpdateOperationsInput;
+  verifyType?: EnumVerifyTypeFieldUpdateOperationsInput;
   identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
   privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
   myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
+  myTokens?: TokenUncheckedUpdateManyWithoutOwnerInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutClaimerInput;
 }
 
-export interface SchoolUpdateWithoutCityInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  npsn?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  classrooms?: ClassroomUpdateManyWithoutSchoolInput;
-  levels?: number[];
-  type?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  logoPath?: NullableStringFieldUpdateOperationsInput;
-  bannerPath?: NullableStringFieldUpdateOperationsInput;
-  province?: ProvinceUpdateOneRequiredWithoutSchoolInput;
+export interface TokenClaimCreateManyTokenInput {
+  id?: string;
+  userId: string;
+  expiredAt?: undefined;
 }
 
-export interface SchoolUncheckedUpdateWithoutCityInput {
+export interface TokenClaimUpdateWithoutTokenInput {
   id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  npsn?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutSchoolInput;
-  levels?: number[];
-  type?: StringFieldUpdateOperationsInput;
-  address?: StringFieldUpdateOperationsInput;
-  logoPath?: NullableStringFieldUpdateOperationsInput;
-  bannerPath?: NullableStringFieldUpdateOperationsInput;
-  provinceId?: StringFieldUpdateOperationsInput;
+  claimer?: UserUpdateOneRequiredWithoutTokenClaimsInput;
+  expiredAt?: NullableDateTimeFieldUpdateOperationsInput;
+}
+
+export interface TokenClaimUncheckedUpdateWithoutTokenInput {
+  id?: StringFieldUpdateOperationsInput;
+  userId?: StringFieldUpdateOperationsInput;
+  expiredAt?: NullableDateTimeFieldUpdateOperationsInput;
+}
+
+export interface TokenClaimUncheckedUpdateManyWithoutTokenClaimsInput {
+  id?: StringFieldUpdateOperationsInput;
+  userId?: StringFieldUpdateOperationsInput;
+  expiredAt?: NullableDateTimeFieldUpdateOperationsInput;
 }
 
 export interface IdentityFileCreateManyUserInput {
@@ -8222,7 +7158,6 @@ export interface ExamSessionCreateManyUserInput {
   openAt?: undefined;
   closeAt?: undefined;
   maxPlayer?: number;
-  password?: string;
 }
 
 export interface PrivateChatCreateManyToInput {
@@ -8243,23 +7178,6 @@ export interface PrivateChatCreateManyFromInput {
   updatedAt?: undefined;
 }
 
-export interface ClassroomCreateManyUserInput {
-  id?: string;
-  name: string;
-  schoolId?: string;
-  level?: number;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomStudentCreateManyUserInput {
-  id?: string;
-  classroomId?: string;
-  status?: ClassroomStudentStatus;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
 export interface NotificationCreateManyUserInput {
   id?: string;
   picturePath?: string;
@@ -8270,6 +7188,18 @@ export interface NotificationCreateManyUserInput {
   followUpData?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
+}
+
+export interface TokenCreateManyOwnerInput {
+  id?: string;
+  token: string;
+  maxClaim?: number;
+}
+
+export interface TokenClaimCreateManyClaimerInput {
+  id?: string;
+  tokenId: string;
+  expiredAt?: undefined;
 }
 
 export interface IdentityFileUpdateWithoutUserInput {
@@ -8370,7 +7300,6 @@ export interface ExamSessionUpdateWithoutUserInput {
   openAt?: NullableDateTimeFieldUpdateOperationsInput;
   closeAt?: NullableDateTimeFieldUpdateOperationsInput;
   maxPlayer?: NullableIntFieldUpdateOperationsInput;
-  password?: NullableStringFieldUpdateOperationsInput;
   examAnswers?: ExamAnswerUpdateManyWithoutExamSessionInput;
 }
 
@@ -8380,7 +7309,6 @@ export interface ExamSessionUncheckedUpdateWithoutUserInput {
   openAt?: NullableDateTimeFieldUpdateOperationsInput;
   closeAt?: NullableDateTimeFieldUpdateOperationsInput;
   maxPlayer?: NullableIntFieldUpdateOperationsInput;
-  password?: NullableStringFieldUpdateOperationsInput;
   examAnswers?: ExamAnswerUncheckedUpdateManyWithoutExamSessionInput;
 }
 
@@ -8390,7 +7318,6 @@ export interface ExamSessionUncheckedUpdateManyWithoutExamsessionsInput {
   openAt?: NullableDateTimeFieldUpdateOperationsInput;
   closeAt?: NullableDateTimeFieldUpdateOperationsInput;
   maxPlayer?: NullableIntFieldUpdateOperationsInput;
-  password?: NullableStringFieldUpdateOperationsInput;
 }
 
 export interface PrivateChatUpdateWithoutToInput {
@@ -8447,59 +7374,6 @@ export interface PrivateChatUncheckedUpdateManyWithoutMyPrivateChatsInput {
   updatedAt?: DateTimeFieldUpdateOperationsInput;
 }
 
-export interface ClassroomUpdateWithoutUserInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  school?: SchoolUpdateOneWithoutClassroomsInput;
-  students?: ClassroomStudentUpdateManyWithoutClassroomInput;
-  level?: IntFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface ClassroomUncheckedUpdateWithoutUserInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  schoolId?: NullableStringFieldUpdateOperationsInput;
-  students?: ClassroomStudentUncheckedUpdateManyWithoutClassroomInput;
-  level?: IntFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface ClassroomUncheckedUpdateManyWithoutClassroomsInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  schoolId?: NullableStringFieldUpdateOperationsInput;
-  level?: IntFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface ClassroomStudentUpdateWithoutUserInput {
-  id?: StringFieldUpdateOperationsInput;
-  classroom?: ClassroomUpdateOneWithoutStudentsInput;
-  status?: EnumClassroomStudentStatusFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface ClassroomStudentUncheckedUpdateWithoutUserInput {
-  id?: StringFieldUpdateOperationsInput;
-  classroomId?: NullableStringFieldUpdateOperationsInput;
-  status?: EnumClassroomStudentStatusFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface ClassroomStudentUncheckedUpdateManyWithoutClassroomStudentsInput {
-  id?: StringFieldUpdateOperationsInput;
-  classroomId?: NullableStringFieldUpdateOperationsInput;
-  status?: EnumClassroomStudentStatusFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
 export interface NotificationUpdateWithoutUserInput {
   id?: StringFieldUpdateOperationsInput;
   picturePath?: NullableStringFieldUpdateOperationsInput;
@@ -8536,65 +7410,36 @@ export interface NotificationUncheckedUpdateManyWithoutNotificationsInput {
   updatedAt?: DateTimeFieldUpdateOperationsInput;
 }
 
-export interface ClassroomCreateManySchoolInput {
-  id?: string;
-  name: string;
-  userId: string;
-  level?: number;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomUpdateWithoutSchoolInput {
+export interface TokenUpdateWithoutOwnerInput {
   id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  user?: UserUpdateOneRequiredWithoutClassroomsInput;
-  students?: ClassroomStudentUpdateManyWithoutClassroomInput;
-  level?: IntFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  token?: StringFieldUpdateOperationsInput;
+  tokenClaims?: TokenClaimUpdateManyWithoutTokenInput;
+  maxClaim?: NullableIntFieldUpdateOperationsInput;
 }
 
-export interface ClassroomUncheckedUpdateWithoutSchoolInput {
+export interface TokenUncheckedUpdateWithoutOwnerInput {
   id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  userId?: StringFieldUpdateOperationsInput;
-  students?: ClassroomStudentUncheckedUpdateManyWithoutClassroomInput;
-  level?: IntFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  token?: StringFieldUpdateOperationsInput;
+  tokenClaims?: TokenClaimUncheckedUpdateManyWithoutTokenInput;
+  maxClaim?: NullableIntFieldUpdateOperationsInput;
 }
 
-export interface ClassroomStudentCreateManyClassroomInput {
-  id?: string;
-  userId: string;
-  status?: ClassroomStudentStatus;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface ClassroomStudentUpdateWithoutClassroomInput {
+export interface TokenUncheckedUpdateManyWithoutMyTokensInput {
   id?: StringFieldUpdateOperationsInput;
-  user?: UserUpdateOneRequiredWithoutClassroomStudentsInput;
-  status?: EnumClassroomStudentStatusFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  token?: StringFieldUpdateOperationsInput;
+  maxClaim?: NullableIntFieldUpdateOperationsInput;
 }
 
-export interface ClassroomStudentUncheckedUpdateWithoutClassroomInput {
+export interface TokenClaimUpdateWithoutClaimerInput {
   id?: StringFieldUpdateOperationsInput;
-  userId?: StringFieldUpdateOperationsInput;
-  status?: EnumClassroomStudentStatusFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  token?: TokenUpdateOneRequiredWithoutTokenClaimsInput;
+  expiredAt?: NullableDateTimeFieldUpdateOperationsInput;
 }
 
-export interface ClassroomStudentUncheckedUpdateManyWithoutStudentsInput {
+export interface TokenClaimUncheckedUpdateWithoutClaimerInput {
   id?: StringFieldUpdateOperationsInput;
-  userId?: StringFieldUpdateOperationsInput;
-  status?: EnumClassroomStudentStatusFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  tokenId?: StringFieldUpdateOperationsInput;
+  expiredAt?: NullableDateTimeFieldUpdateOperationsInput;
 }
 
 export interface ExamQuestionCreateManyExamInput {
@@ -8771,16 +7616,30 @@ export interface AggregateProvince {
   _max: Maybe<ProvinceMaxAggregateOutputType>;
 }
 
-export interface AggregateCity {
-  _count: Maybe<CityCountAggregateOutputType>;
-  _min: Maybe<CityMinAggregateOutputType>;
-  _max: Maybe<CityMaxAggregateOutputType>;
+export interface AggregateRegency {
+  _count: Maybe<RegencyCountAggregateOutputType>;
+  _min: Maybe<RegencyMinAggregateOutputType>;
+  _max: Maybe<RegencyMaxAggregateOutputType>;
 }
 
 export interface AggregateIdentityFile {
   _count: Maybe<IdentityFileCountAggregateOutputType>;
   _min: Maybe<IdentityFileMinAggregateOutputType>;
   _max: Maybe<IdentityFileMaxAggregateOutputType>;
+}
+
+export interface AggregateToken {
+  _count: Maybe<TokenCountAggregateOutputType>;
+  _avg: Maybe<TokenAvgAggregateOutputType>;
+  _sum: Maybe<TokenSumAggregateOutputType>;
+  _min: Maybe<TokenMinAggregateOutputType>;
+  _max: Maybe<TokenMaxAggregateOutputType>;
+}
+
+export interface AggregateTokenClaim {
+  _count: Maybe<TokenClaimCountAggregateOutputType>;
+  _min: Maybe<TokenClaimMinAggregateOutputType>;
+  _max: Maybe<TokenClaimMaxAggregateOutputType>;
 }
 
 export interface AggregateUser {
@@ -8795,28 +7654,6 @@ export interface AggregateNotification {
   _count: Maybe<NotificationCountAggregateOutputType>;
   _min: Maybe<NotificationMinAggregateOutputType>;
   _max: Maybe<NotificationMaxAggregateOutputType>;
-}
-
-export interface AggregateSchool {
-  _count: Maybe<SchoolCountAggregateOutputType>;
-  _avg: Maybe<SchoolAvgAggregateOutputType>;
-  _sum: Maybe<SchoolSumAggregateOutputType>;
-  _min: Maybe<SchoolMinAggregateOutputType>;
-  _max: Maybe<SchoolMaxAggregateOutputType>;
-}
-
-export interface AggregateClassroom {
-  _count: Maybe<ClassroomCountAggregateOutputType>;
-  _avg: Maybe<ClassroomAvgAggregateOutputType>;
-  _sum: Maybe<ClassroomSumAggregateOutputType>;
-  _min: Maybe<ClassroomMinAggregateOutputType>;
-  _max: Maybe<ClassroomMaxAggregateOutputType>;
-}
-
-export interface AggregateClassroomStudent {
-  _count: Maybe<ClassroomStudentCountAggregateOutputType>;
-  _min: Maybe<ClassroomStudentMinAggregateOutputType>;
-  _max: Maybe<ClassroomStudentMaxAggregateOutputType>;
 }
 
 export interface AggregatePrivateChat {
@@ -8860,9 +7697,8 @@ export interface AggregateQuestion {
 }
 
 export interface ProvinceCountOutputType {
-  cities: number;
+  regencies: number;
   users: number;
-  School: number;
 }
 
 export interface ProvinceCountAggregateOutputType {
@@ -8887,25 +7723,24 @@ export interface ProvinceMaxAggregateOutputType {
   updatedAt: Maybe<undefined>;
 }
 
-export interface CityCountOutputType {
+export interface RegencyCountOutputType {
   users: number;
-  School: number;
 }
 
-export interface CityCountAggregateOutputType {
+export interface RegencyCountAggregateOutputType {
   id: number;
   name: number;
   provinceId: number;
   _all: number;
 }
 
-export interface CityMinAggregateOutputType {
+export interface RegencyMinAggregateOutputType {
   id: Maybe<string>;
   name: Maybe<string>;
   provinceId: Maybe<string>;
 }
 
-export interface CityMaxAggregateOutputType {
+export interface RegencyMaxAggregateOutputType {
   id: Maybe<string>;
   name: Maybe<string>;
   provinceId: Maybe<string>;
@@ -8939,6 +7774,62 @@ export interface IdentityFileMaxAggregateOutputType {
   userId: Maybe<string>;
 }
 
+export interface TokenCountOutputType {
+  tokenClaims: number;
+}
+
+export interface TokenCountAggregateOutputType {
+  id: number;
+  token: number;
+  userId: number;
+  maxClaim: number;
+  _all: number;
+}
+
+export interface TokenAvgAggregateOutputType {
+  maxClaim: Maybe<number>;
+}
+
+export interface TokenSumAggregateOutputType {
+  maxClaim: Maybe<number>;
+}
+
+export interface TokenMinAggregateOutputType {
+  id: Maybe<string>;
+  token: Maybe<string>;
+  userId: Maybe<string>;
+  maxClaim: Maybe<number>;
+}
+
+export interface TokenMaxAggregateOutputType {
+  id: Maybe<string>;
+  token: Maybe<string>;
+  userId: Maybe<string>;
+  maxClaim: Maybe<number>;
+}
+
+export interface TokenClaimCountAggregateOutputType {
+  id: number;
+  tokenId: number;
+  userId: number;
+  expiredAt: number;
+  _all: number;
+}
+
+export interface TokenClaimMinAggregateOutputType {
+  id: Maybe<string>;
+  tokenId: Maybe<string>;
+  userId: Maybe<string>;
+  expiredAt: Maybe<undefined>;
+}
+
+export interface TokenClaimMaxAggregateOutputType {
+  id: Maybe<string>;
+  tokenId: Maybe<string>;
+  userId: Maybe<string>;
+  expiredAt: Maybe<undefined>;
+}
+
 export interface UserCountOutputType {
   identityFiles: number;
   questions: number;
@@ -8946,16 +7837,15 @@ export interface UserCountOutputType {
   examsessions: number;
   privateChats: number;
   myPrivateChats: number;
-  classrooms: number;
-  classroomStudents: number;
   notifications: number;
+  myTokens: number;
+  tokenClaims: number;
 }
 
 export interface UserCountAggregateOutputType {
   id: number;
   name: number;
   email: number;
-  password: number;
   phoneNumber: number;
   address: number;
   profilePicturePath: number;
@@ -8964,14 +7854,15 @@ export interface UserCountAggregateOutputType {
   nisn: number;
   nrg: number;
   provinceId: number;
-  cityId: number;
+  regencyId: number;
   isAdmin: number;
-  isBimbel: number;
   role: number;
   balance: number;
   emailVerifiedAt: number;
   phoneNumberVerifiedAt: number;
-  bimbelApprovedAt: number;
+  identityNumberVerifiedAt: number;
+  verifykey: number;
+  verifyType: number;
   _all: number;
 }
 
@@ -8987,7 +7878,6 @@ export interface UserMinAggregateOutputType {
   id: Maybe<string>;
   name: Maybe<string>;
   email: Maybe<string>;
-  password: Maybe<string>;
   phoneNumber: Maybe<string>;
   address: Maybe<string>;
   profilePicturePath: Maybe<string>;
@@ -8996,21 +7886,21 @@ export interface UserMinAggregateOutputType {
   nisn: Maybe<string>;
   nrg: Maybe<string>;
   provinceId: Maybe<string>;
-  cityId: Maybe<string>;
+  regencyId: Maybe<string>;
   isAdmin: Maybe<boolean>;
-  isBimbel: Maybe<boolean>;
   role: Maybe<Roles>;
   balance: Maybe<number>;
   emailVerifiedAt: Maybe<undefined>;
   phoneNumberVerifiedAt: Maybe<undefined>;
-  bimbelApprovedAt: Maybe<undefined>;
+  identityNumberVerifiedAt: Maybe<undefined>;
+  verifykey: Maybe<string>;
+  verifyType: Maybe<VerifyType>;
 }
 
 export interface UserMaxAggregateOutputType {
   id: Maybe<string>;
   name: Maybe<string>;
   email: Maybe<string>;
-  password: Maybe<string>;
   phoneNumber: Maybe<string>;
   address: Maybe<string>;
   profilePicturePath: Maybe<string>;
@@ -9019,14 +7909,15 @@ export interface UserMaxAggregateOutputType {
   nisn: Maybe<string>;
   nrg: Maybe<string>;
   provinceId: Maybe<string>;
-  cityId: Maybe<string>;
+  regencyId: Maybe<string>;
   isAdmin: Maybe<boolean>;
-  isBimbel: Maybe<boolean>;
   role: Maybe<Roles>;
   balance: Maybe<number>;
   emailVerifiedAt: Maybe<undefined>;
   phoneNumberVerifiedAt: Maybe<undefined>;
-  bimbelApprovedAt: Maybe<undefined>;
+  identityNumberVerifiedAt: Maybe<undefined>;
+  verifykey: Maybe<string>;
+  verifyType: Maybe<VerifyType>;
 }
 
 export interface NotificationCountAggregateOutputType {
@@ -9065,133 +7956,6 @@ export interface NotificationMaxAggregateOutputType {
   followUpContext: Maybe<string>;
   followUpData: Maybe<string>;
   userId: Maybe<string>;
-  createdAt: Maybe<undefined>;
-  updatedAt: Maybe<undefined>;
-}
-
-export interface SchoolCountOutputType {
-  classrooms: number;
-}
-
-export interface SchoolCountAggregateOutputType {
-  id: number;
-  name: number;
-  npsn: number;
-  createdAt: number;
-  updatedAt: number;
-  levels: number;
-  type: number;
-  address: number;
-  logoPath: number;
-  bannerPath: number;
-  provinceId: number;
-  cityId: number;
-  _all: number;
-}
-
-export interface SchoolAvgAggregateOutputType {
-  levels: Maybe<number>;
-}
-
-export interface SchoolSumAggregateOutputType {
-  levels: Maybe<number>;
-}
-
-export interface SchoolMinAggregateOutputType {
-  id: Maybe<string>;
-  name: Maybe<string>;
-  npsn: Maybe<string>;
-  createdAt: Maybe<undefined>;
-  updatedAt: Maybe<undefined>;
-  type: Maybe<string>;
-  address: Maybe<string>;
-  logoPath: Maybe<string>;
-  bannerPath: Maybe<string>;
-  provinceId: Maybe<string>;
-  cityId: Maybe<string>;
-}
-
-export interface SchoolMaxAggregateOutputType {
-  id: Maybe<string>;
-  name: Maybe<string>;
-  npsn: Maybe<string>;
-  createdAt: Maybe<undefined>;
-  updatedAt: Maybe<undefined>;
-  type: Maybe<string>;
-  address: Maybe<string>;
-  logoPath: Maybe<string>;
-  bannerPath: Maybe<string>;
-  provinceId: Maybe<string>;
-  cityId: Maybe<string>;
-}
-
-export interface ClassroomCountOutputType {
-  students: number;
-}
-
-export interface ClassroomCountAggregateOutputType {
-  id: number;
-  name: number;
-  schoolId: number;
-  userId: number;
-  level: number;
-  createdAt: number;
-  updatedAt: number;
-  _all: number;
-}
-
-export interface ClassroomAvgAggregateOutputType {
-  level: Maybe<number>;
-}
-
-export interface ClassroomSumAggregateOutputType {
-  level: Maybe<number>;
-}
-
-export interface ClassroomMinAggregateOutputType {
-  id: Maybe<string>;
-  name: Maybe<string>;
-  schoolId: Maybe<string>;
-  userId: Maybe<string>;
-  level: Maybe<number>;
-  createdAt: Maybe<undefined>;
-  updatedAt: Maybe<undefined>;
-}
-
-export interface ClassroomMaxAggregateOutputType {
-  id: Maybe<string>;
-  name: Maybe<string>;
-  schoolId: Maybe<string>;
-  userId: Maybe<string>;
-  level: Maybe<number>;
-  createdAt: Maybe<undefined>;
-  updatedAt: Maybe<undefined>;
-}
-
-export interface ClassroomStudentCountAggregateOutputType {
-  id: number;
-  userId: number;
-  classroomId: number;
-  status: number;
-  createdAt: number;
-  updatedAt: number;
-  _all: number;
-}
-
-export interface ClassroomStudentMinAggregateOutputType {
-  id: Maybe<string>;
-  userId: Maybe<string>;
-  classroomId: Maybe<string>;
-  status: Maybe<ClassroomStudentStatus>;
-  createdAt: Maybe<undefined>;
-  updatedAt: Maybe<undefined>;
-}
-
-export interface ClassroomStudentMaxAggregateOutputType {
-  id: Maybe<string>;
-  userId: Maybe<string>;
-  classroomId: Maybe<string>;
-  status: Maybe<ClassroomStudentStatus>;
   createdAt: Maybe<undefined>;
   updatedAt: Maybe<undefined>;
 }
@@ -9267,7 +8031,6 @@ export interface ExamSessionCountAggregateOutputType {
   openAt: number;
   closeAt: number;
   maxPlayer: number;
-  password: number;
   userId: number;
   _all: number;
 }
@@ -9286,7 +8049,6 @@ export interface ExamSessionMinAggregateOutputType {
   openAt: Maybe<undefined>;
   closeAt: Maybe<undefined>;
   maxPlayer: Maybe<number>;
-  password: Maybe<string>;
   userId: Maybe<string>;
 }
 
@@ -9296,7 +8058,6 @@ export interface ExamSessionMaxAggregateOutputType {
   openAt: Maybe<undefined>;
   closeAt: Maybe<undefined>;
   maxPlayer: Maybe<number>;
-  password: Maybe<string>;
   userId: Maybe<string>;
 }
 
@@ -9644,123 +8405,6 @@ export interface aggregatePrivateChatArgs {
   skip?: number;
 }
 
-export interface findUniqueClassroomStudentArgs {
-  where: ClassroomStudentWhereUniqueInput;
-}
-
-export interface findFirstClassroomStudentArgs {
-  where?: ClassroomStudentWhereInput;
-  orderBy?: ClassroomStudentOrderByWithRelationInput[];
-  cursor?: ClassroomStudentWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: ClassroomStudentScalarFieldEnum[];
-}
-
-export interface findManyClassroomStudentArgs {
-  where?: ClassroomStudentWhereInput;
-  orderBy?: ClassroomStudentOrderByWithRelationInput[];
-  cursor?: ClassroomStudentWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: ClassroomStudentScalarFieldEnum[];
-}
-
-export interface findManyClassroomStudentCountArgs {
-  where?: ClassroomStudentWhereInput;
-  orderBy?: ClassroomStudentOrderByWithRelationInput[];
-  cursor?: ClassroomStudentWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: ClassroomStudentScalarFieldEnum[];
-}
-
-export interface aggregateClassroomStudentArgs {
-  where?: ClassroomStudentWhereInput;
-  orderBy?: ClassroomStudentOrderByWithRelationInput[];
-  cursor?: ClassroomStudentWhereUniqueInput;
-  take?: number;
-  skip?: number;
-}
-
-export interface findUniqueClassroomArgs {
-  where: ClassroomWhereUniqueInput;
-}
-
-export interface findFirstClassroomArgs {
-  where?: ClassroomWhereInput;
-  orderBy?: ClassroomOrderByWithRelationInput[];
-  cursor?: ClassroomWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: ClassroomScalarFieldEnum[];
-}
-
-export interface findManyClassroomArgs {
-  where?: ClassroomWhereInput;
-  orderBy?: ClassroomOrderByWithRelationInput[];
-  cursor?: ClassroomWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: ClassroomScalarFieldEnum[];
-}
-
-export interface findManyClassroomCountArgs {
-  where?: ClassroomWhereInput;
-  orderBy?: ClassroomOrderByWithRelationInput[];
-  cursor?: ClassroomWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: ClassroomScalarFieldEnum[];
-}
-
-export interface aggregateClassroomArgs {
-  where?: ClassroomWhereInput;
-  orderBy?: ClassroomOrderByWithRelationInput[];
-  cursor?: ClassroomWhereUniqueInput;
-  take?: number;
-  skip?: number;
-}
-
-export interface findUniqueSchoolArgs {
-  where: SchoolWhereUniqueInput;
-}
-
-export interface findFirstSchoolArgs {
-  where?: SchoolWhereInput;
-  orderBy?: SchoolOrderByWithRelationInput[];
-  cursor?: SchoolWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: SchoolScalarFieldEnum[];
-}
-
-export interface findManySchoolArgs {
-  where?: SchoolWhereInput;
-  orderBy?: SchoolOrderByWithRelationInput[];
-  cursor?: SchoolWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: SchoolScalarFieldEnum[];
-}
-
-export interface findManySchoolCountArgs {
-  where?: SchoolWhereInput;
-  orderBy?: SchoolOrderByWithRelationInput[];
-  cursor?: SchoolWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: SchoolScalarFieldEnum[];
-}
-
-export interface aggregateSchoolArgs {
-  where?: SchoolWhereInput;
-  orderBy?: SchoolOrderByWithRelationInput[];
-  cursor?: SchoolWhereUniqueInput;
-  take?: number;
-  skip?: number;
-}
-
 export interface findUniqueNotificationArgs {
   where: NotificationWhereUniqueInput;
 }
@@ -9839,6 +8483,84 @@ export interface aggregateUserArgs {
   skip?: number;
 }
 
+export interface findUniqueTokenClaimArgs {
+  where: TokenClaimWhereUniqueInput;
+}
+
+export interface findFirstTokenClaimArgs {
+  where?: TokenClaimWhereInput;
+  orderBy?: TokenClaimOrderByWithRelationInput[];
+  cursor?: TokenClaimWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: TokenClaimScalarFieldEnum[];
+}
+
+export interface findManyTokenClaimArgs {
+  where?: TokenClaimWhereInput;
+  orderBy?: TokenClaimOrderByWithRelationInput[];
+  cursor?: TokenClaimWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: TokenClaimScalarFieldEnum[];
+}
+
+export interface findManyTokenClaimCountArgs {
+  where?: TokenClaimWhereInput;
+  orderBy?: TokenClaimOrderByWithRelationInput[];
+  cursor?: TokenClaimWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: TokenClaimScalarFieldEnum[];
+}
+
+export interface aggregateTokenClaimArgs {
+  where?: TokenClaimWhereInput;
+  orderBy?: TokenClaimOrderByWithRelationInput[];
+  cursor?: TokenClaimWhereUniqueInput;
+  take?: number;
+  skip?: number;
+}
+
+export interface findUniqueTokenArgs {
+  where: TokenWhereUniqueInput;
+}
+
+export interface findFirstTokenArgs {
+  where?: TokenWhereInput;
+  orderBy?: TokenOrderByWithRelationInput[];
+  cursor?: TokenWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: TokenScalarFieldEnum[];
+}
+
+export interface findManyTokenArgs {
+  where?: TokenWhereInput;
+  orderBy?: TokenOrderByWithRelationInput[];
+  cursor?: TokenWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: TokenScalarFieldEnum[];
+}
+
+export interface findManyTokenCountArgs {
+  where?: TokenWhereInput;
+  orderBy?: TokenOrderByWithRelationInput[];
+  cursor?: TokenWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: TokenScalarFieldEnum[];
+}
+
+export interface aggregateTokenArgs {
+  where?: TokenWhereInput;
+  orderBy?: TokenOrderByWithRelationInput[];
+  cursor?: TokenWhereUniqueInput;
+  take?: number;
+  skip?: number;
+}
+
 export interface findUniqueIdentityFileArgs {
   where: IdentityFileWhereUniqueInput;
 }
@@ -9878,41 +8600,41 @@ export interface aggregateIdentityFileArgs {
   skip?: number;
 }
 
-export interface findUniqueCityArgs {
-  where: CityWhereUniqueInput;
+export interface findUniqueRegencyArgs {
+  where: RegencyWhereUniqueInput;
 }
 
-export interface findFirstCityArgs {
-  where?: CityWhereInput;
-  orderBy?: CityOrderByWithRelationInput[];
-  cursor?: CityWhereUniqueInput;
+export interface findFirstRegencyArgs {
+  where?: RegencyWhereInput;
+  orderBy?: RegencyOrderByWithRelationInput[];
+  cursor?: RegencyWhereUniqueInput;
   take?: number;
   skip?: number;
-  distinct?: CityScalarFieldEnum[];
+  distinct?: RegencyScalarFieldEnum[];
 }
 
-export interface findManyCityArgs {
-  where?: CityWhereInput;
-  orderBy?: CityOrderByWithRelationInput[];
-  cursor?: CityWhereUniqueInput;
+export interface findManyRegencyArgs {
+  where?: RegencyWhereInput;
+  orderBy?: RegencyOrderByWithRelationInput[];
+  cursor?: RegencyWhereUniqueInput;
   take?: number;
   skip?: number;
-  distinct?: CityScalarFieldEnum[];
+  distinct?: RegencyScalarFieldEnum[];
 }
 
-export interface findManyCityCountArgs {
-  where?: CityWhereInput;
-  orderBy?: CityOrderByWithRelationInput[];
-  cursor?: CityWhereUniqueInput;
+export interface findManyRegencyCountArgs {
+  where?: RegencyWhereInput;
+  orderBy?: RegencyOrderByWithRelationInput[];
+  cursor?: RegencyWhereUniqueInput;
   take?: number;
   skip?: number;
-  distinct?: CityScalarFieldEnum[];
+  distinct?: RegencyScalarFieldEnum[];
 }
 
-export interface aggregateCityArgs {
-  where?: CityWhereInput;
-  orderBy?: CityOrderByWithRelationInput[];
-  cursor?: CityWhereUniqueInput;
+export interface aggregateRegencyArgs {
+  where?: RegencyWhereInput;
+  orderBy?: RegencyOrderByWithRelationInput[];
+  cursor?: RegencyWhereUniqueInput;
   take?: number;
   skip?: number;
 }
@@ -9955,6 +8677,8 @@ export interface aggregateProvinceArgs {
   take?: number;
   skip?: number;
 }
+
+export interface meArgs {}
 
 export interface createOneQuestionArgs {
   data: QuestionCreateInput;
@@ -10124,90 +8848,6 @@ export interface deleteManyPrivateChatArgs {
   where?: PrivateChatWhereInput;
 }
 
-export interface createOneClassroomStudentArgs {
-  data: ClassroomStudentCreateInput;
-}
-
-export interface updateOneClassroomStudentArgs {
-  data: ClassroomStudentUpdateInput;
-  where: ClassroomStudentWhereUniqueInput;
-}
-
-export interface upsertOneClassroomStudentArgs {
-  where: ClassroomStudentWhereUniqueInput;
-  create: ClassroomStudentCreateInput;
-  update: ClassroomStudentUpdateInput;
-}
-
-export interface deleteOneClassroomStudentArgs {
-  where: ClassroomStudentWhereUniqueInput;
-}
-
-export interface updateManyClassroomStudentArgs {
-  data: ClassroomStudentUpdateManyMutationInput;
-  where?: ClassroomStudentWhereInput;
-}
-
-export interface deleteManyClassroomStudentArgs {
-  where?: ClassroomStudentWhereInput;
-}
-
-export interface createOneClassroomArgs {
-  data: ClassroomCreateInput;
-}
-
-export interface updateOneClassroomArgs {
-  data: ClassroomUpdateInput;
-  where: ClassroomWhereUniqueInput;
-}
-
-export interface upsertOneClassroomArgs {
-  where: ClassroomWhereUniqueInput;
-  create: ClassroomCreateInput;
-  update: ClassroomUpdateInput;
-}
-
-export interface deleteOneClassroomArgs {
-  where: ClassroomWhereUniqueInput;
-}
-
-export interface updateManyClassroomArgs {
-  data: ClassroomUpdateManyMutationInput;
-  where?: ClassroomWhereInput;
-}
-
-export interface deleteManyClassroomArgs {
-  where?: ClassroomWhereInput;
-}
-
-export interface createOneSchoolArgs {
-  data: SchoolCreateInput;
-}
-
-export interface updateOneSchoolArgs {
-  data: SchoolUpdateInput;
-  where: SchoolWhereUniqueInput;
-}
-
-export interface upsertOneSchoolArgs {
-  where: SchoolWhereUniqueInput;
-  create: SchoolCreateInput;
-  update: SchoolUpdateInput;
-}
-
-export interface deleteOneSchoolArgs {
-  where: SchoolWhereUniqueInput;
-}
-
-export interface updateManySchoolArgs {
-  data: SchoolUpdateManyMutationInput;
-  where?: SchoolWhereInput;
-}
-
-export interface deleteManySchoolArgs {
-  where?: SchoolWhereInput;
-}
-
 export interface createOneNotificationArgs {
   data: NotificationCreateInput;
 }
@@ -10264,6 +8904,62 @@ export interface deleteManyUserArgs {
   where?: UserWhereInput;
 }
 
+export interface createOneTokenClaimArgs {
+  data: TokenClaimCreateInput;
+}
+
+export interface updateOneTokenClaimArgs {
+  data: TokenClaimUpdateInput;
+  where: TokenClaimWhereUniqueInput;
+}
+
+export interface upsertOneTokenClaimArgs {
+  where: TokenClaimWhereUniqueInput;
+  create: TokenClaimCreateInput;
+  update: TokenClaimUpdateInput;
+}
+
+export interface deleteOneTokenClaimArgs {
+  where: TokenClaimWhereUniqueInput;
+}
+
+export interface updateManyTokenClaimArgs {
+  data: TokenClaimUpdateManyMutationInput;
+  where?: TokenClaimWhereInput;
+}
+
+export interface deleteManyTokenClaimArgs {
+  where?: TokenClaimWhereInput;
+}
+
+export interface createOneTokenArgs {
+  data: TokenCreateInput;
+}
+
+export interface updateOneTokenArgs {
+  data: TokenUpdateInput;
+  where: TokenWhereUniqueInput;
+}
+
+export interface upsertOneTokenArgs {
+  where: TokenWhereUniqueInput;
+  create: TokenCreateInput;
+  update: TokenUpdateInput;
+}
+
+export interface deleteOneTokenArgs {
+  where: TokenWhereUniqueInput;
+}
+
+export interface updateManyTokenArgs {
+  data: TokenUpdateManyMutationInput;
+  where?: TokenWhereInput;
+}
+
+export interface deleteManyTokenArgs {
+  where?: TokenWhereInput;
+}
+
 export interface createOneIdentityFileArgs {
   data: IdentityFileCreateInput;
 }
@@ -10292,32 +8988,32 @@ export interface deleteManyIdentityFileArgs {
   where?: IdentityFileWhereInput;
 }
 
-export interface createOneCityArgs {
-  data: CityCreateInput;
+export interface createOneRegencyArgs {
+  data: RegencyCreateInput;
 }
 
-export interface updateOneCityArgs {
-  data: CityUpdateInput;
-  where: CityWhereUniqueInput;
+export interface updateOneRegencyArgs {
+  data: RegencyUpdateInput;
+  where: RegencyWhereUniqueInput;
 }
 
-export interface upsertOneCityArgs {
-  where: CityWhereUniqueInput;
-  create: CityCreateInput;
-  update: CityUpdateInput;
+export interface upsertOneRegencyArgs {
+  where: RegencyWhereUniqueInput;
+  create: RegencyCreateInput;
+  update: RegencyUpdateInput;
 }
 
-export interface deleteOneCityArgs {
-  where: CityWhereUniqueInput;
+export interface deleteOneRegencyArgs {
+  where: RegencyWhereUniqueInput;
 }
 
-export interface updateManyCityArgs {
-  data: CityUpdateManyMutationInput;
-  where?: CityWhereInput;
+export interface updateManyRegencyArgs {
+  data: RegencyUpdateManyMutationInput;
+  where?: RegencyWhereInput;
 }
 
-export interface deleteManyCityArgs {
-  where?: CityWhereInput;
+export interface deleteManyRegencyArgs {
+  where?: RegencyWhereInput;
 }
 
 export interface createOneProvinceArgs {
@@ -10347,3 +9043,39 @@ export interface updateManyProvinceArgs {
 export interface deleteManyProvinceArgs {
   where?: ProvinceWhereInput;
 }
+
+export interface confirmVerificationArgs {
+  type: VerifyType;
+  key: string;
+}
+
+export interface registerArgs {
+  email: string;
+  password: string;
+  name: string;
+  phoneNumber?: string;
+  address?: string;
+  nrg?: string;
+  nisn?: string;
+  provinceId: string;
+  regencyId: string;
+  role: Roles;
+}
+
+export interface validateArgs {
+  email: string;
+}
+
+export interface loginArgs {
+  email: string;
+  password: string;
+}
+
+export interface sendChatArgs {
+  to: string;
+  content: string;
+  type: ContentType;
+  file?: File;
+}
+
+export interface privateChatSubscribeArgs {}

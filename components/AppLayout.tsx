@@ -33,6 +33,8 @@ import MenuItem from "@mui/material/MenuItem";
 import Badge from "@mui/material/Badge";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import Menu from "@mui/material/Menu";
+import { useUserStore } from "stores/user";
+import Link from "next/link";
 
 const drawerWidth = 240;
 
@@ -277,7 +279,6 @@ const RolesTranslation: Record<string, string> = {
 };
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const theme = useTheme();
   const [open, setOpen] = useState(true);
 
   const handleDrawerOpen = () => {
@@ -302,6 +303,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     setAnchorEl(null);
   };
   const [role, setRole] = useState(0);
+
+  const { user } = useUserStore();
 
   const isMenuOpen = Boolean(anchorEl);
   const renderMenu = (
@@ -330,6 +333,22 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
+      <Box
+        sx={{
+          height: 100,
+          width: "100%",
+          display: "flex",
+          alignContent: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Typography variant="h5">Anda belum verifikasi email !</Typography>
+        <Typography variant="body2">
+          <Link href="/">
+            <a>klik disini untuk kirim ulang verifikasi email</a>
+          </Link>
+        </Typography>
+      </Box>
       <AppBar position="fixed" open={open}>
         <Toolbar sx={{ justifyContent: "space-between", display: "flex" }}>
           <Toolbar>
@@ -424,11 +443,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             {RolesTranslation[roles] ?? roles}
           </Typography>
           <IconButton onClick={handleDrawerClose}>
-            {theme.direction === "rtl" ? (
-              <ChevronRightIcon />
-            ) : (
-              <ChevronLeftIcon />
-            )}
+            <ChevronRightIcon />
           </IconButton>
         </DrawerHeader>
         <Divider />

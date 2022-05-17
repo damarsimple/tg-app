@@ -20,12 +20,32 @@ import {
 } from "@mui/material";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import { useRouter } from "next/router";
+import { useUserStore, RegisterPayload } from "stores/user";
 const steps = ["Pilih", "Biodata", "Data Akun"];
 
 export default function Checkout() {
+  const { push } = useRouter();
+
+  const { register } = useUserStore();
+
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const [data, setData] = useState<RegisterPayload | null>(null);
+
   const [activeStep, setActiveStep] = useState(0);
   const [registeredAs, setRegisteredAs] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+
+  const handleRegister = async (data: RegisterPayload) => {
+    try {
+      await register(data);
+
+      push("/");
+    } catch (error) {
+      setErrorMessage(`${error}`);
+    }
+  };
 
   const handleNext = () => {
     if (activeStep == 1) {
@@ -122,6 +142,11 @@ export default function Checkout() {
               setFieldValue,
             }) => (
               <Box component="form" ref={formRef} onSubmit={handleSubmit}>
+                {errorMessage && (
+                  <Typography variant="h6" color="error" textAlign={"center"}>
+                    {errorMessage}
+                  </Typography>
+                )}
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6}>
                     <TextField

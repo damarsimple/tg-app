@@ -37,7 +37,7 @@ const Home: NextPage = () => {
               alt="Tugasguru"
             />
           </Box>
-          <Typography variant="h2">TUGAS GURU</Typography>
+          <Typography variant="h2">TUGAS GURU </Typography>
           <Typography variant="subtitle1">
             Ujian Online, Quiz, Bimbingan Belajar, Ruang Kelas, Admin Sekolah,
             Absensi QR Code, PPDB Online, Raport Online, Cek Kelulusan, Akun
