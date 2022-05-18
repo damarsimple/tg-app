@@ -7,7 +7,7 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "typegen": "rm ./generated.ts && sgts -e http://localhost:4000/graphql -o ./generated.ts && sed  -i '1i //@ts-nocheck\n' generated.ts && echo '\nmodified ..\n'"
+        "typegen": "touch generated.ts && rm ./generated.ts && sgts -e https://tg-be.damaral.my.id/graphql -o ./generated.ts && sed  -i '1i //@ts-nocheck\n' generated.ts && echo '\nmodified ..\n'"
     },
     "dependencies": {
         "@apollo/client": "^3.6.2",
@@ -15,6 +15,7 @@
         "@emotion/styled": "^11.8.1",
         "@mui/icons-material": "^5.6.2",
         "@mui/material": "^5.7.0",
+        "@react-hook/media-query": "^1.1.1",
         "@types/apollo-upload-client": "^17.0.0",
         "@types/ws": "^8.5.3",
         "apollo-upload-client": "^17.0.0",
@@ -24,6 +25,8 @@
         "next": "12.1.6",
         "react": "18.1.0",
         "react-dom": "18.1.0",
+        "sharp": "^0.30.4",
+        "use-mobile-detect-hook": "^1.0.5",
         "ws": "^8.6.0",
         "yup": "^0.32.11",
         "zustand": "^4.0.0-rc.1"

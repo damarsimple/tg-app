@@ -1,4 +1,4 @@
-import { useState, ReactNode } from "react";
+import { useState, ReactNode, useEffect } from "react";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import Divider from "@mui/material/Divider";
@@ -7,6 +7,7 @@ import InboxIcon from "@mui/icons-material/MoveToInbox";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
+import LinkMui from "@mui/material/Link";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import MailIcon from "@mui/icons-material/Mail";
@@ -35,6 +36,11 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import Menu from "@mui/material/Menu";
 import { useUserStore } from "stores/user";
 import Link from "next/link";
+import Paper from "@mui/material/Paper";
+import { useNoticationStore } from "stores/notifications";
+import { usePrivateChatStore } from "../stores/chats";
+import { useRouter } from "next/router";
+import { useDrawerStore } from "../stores/applayout";
 
 const drawerWidth = 240;
 
@@ -279,15 +285,9 @@ const RolesTranslation: Record<string, string> = {
 };
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const [open, setOpen] = useState(true);
+  const { push, pathname } = useRouter();
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
+  const { open, handleDrawerClose, handleDrawerOpen } = useDrawerStore();
 
   const [roles, setRoles] = useState("TEACHER");
 
@@ -305,8 +305,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [role, setRole] = useState(0);
 
   const { user } = useUserStore();
+  const { getSpesificPrivateChats, register } = usePrivateChatStore();
 
+  const init = async () => {
+    await register();
+  };
+
+  useEffect(() => {
+    init();
+  }, []);
+
+  const { notifications } = useNoticationStore();
   const isMenuOpen = Boolean(anchorEl);
+  const unreadChats = getSpesificPrivateChats("unread");
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
@@ -331,24 +342,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   );
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box>
       <CssBaseline />
-      <Box
-        sx={{
-          height: 100,
-          width: "100%",
-          display: "flex",
-          alignContent: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Typography variant="h5">Anda belum verifikasi email !</Typography>
-        <Typography variant="body2">
-          <Link href="/">
-            <a>klik disini untuk kirim ulang verifikasi email</a>
-          </Link>
-        </Typography>
-      </Box>
+
       <AppBar position="fixed" open={open}>
         <Toolbar sx={{ justifyContent: "space-between", display: "flex" }}>
           <Toolbar>
@@ -376,7 +372,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 TUGAS GURU
               </Typography>
             )}
-            <Search>
+            {/* <Search>
               <SearchIconWrapper>
                 <SearchIcon />
               </SearchIconWrapper>
@@ -384,7 +380,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 placeholder="Search…"
                 inputProps={{ "aria-label": "search" }}
               />
-            </Search>
+            </Search> */}
           </Toolbar>
           <Toolbar>
             <IconButton
@@ -404,8 +400,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               size="large"
               aria-label="show 4 new mails"
               color="inherit"
+              onClick={() => {
+                push("/chats");
+              }}
             >
-              <Badge badgeContent={4} color="error">
+              <Badge badgeContent={unreadChats.length} color="error">
                 <MailIcon />
               </Badge>
             </IconButton>
@@ -413,8 +412,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               size="large"
               aria-label="show 17 new notifications"
               color="inherit"
+              onClick={() => {
+                push("/notifications");
+              }}
             >
-              <Badge badgeContent={17} color="error">
+              <Badge badgeContent={notifications.length} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
@@ -456,7 +458,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             },
           ].map((text, index) => (
             <ListItem key={text.name} disablePadding>
-              <ListItemButton>
+              <ListItemButton
+                onClick={() => {
+                  push(text.link);
+                }}
+              >
                 <ListItemIcon>
                   <Icon>{text.icon}</Icon>
                 </ListItemIcon>
@@ -469,7 +475,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <List>
           {features?.map((text, index) => (
             <ListItem key={text.name} disablePadding>
-              <ListItemButton>
+              <ListItemButton
+                onClick={() => {
+                  push(text.link);
+                }}
+              >
                 <ListItemIcon>
                   <Icon>{text.icon}</Icon>
                 </ListItemIcon>
@@ -489,7 +499,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             },
           ].map((text, index) => (
             <ListItem key={text.name} disablePadding>
-              <ListItemButton>
+              <ListItemButton
+                onClick={() => {
+                  push(text.link);
+                }}
+              >
                 <ListItemIcon>
                   <Icon>{text.icon}</Icon>
                 </ListItemIcon>
@@ -533,11 +547,33 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           ))}
         </List>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box component="main">
         <DrawerHeader />
-        {children}
+        <Box sx={{ marginLeft: "56px" }}>{children}</Box>
         {renderMenu}
       </Box>
+      {pathname == "/dashboard" && (
+        <Paper
+          sx={{
+            height: 50,
+            width: "100%",
+            alignContent: "center",
+            justifyContent: "center",
+            textAlign: "center",
+            position: "fixed",
+            bottom: 0,
+            zIndex: 99999,
+            paddingBottom: 5,
+          }}
+        >
+          <Typography variant="h5">Anda belum memverifikasi email</Typography>
+          <Typography variant="body2">
+            <Link href="/">
+              <a>klik disini untuk kirim ulang verifikasi email</a>
+            </Link>
+          </Typography>
+        </Paper>
+      )}
     </Box>
   );
 }
