@@ -145,6 +145,11 @@ export const usePrivateChatStore = create<PrivateChatState>((set, get) => ({
               name
               profilePicturePath
             }
+            from {
+              id
+              name
+              profilePicturePath
+            }
             lastReadAt
             lastChatId
           }

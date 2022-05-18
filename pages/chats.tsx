@@ -33,6 +33,8 @@ export default function Chats() {
     getConversation,
     sendConversation,
     getSession,
+    fetchSession,
+    addSessions,
   } = usePrivateChatStore();
 
   const [selectedId, setSelectedId] = useState("");
@@ -78,6 +80,18 @@ export default function Chats() {
     mutation CreateNewSession($to: String!) {
       createNewSession(to: $to) {
         id
+        toId
+        fromId
+        from {
+          id
+          name
+          profilePicturePath
+        }
+        lastReadAt
+        lastChatId
+        lastChat {
+          content
+        }
       }
     }
   `);
@@ -130,6 +144,8 @@ export default function Chats() {
                 <ListItemButton
                   onClick={() => {
                     handleCreate({ variables: { to: e.id } }).then((x) => {
+                      if (!x?.data?.createNewSession) return;
+                      addSessions(x.data?.createNewSession);
                       setSelectedId(`${x.data?.createNewSession?.id}`);
                       setShowSendModal(false);
                     });
