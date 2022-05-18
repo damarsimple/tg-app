@@ -94,19 +94,7 @@ export const usePrivateChatStore = create<PrivateChatState>((set, get) => ({
       query: gql`
         query FindManyPrivateChatSession($where: PrivateChatSessionWhereInput) {
           findManyPrivateChatSession(where: $where) {
-            id
-            toId
-            fromId
-            from {
-              id
-              name
-              profilePicturePath
-            }
-            lastReadAt
-            lastChatId
-            lastChat {
-              content
-            }
+        .e
           }
         }
       `,
