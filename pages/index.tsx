@@ -50,7 +50,7 @@ const Home: NextPage = () => {
             DAFTAR
           </Button>
           <Button variant="contained" onClick={() => push("/guest")}>
-            COBA
+            LIHAT FITUR
           </Button>
           <Button
             variant="contained"

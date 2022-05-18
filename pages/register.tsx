@@ -80,8 +80,8 @@ export default function Checkout() {
     findManySchool: School[];
   }>(
     gql`
-      query FindManySchool($where: SchoolWhereInput) {
-        findManySchool(where: $where) {
+      query FindManySchool($take: Int, $where: SchoolWhereInput) {
+        findManySchool(where: $where, take: $take) {
           id
           name
         }
@@ -89,6 +89,7 @@ export default function Checkout() {
     `,
     {
       variables: {
+        take: !data?.provinceId || !data?.regencyId ? 1 : undefined,
         where: {
           provinceId: {
             equals: data?.provinceId,
@@ -117,6 +118,7 @@ export default function Checkout() {
 
   const handleRegister = async (extra: Partial<RegisterPayload>) => {
     try {
+      setErrorMessage("");
       if (!data) return;
 
       await register({
@@ -128,7 +130,7 @@ export default function Checkout() {
         role: `${reverseMap[registeredAs] as Roles}`,
       });
 
-      push("/dashboard");
+      window.location.replace("/dashboard");
     } catch (error) {
       setErrorMessage(`${error}`);
     }
@@ -151,6 +153,20 @@ export default function Checkout() {
   };
 
   function getStepContent(step: number) {
+    const validationMap: Record<string, any> = {
+      GURU: Yup.object({
+        nrg: Yup.string().required("Harus di isi"),
+        schoolId: Yup.string().required("Harus di isi"),
+      }),
+      SISWA: Yup.object({
+        nisn: Yup.string().required("Harus di isi"),
+        schoolId: Yup.string().required("Harus di isi"),
+      }),
+      "ORANG TUA": Yup.object({
+        nisn: Yup.string().required("Harus di isi"),
+      }),
+    };
+
     switch (step) {
       case 0:
         return (
@@ -200,6 +216,7 @@ export default function Checkout() {
             })}
             onSubmit={async (values, { setSubmitting }) => {
               try {
+                setErrorMessage("");
                 await validateEmail(values);
 
                 setData(values as unknown as RegisterPayload);
@@ -405,12 +422,7 @@ export default function Checkout() {
               nrg: "",
               nisn: "",
             }}
-            validationSchema={Yup.object({
-              name: Yup.string().required("Harus di isi").max(15, "Max 15"),
-              email: Yup.string()
-                .required("Harus di isi")
-                .email("Email tidak valid"),
-            })}
+            validationSchema={validationMap[registeredAs]}
             onSubmit={(values, { setSubmitting }) => {
               handleRegister(values);
             }}
@@ -452,8 +464,8 @@ export default function Checkout() {
                             onBlur={handleBlur}
                             onChange={handleChange}
                             value={values.schoolId}
-                            error={Boolean(touched.schoolId && errors.schoolId)}
-                            helperText={touched.schoolId && errors.schoolId}
+                            error={Boolean(errors.schoolId)}
+                            helperText={errors.schoolId}
                           />
                         )}
                       />
@@ -471,8 +483,8 @@ export default function Checkout() {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         value={values.nisn}
-                        error={Boolean(touched.nisn && errors.nisn)}
-                        helperText={touched.nisn && errors.nisn}
+                        error={Boolean(errors.nisn)}
+                        helperText={errors.nisn}
                       />
                     </Grid>
                   )}
@@ -500,8 +512,8 @@ export default function Checkout() {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           value={values.nrg}
-                          error={Boolean(touched.nrg && errors.nrg)}
-                          helperText={touched.nrg && errors.nrg}
+                          error={Boolean(errors.nrg)}
+                          helperText={errors.nrg}
                         />
                       </Grid>
                       {asBimbel && (

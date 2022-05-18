@@ -73,7 +73,7 @@ export default function Login() {
               try {
                 await login(data);
 
-                push("/dashboard");
+                window.location.replace("/dashboard");
               } catch (error) {
                 setErrorMessage(`${error}`);
               }

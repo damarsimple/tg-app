@@ -112,7 +112,7 @@ export const usePrivateChatStore = create<PrivateChatState>((set, get) => ({
       `,
       variables: {
         where: {
-          fromId: {
+          toId: {
             equals: userId,
           },
         },
