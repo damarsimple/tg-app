@@ -7,7 +7,7 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "typegen": "touch generated.ts && rm ./generated.ts && sgts -e https://tg-be.damaral.my.id/graphql -o ./generated.ts && sed  -i '1i //@ts-nocheck\n' generated.ts && echo '\nmodified ..\n'"
+        "typegen": "touch generated.ts && rm ./generated.ts && sgts -e http://localhost:4000/graphql -o ./generated.ts && sed  -i '1i //@ts-nocheck\n' generated.ts && echo '\nmodified ..\n'"
     },
     "dependencies": {
         "@apollo/client": "^3.6.2",

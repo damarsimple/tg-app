@@ -15,30 +15,6 @@
 
 export type Maybe<T> = T | null;
 
-export interface PrivateChatSession {
-  id: string;
-  fromId: string;
-  from: User;
-  toId: string;
-  to: User;
-  lastReadAt: Maybe<undefined>;
-  lastChatId: Maybe<string>;
-  lastChat: Maybe<PrivateChat>;
-  createdAt: undefined;
-  updatedAt: undefined;
-}
-
-export interface SchoolStaff {
-  id: string;
-  schoolId: string;
-  school: School;
-  userId: string;
-  user: User;
-  roles: SchoolStaffRoles[];
-  createdAt: undefined;
-  updatedAt: undefined;
-}
-
 export interface Question {
   id: string;
   name: string;
@@ -105,19 +81,27 @@ export interface Exam {
   _count: ExamCountOutputType;
 }
 
-export interface PrivateChat {
+export interface Chat {
   id: string;
   fromId: string;
   from: User;
-  toId: string;
-  to: User;
   contentType: ContentType;
   content: string;
   readAt: Maybe<undefined>;
   createdAt: undefined;
   updatedAt: undefined;
-  privateChatSession: PrivateChatSession[];
-  _count: PrivateChatCountOutputType;
+  chatSessionId: string;
+  chatSession: ChatSession;
+}
+
+export interface ChatSession {
+  id: string;
+  participantsIds: string[];
+  lastReadAt: Maybe<undefined>;
+  createdAt: undefined;
+  updatedAt: undefined;
+  chats: Chat[];
+  _count: ChatSessionCountOutputType;
 }
 
 export interface ClassroomStudent {
@@ -143,6 +127,17 @@ export interface Classroom {
   createdAt: undefined;
   updatedAt: undefined;
   _count: ClassroomCountOutputType;
+}
+
+export interface SchoolStaff {
+  id: string;
+  schoolId: string;
+  school: School;
+  userId: string;
+  user: User;
+  roles: SchoolStaffRoles[];
+  createdAt: undefined;
+  updatedAt: undefined;
 }
 
 export interface School {
@@ -210,16 +205,13 @@ export interface User {
   questions: Question[];
   examinations: Exam[];
   examsessions: ExamSession[];
-  privateChats: PrivateChat[];
-  myPrivateChats: PrivateChat[];
+  myChats: Chat[];
   classrooms: Classroom[];
   classroomStudents: ClassroomStudent[];
   notifications: Notification[];
   schoolStaffs: SchoolStaff[];
   schoolId: Maybe<string>;
   school: Maybe<School>;
-  privateChatSession: PrivateChatSession[];
-  myPrivateChatSession: PrivateChatSession[];
   _count: UserCountOutputType;
 }
 
@@ -367,24 +359,22 @@ export enum ClassroomStudentScalarFieldEnum {
   Createdat = 'createdAt',
   Updatedat = 'updatedAt',
 }
-export enum PrivateChatSessionScalarFieldEnum {
+export enum ChatSessionScalarFieldEnum {
   Id = 'id',
-  Fromid = 'fromId',
-  Toid = 'toId',
+  Participantsids = 'participantsIds',
   Lastreadat = 'lastReadAt',
-  Lastchatid = 'lastChatId',
   Createdat = 'createdAt',
   Updatedat = 'updatedAt',
 }
-export enum PrivateChatScalarFieldEnum {
+export enum ChatScalarFieldEnum {
   Id = 'id',
   Fromid = 'fromId',
-  Toid = 'toId',
   Contenttype = 'contentType',
   Content = 'content',
   Readat = 'readAt',
   Createdat = 'createdAt',
   Updatedat = 'updatedAt',
+  Chatsessionid = 'chatSessionId',
 }
 export enum ExamScalarFieldEnum {
   Id = 'id',
@@ -646,16 +636,13 @@ export interface UserWhereInput {
   questions?: QuestionListRelationFilter;
   examinations?: ExamListRelationFilter;
   examsessions?: ExamSessionListRelationFilter;
-  privateChats?: PrivateChatListRelationFilter;
-  myPrivateChats?: PrivateChatListRelationFilter;
+  myChats?: ChatListRelationFilter;
   classrooms?: ClassroomListRelationFilter;
   classroomStudents?: ClassroomStudentListRelationFilter;
   notifications?: NotificationListRelationFilter;
   schoolStaffs?: SchoolStaffListRelationFilter;
   schoolId?: StringNullableFilter;
   school?: SchoolWhereInput;
-  privateChatSession?: PrivateChatSessionListRelationFilter;
-  myPrivateChatSession?: PrivateChatSessionListRelationFilter;
 }
 
 export interface UserOrderByWithRelationInput {
@@ -687,16 +674,13 @@ export interface UserOrderByWithRelationInput {
   questions?: QuestionOrderByRelationAggregateInput;
   examinations?: ExamOrderByRelationAggregateInput;
   examsessions?: ExamSessionOrderByRelationAggregateInput;
-  privateChats?: PrivateChatOrderByRelationAggregateInput;
-  myPrivateChats?: PrivateChatOrderByRelationAggregateInput;
+  myChats?: ChatOrderByRelationAggregateInput;
   classrooms?: ClassroomOrderByRelationAggregateInput;
   classroomStudents?: ClassroomStudentOrderByRelationAggregateInput;
   notifications?: NotificationOrderByRelationAggregateInput;
   schoolStaffs?: SchoolStaffOrderByRelationAggregateInput;
   schoolId?: SortOrder;
   school?: SchoolOrderByWithRelationInput;
-  privateChatSession?: PrivateChatSessionOrderByRelationAggregateInput;
-  myPrivateChatSession?: PrivateChatSessionOrderByRelationAggregateInput;
 }
 
 export interface UserWhereUniqueInput {
@@ -1083,126 +1067,113 @@ export interface ClassroomStudentScalarWhereWithAggregatesInput {
   updatedAt?: DateTimeWithAggregatesFilter;
 }
 
-export interface PrivateChatSessionWhereInput {
-  AND?: PrivateChatSessionWhereInput[];
-  OR?: PrivateChatSessionWhereInput[];
-  NOT?: PrivateChatSessionWhereInput[];
+export interface ChatSessionWhereInput {
+  AND?: ChatSessionWhereInput[];
+  OR?: ChatSessionWhereInput[];
+  NOT?: ChatSessionWhereInput[];
   id?: StringFilter;
-  fromId?: StringFilter;
-  from?: UserWhereInput;
-  toId?: StringFilter;
-  to?: UserWhereInput;
+  participantsIds?: StringNullableListFilter;
   lastReadAt?: DateTimeNullableFilter;
-  lastChatId?: StringNullableFilter;
-  lastChat?: PrivateChatWhereInput;
   createdAt?: DateTimeFilter;
   updatedAt?: DateTimeFilter;
+  chats?: ChatListRelationFilter;
 }
 
-export interface PrivateChatSessionOrderByWithRelationInput {
+export interface ChatSessionOrderByWithRelationInput {
   id?: SortOrder;
-  fromId?: SortOrder;
-  from?: UserOrderByWithRelationInput;
-  toId?: SortOrder;
-  to?: UserOrderByWithRelationInput;
+  participantsIds?: SortOrder;
   lastReadAt?: SortOrder;
-  lastChatId?: SortOrder;
-  lastChat?: PrivateChatOrderByWithRelationInput;
   createdAt?: SortOrder;
   updatedAt?: SortOrder;
+  chats?: ChatOrderByRelationAggregateInput;
 }
 
-export interface PrivateChatSessionWhereUniqueInput {
+export interface ChatSessionWhereUniqueInput {
   id?: string;
 }
 
-export interface PrivateChatSessionOrderByWithAggregationInput {
+export interface ChatSessionOrderByWithAggregationInput {
   id?: SortOrder;
-  fromId?: SortOrder;
-  toId?: SortOrder;
+  participantsIds?: SortOrder;
   lastReadAt?: SortOrder;
-  lastChatId?: SortOrder;
   createdAt?: SortOrder;
   updatedAt?: SortOrder;
-  _count?: PrivateChatSessionCountOrderByAggregateInput;
-  _max?: PrivateChatSessionMaxOrderByAggregateInput;
-  _min?: PrivateChatSessionMinOrderByAggregateInput;
+  _count?: ChatSessionCountOrderByAggregateInput;
+  _max?: ChatSessionMaxOrderByAggregateInput;
+  _min?: ChatSessionMinOrderByAggregateInput;
 }
 
-export interface PrivateChatSessionScalarWhereWithAggregatesInput {
-  AND?: PrivateChatSessionScalarWhereWithAggregatesInput[];
-  OR?: PrivateChatSessionScalarWhereWithAggregatesInput[];
-  NOT?: PrivateChatSessionScalarWhereWithAggregatesInput[];
+export interface ChatSessionScalarWhereWithAggregatesInput {
+  AND?: ChatSessionScalarWhereWithAggregatesInput[];
+  OR?: ChatSessionScalarWhereWithAggregatesInput[];
+  NOT?: ChatSessionScalarWhereWithAggregatesInput[];
   id?: StringWithAggregatesFilter;
-  fromId?: StringWithAggregatesFilter;
-  toId?: StringWithAggregatesFilter;
+  participantsIds?: StringNullableListFilter;
   lastReadAt?: DateTimeNullableWithAggregatesFilter;
-  lastChatId?: StringNullableWithAggregatesFilter;
   createdAt?: DateTimeWithAggregatesFilter;
   updatedAt?: DateTimeWithAggregatesFilter;
 }
 
-export interface PrivateChatWhereInput {
-  AND?: PrivateChatWhereInput[];
-  OR?: PrivateChatWhereInput[];
-  NOT?: PrivateChatWhereInput[];
+export interface ChatWhereInput {
+  AND?: ChatWhereInput[];
+  OR?: ChatWhereInput[];
+  NOT?: ChatWhereInput[];
   id?: StringFilter;
   fromId?: StringFilter;
   from?: UserWhereInput;
-  toId?: StringFilter;
-  to?: UserWhereInput;
   contentType?: EnumContentTypeFilter;
   content?: StringFilter;
   readAt?: DateTimeNullableFilter;
   createdAt?: DateTimeFilter;
   updatedAt?: DateTimeFilter;
-  privateChatSession?: PrivateChatSessionListRelationFilter;
+  chatSessionId?: StringFilter;
+  chatSession?: ChatSessionWhereInput;
 }
 
-export interface PrivateChatOrderByWithRelationInput {
+export interface ChatOrderByWithRelationInput {
   id?: SortOrder;
   fromId?: SortOrder;
   from?: UserOrderByWithRelationInput;
-  toId?: SortOrder;
-  to?: UserOrderByWithRelationInput;
   contentType?: SortOrder;
   content?: SortOrder;
   readAt?: SortOrder;
   createdAt?: SortOrder;
   updatedAt?: SortOrder;
-  privateChatSession?: PrivateChatSessionOrderByRelationAggregateInput;
+  chatSessionId?: SortOrder;
+  chatSession?: ChatSessionOrderByWithRelationInput;
 }
 
-export interface PrivateChatWhereUniqueInput {
+export interface ChatWhereUniqueInput {
   id?: string;
+  chatSessionId?: string;
 }
 
-export interface PrivateChatOrderByWithAggregationInput {
+export interface ChatOrderByWithAggregationInput {
   id?: SortOrder;
   fromId?: SortOrder;
-  toId?: SortOrder;
   contentType?: SortOrder;
   content?: SortOrder;
   readAt?: SortOrder;
   createdAt?: SortOrder;
   updatedAt?: SortOrder;
-  _count?: PrivateChatCountOrderByAggregateInput;
-  _max?: PrivateChatMaxOrderByAggregateInput;
-  _min?: PrivateChatMinOrderByAggregateInput;
+  chatSessionId?: SortOrder;
+  _count?: ChatCountOrderByAggregateInput;
+  _max?: ChatMaxOrderByAggregateInput;
+  _min?: ChatMinOrderByAggregateInput;
 }
 
-export interface PrivateChatScalarWhereWithAggregatesInput {
-  AND?: PrivateChatScalarWhereWithAggregatesInput[];
-  OR?: PrivateChatScalarWhereWithAggregatesInput[];
-  NOT?: PrivateChatScalarWhereWithAggregatesInput[];
+export interface ChatScalarWhereWithAggregatesInput {
+  AND?: ChatScalarWhereWithAggregatesInput[];
+  OR?: ChatScalarWhereWithAggregatesInput[];
+  NOT?: ChatScalarWhereWithAggregatesInput[];
   id?: StringWithAggregatesFilter;
   fromId?: StringWithAggregatesFilter;
-  toId?: StringWithAggregatesFilter;
   contentType?: EnumContentTypeWithAggregatesFilter;
   content?: StringWithAggregatesFilter;
   readAt?: DateTimeNullableWithAggregatesFilter;
   createdAt?: DateTimeWithAggregatesFilter;
   updatedAt?: DateTimeWithAggregatesFilter;
+  chatSessionId?: StringWithAggregatesFilter;
 }
 
 export interface ExamWhereInput {
@@ -1675,15 +1646,12 @@ export interface UserCreateInput {
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  myChats?: ChatCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
   school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUncheckedCreateInput {
@@ -1713,15 +1681,12 @@ export interface UserUncheckedCreateInput {
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  myChats?: ChatUncheckedCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
   schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUpdateInput {
@@ -1751,15 +1716,12 @@ export interface UserUpdateInput {
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  myChats?: ChatUpdateManyWithoutFromInput;
   classrooms?: ClassroomUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
   school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateInput {
@@ -1789,15 +1751,12 @@ export interface UserUncheckedUpdateInput {
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  myChats?: ChatUncheckedUpdateManyWithoutFromInput;
   classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
   schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
 export interface UserCreateManyInput {
@@ -2204,134 +2163,122 @@ export interface ClassroomStudentUncheckedUpdateManyInput {
   updatedAt?: DateTimeFieldUpdateOperationsInput;
 }
 
-export interface PrivateChatSessionCreateInput {
+export interface ChatSessionCreateInput {
   id?: string;
-  from: UserCreateNestedOneWithoutMyPrivateChatSessionInput;
-  to: UserCreateNestedOneWithoutPrivateChatSessionInput;
+  participantsIds?: string[];
   lastReadAt?: undefined;
-  lastChat?: PrivateChatCreateNestedOneWithoutPrivateChatSessionInput;
+  createdAt?: undefined;
+  updatedAt?: undefined;
+  chats?: ChatCreateNestedManyWithoutChatSessionInput;
+}
+
+export interface ChatSessionUncheckedCreateInput {
+  id?: string;
+  participantsIds?: string[];
+  lastReadAt?: undefined;
+  createdAt?: undefined;
+  updatedAt?: undefined;
+  chats?: ChatUncheckedCreateNestedManyWithoutChatSessionInput;
+}
+
+export interface ChatSessionUpdateInput {
+  id?: StringFieldUpdateOperationsInput;
+  participantsIds?: string[];
+  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
+  createdAt?: DateTimeFieldUpdateOperationsInput;
+  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  chats?: ChatUpdateManyWithoutChatSessionInput;
+}
+
+export interface ChatSessionUncheckedUpdateInput {
+  id?: StringFieldUpdateOperationsInput;
+  participantsIds?: string[];
+  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
+  createdAt?: DateTimeFieldUpdateOperationsInput;
+  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  chats?: ChatUncheckedUpdateManyWithoutChatSessionInput;
+}
+
+export interface ChatSessionCreateManyInput {
+  id?: string;
+  participantsIds?: string[];
+  lastReadAt?: undefined;
   createdAt?: undefined;
   updatedAt?: undefined;
 }
 
-export interface PrivateChatSessionUncheckedCreateInput {
-  id?: string;
-  fromId: string;
-  toId: string;
-  lastReadAt?: undefined;
-  lastChatId?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface PrivateChatSessionUpdateInput {
+export interface ChatSessionUncheckedUpdateManyInput {
   id?: StringFieldUpdateOperationsInput;
-  from?: UserUpdateOneRequiredWithoutMyPrivateChatSessionInput;
-  to?: UserUpdateOneRequiredWithoutPrivateChatSessionInput;
+  participantsIds?: string[];
   lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
-  lastChat?: PrivateChatUpdateOneWithoutPrivateChatSessionInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
 }
 
-export interface PrivateChatSessionUncheckedUpdateInput {
-  id?: StringFieldUpdateOperationsInput;
-  fromId?: StringFieldUpdateOperationsInput;
-  toId?: StringFieldUpdateOperationsInput;
-  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
-  lastChatId?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface PrivateChatSessionCreateManyInput {
+export interface ChatCreateInput {
   id?: string;
-  fromId: string;
-  toId: string;
-  lastReadAt?: undefined;
-  lastChatId?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface PrivateChatSessionUncheckedUpdateManyInput {
-  id?: StringFieldUpdateOperationsInput;
-  fromId?: StringFieldUpdateOperationsInput;
-  toId?: StringFieldUpdateOperationsInput;
-  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
-  lastChatId?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface PrivateChatCreateInput {
-  id?: string;
-  from: UserCreateNestedOneWithoutMyPrivateChatsInput;
-  to: UserCreateNestedOneWithoutPrivateChatsInput;
+  from: UserCreateNestedOneWithoutMyChatsInput;
   contentType: ContentType;
   content: string;
   readAt?: undefined;
   createdAt?: undefined;
   updatedAt?: undefined;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutLastChatInput;
+  chatSession: ChatSessionCreateNestedOneWithoutChatsInput;
 }
 
-export interface PrivateChatUncheckedCreateInput {
+export interface ChatUncheckedCreateInput {
   id?: string;
   fromId: string;
-  toId: string;
   contentType: ContentType;
   content: string;
   readAt?: undefined;
   createdAt?: undefined;
   updatedAt?: undefined;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutLastChatInput;
+  chatSessionId: string;
 }
 
-export interface PrivateChatUpdateInput {
+export interface ChatUpdateInput {
   id?: StringFieldUpdateOperationsInput;
-  from?: UserUpdateOneRequiredWithoutMyPrivateChatsInput;
-  to?: UserUpdateOneRequiredWithoutPrivateChatsInput;
+  from?: UserUpdateOneRequiredWithoutMyChatsInput;
   contentType?: EnumContentTypeFieldUpdateOperationsInput;
   content?: StringFieldUpdateOperationsInput;
   readAt?: NullableDateTimeFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutLastChatInput;
+  chatSession?: ChatSessionUpdateOneRequiredWithoutChatsInput;
 }
 
-export interface PrivateChatUncheckedUpdateInput {
+export interface ChatUncheckedUpdateInput {
   id?: StringFieldUpdateOperationsInput;
   fromId?: StringFieldUpdateOperationsInput;
-  toId?: StringFieldUpdateOperationsInput;
   contentType?: EnumContentTypeFieldUpdateOperationsInput;
   content?: StringFieldUpdateOperationsInput;
   readAt?: NullableDateTimeFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutLastChatInput;
+  chatSessionId?: StringFieldUpdateOperationsInput;
 }
 
-export interface PrivateChatCreateManyInput {
+export interface ChatCreateManyInput {
   id?: string;
   fromId: string;
-  toId: string;
   contentType: ContentType;
   content: string;
   readAt?: undefined;
   createdAt?: undefined;
   updatedAt?: undefined;
+  chatSessionId: string;
 }
 
-export interface PrivateChatUncheckedUpdateManyInput {
+export interface ChatUncheckedUpdateManyInput {
   id?: StringFieldUpdateOperationsInput;
   fromId?: StringFieldUpdateOperationsInput;
-  toId?: StringFieldUpdateOperationsInput;
   contentType?: EnumContentTypeFieldUpdateOperationsInput;
   content?: StringFieldUpdateOperationsInput;
   readAt?: NullableDateTimeFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
+  chatSessionId?: StringFieldUpdateOperationsInput;
 }
 
 export interface ExamCreateInput {
@@ -2914,10 +2861,10 @@ export interface ExamSessionListRelationFilter {
   none?: ExamSessionWhereInput;
 }
 
-export interface PrivateChatListRelationFilter {
-  every?: PrivateChatWhereInput;
-  some?: PrivateChatWhereInput;
-  none?: PrivateChatWhereInput;
+export interface ChatListRelationFilter {
+  every?: ChatWhereInput;
+  some?: ChatWhereInput;
+  none?: ChatWhereInput;
 }
 
 export interface ClassroomListRelationFilter {
@@ -2949,12 +2896,6 @@ export interface SchoolRelationFilter {
   isNot?: SchoolWhereInput;
 }
 
-export interface PrivateChatSessionListRelationFilter {
-  every?: PrivateChatSessionWhereInput;
-  some?: PrivateChatSessionWhereInput;
-  none?: PrivateChatSessionWhereInput;
-}
-
 export interface IdentityFileOrderByRelationAggregateInput {
   _count?: SortOrder;
 }
@@ -2971,7 +2912,7 @@ export interface ExamSessionOrderByRelationAggregateInput {
   _count?: SortOrder;
 }
 
-export interface PrivateChatOrderByRelationAggregateInput {
+export interface ChatOrderByRelationAggregateInput {
   _count?: SortOrder;
 }
 
@@ -2988,10 +2929,6 @@ export interface NotificationOrderByRelationAggregateInput {
 }
 
 export interface SchoolStaffOrderByRelationAggregateInput {
-  _count?: SortOrder;
-}
-
-export interface PrivateChatSessionOrderByRelationAggregateInput {
   _count?: SortOrder;
 }
 
@@ -3402,37 +3339,32 @@ export interface EnumClassroomStudentStatusWithAggregatesFilter {
   _max?: NestedEnumClassroomStudentStatusFilter;
 }
 
-export interface PrivateChatRelationFilter {
-  is?: PrivateChatWhereInput;
-  isNot?: PrivateChatWhereInput;
+export interface StringNullableListFilter {
+  equals?: string[];
+  has?: string;
+  hasEvery?: string[];
+  hasSome?: string[];
+  isEmpty?: boolean;
 }
 
-export interface PrivateChatSessionCountOrderByAggregateInput {
+export interface ChatSessionCountOrderByAggregateInput {
   id?: SortOrder;
-  fromId?: SortOrder;
-  toId?: SortOrder;
+  participantsIds?: SortOrder;
   lastReadAt?: SortOrder;
-  lastChatId?: SortOrder;
   createdAt?: SortOrder;
   updatedAt?: SortOrder;
 }
 
-export interface PrivateChatSessionMaxOrderByAggregateInput {
+export interface ChatSessionMaxOrderByAggregateInput {
   id?: SortOrder;
-  fromId?: SortOrder;
-  toId?: SortOrder;
   lastReadAt?: SortOrder;
-  lastChatId?: SortOrder;
   createdAt?: SortOrder;
   updatedAt?: SortOrder;
 }
 
-export interface PrivateChatSessionMinOrderByAggregateInput {
+export interface ChatSessionMinOrderByAggregateInput {
   id?: SortOrder;
-  fromId?: SortOrder;
-  toId?: SortOrder;
   lastReadAt?: SortOrder;
-  lastChatId?: SortOrder;
   createdAt?: SortOrder;
   updatedAt?: SortOrder;
 }
@@ -3444,37 +3376,42 @@ export interface EnumContentTypeFilter {
   not?: NestedEnumContentTypeFilter;
 }
 
-export interface PrivateChatCountOrderByAggregateInput {
-  id?: SortOrder;
-  fromId?: SortOrder;
-  toId?: SortOrder;
-  contentType?: SortOrder;
-  content?: SortOrder;
-  readAt?: SortOrder;
-  createdAt?: SortOrder;
-  updatedAt?: SortOrder;
+export interface ChatSessionRelationFilter {
+  is?: ChatSessionWhereInput;
+  isNot?: ChatSessionWhereInput;
 }
 
-export interface PrivateChatMaxOrderByAggregateInput {
+export interface ChatCountOrderByAggregateInput {
   id?: SortOrder;
   fromId?: SortOrder;
-  toId?: SortOrder;
   contentType?: SortOrder;
   content?: SortOrder;
   readAt?: SortOrder;
   createdAt?: SortOrder;
   updatedAt?: SortOrder;
+  chatSessionId?: SortOrder;
 }
 
-export interface PrivateChatMinOrderByAggregateInput {
+export interface ChatMaxOrderByAggregateInput {
   id?: SortOrder;
   fromId?: SortOrder;
-  toId?: SortOrder;
   contentType?: SortOrder;
   content?: SortOrder;
   readAt?: SortOrder;
   createdAt?: SortOrder;
   updatedAt?: SortOrder;
+  chatSessionId?: SortOrder;
+}
+
+export interface ChatMinOrderByAggregateInput {
+  id?: SortOrder;
+  fromId?: SortOrder;
+  contentType?: SortOrder;
+  content?: SortOrder;
+  readAt?: SortOrder;
+  createdAt?: SortOrder;
+  updatedAt?: SortOrder;
+  chatSessionId?: SortOrder;
 }
 
 export interface EnumContentTypeWithAggregatesFilter {
@@ -3675,14 +3612,6 @@ export interface EnumQuestionTypeFilter {
   in?: QuestionType[];
   notIn?: QuestionType[];
   not?: NestedEnumQuestionTypeFilter;
-}
-
-export interface StringNullableListFilter {
-  equals?: string[];
-  has?: string;
-  hasEvery?: string[];
-  hasSome?: string[];
-  isEmpty?: boolean;
 }
 
 export interface QuestionCountOrderByAggregateInput {
@@ -4025,18 +3954,11 @@ export interface ExamSessionCreateNestedManyWithoutUserInput {
   connect?: ExamSessionWhereUniqueInput[];
 }
 
-export interface PrivateChatCreateNestedManyWithoutToInput {
-  create?: PrivateChatCreateWithoutToInput[];
-  connectOrCreate?: PrivateChatCreateOrConnectWithoutToInput[];
-  createMany?: PrivateChatCreateManyToInputEnvelope;
-  connect?: PrivateChatWhereUniqueInput[];
-}
-
-export interface PrivateChatCreateNestedManyWithoutFromInput {
-  create?: PrivateChatCreateWithoutFromInput[];
-  connectOrCreate?: PrivateChatCreateOrConnectWithoutFromInput[];
-  createMany?: PrivateChatCreateManyFromInputEnvelope;
-  connect?: PrivateChatWhereUniqueInput[];
+export interface ChatCreateNestedManyWithoutFromInput {
+  create?: ChatCreateWithoutFromInput[];
+  connectOrCreate?: ChatCreateOrConnectWithoutFromInput[];
+  createMany?: ChatCreateManyFromInputEnvelope;
+  connect?: ChatWhereUniqueInput[];
 }
 
 export interface ClassroomCreateNestedManyWithoutUserInput {
@@ -4073,20 +3995,6 @@ export interface SchoolCreateNestedOneWithoutStudentsInput {
   connect?: SchoolWhereUniqueInput;
 }
 
-export interface PrivateChatSessionCreateNestedManyWithoutToInput {
-  create?: PrivateChatSessionCreateWithoutToInput[];
-  connectOrCreate?: PrivateChatSessionCreateOrConnectWithoutToInput[];
-  createMany?: PrivateChatSessionCreateManyToInputEnvelope;
-  connect?: PrivateChatSessionWhereUniqueInput[];
-}
-
-export interface PrivateChatSessionCreateNestedManyWithoutFromInput {
-  create?: PrivateChatSessionCreateWithoutFromInput[];
-  connectOrCreate?: PrivateChatSessionCreateOrConnectWithoutFromInput[];
-  createMany?: PrivateChatSessionCreateManyFromInputEnvelope;
-  connect?: PrivateChatSessionWhereUniqueInput[];
-}
-
 export interface IdentityFileUncheckedCreateNestedManyWithoutUserInput {
   create?: IdentityFileCreateWithoutUserInput[];
   connectOrCreate?: IdentityFileCreateOrConnectWithoutUserInput[];
@@ -4115,18 +4023,11 @@ export interface ExamSessionUncheckedCreateNestedManyWithoutUserInput {
   connect?: ExamSessionWhereUniqueInput[];
 }
 
-export interface PrivateChatUncheckedCreateNestedManyWithoutToInput {
-  create?: PrivateChatCreateWithoutToInput[];
-  connectOrCreate?: PrivateChatCreateOrConnectWithoutToInput[];
-  createMany?: PrivateChatCreateManyToInputEnvelope;
-  connect?: PrivateChatWhereUniqueInput[];
-}
-
-export interface PrivateChatUncheckedCreateNestedManyWithoutFromInput {
-  create?: PrivateChatCreateWithoutFromInput[];
-  connectOrCreate?: PrivateChatCreateOrConnectWithoutFromInput[];
-  createMany?: PrivateChatCreateManyFromInputEnvelope;
-  connect?: PrivateChatWhereUniqueInput[];
+export interface ChatUncheckedCreateNestedManyWithoutFromInput {
+  create?: ChatCreateWithoutFromInput[];
+  connectOrCreate?: ChatCreateOrConnectWithoutFromInput[];
+  createMany?: ChatCreateManyFromInputEnvelope;
+  connect?: ChatWhereUniqueInput[];
 }
 
 export interface ClassroomUncheckedCreateNestedManyWithoutUserInput {
@@ -4155,20 +4056,6 @@ export interface SchoolStaffUncheckedCreateNestedManyWithoutUserInput {
   connectOrCreate?: SchoolStaffCreateOrConnectWithoutUserInput[];
   createMany?: SchoolStaffCreateManyUserInputEnvelope;
   connect?: SchoolStaffWhereUniqueInput[];
-}
-
-export interface PrivateChatSessionUncheckedCreateNestedManyWithoutToInput {
-  create?: PrivateChatSessionCreateWithoutToInput[];
-  connectOrCreate?: PrivateChatSessionCreateOrConnectWithoutToInput[];
-  createMany?: PrivateChatSessionCreateManyToInputEnvelope;
-  connect?: PrivateChatSessionWhereUniqueInput[];
-}
-
-export interface PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput {
-  create?: PrivateChatSessionCreateWithoutFromInput[];
-  connectOrCreate?: PrivateChatSessionCreateOrConnectWithoutFromInput[];
-  createMany?: PrivateChatSessionCreateManyFromInputEnvelope;
-  connect?: PrivateChatSessionWhereUniqueInput[];
 }
 
 export interface NullableStringFieldUpdateOperationsInput {
@@ -4271,32 +4158,18 @@ export interface ExamSessionUpdateManyWithoutUserInput {
   deleteMany?: ExamSessionScalarWhereInput[];
 }
 
-export interface PrivateChatUpdateManyWithoutToInput {
-  create?: PrivateChatCreateWithoutToInput[];
-  connectOrCreate?: PrivateChatCreateOrConnectWithoutToInput[];
-  upsert?: PrivateChatUpsertWithWhereUniqueWithoutToInput[];
-  createMany?: PrivateChatCreateManyToInputEnvelope;
-  set?: PrivateChatWhereUniqueInput[];
-  disconnect?: PrivateChatWhereUniqueInput[];
-  delete?: PrivateChatWhereUniqueInput[];
-  connect?: PrivateChatWhereUniqueInput[];
-  update?: PrivateChatUpdateWithWhereUniqueWithoutToInput[];
-  updateMany?: PrivateChatUpdateManyWithWhereWithoutToInput[];
-  deleteMany?: PrivateChatScalarWhereInput[];
-}
-
-export interface PrivateChatUpdateManyWithoutFromInput {
-  create?: PrivateChatCreateWithoutFromInput[];
-  connectOrCreate?: PrivateChatCreateOrConnectWithoutFromInput[];
-  upsert?: PrivateChatUpsertWithWhereUniqueWithoutFromInput[];
-  createMany?: PrivateChatCreateManyFromInputEnvelope;
-  set?: PrivateChatWhereUniqueInput[];
-  disconnect?: PrivateChatWhereUniqueInput[];
-  delete?: PrivateChatWhereUniqueInput[];
-  connect?: PrivateChatWhereUniqueInput[];
-  update?: PrivateChatUpdateWithWhereUniqueWithoutFromInput[];
-  updateMany?: PrivateChatUpdateManyWithWhereWithoutFromInput[];
-  deleteMany?: PrivateChatScalarWhereInput[];
+export interface ChatUpdateManyWithoutFromInput {
+  create?: ChatCreateWithoutFromInput[];
+  connectOrCreate?: ChatCreateOrConnectWithoutFromInput[];
+  upsert?: ChatUpsertWithWhereUniqueWithoutFromInput[];
+  createMany?: ChatCreateManyFromInputEnvelope;
+  set?: ChatWhereUniqueInput[];
+  disconnect?: ChatWhereUniqueInput[];
+  delete?: ChatWhereUniqueInput[];
+  connect?: ChatWhereUniqueInput[];
+  update?: ChatUpdateWithWhereUniqueWithoutFromInput[];
+  updateMany?: ChatUpdateManyWithWhereWithoutFromInput[];
+  deleteMany?: ChatScalarWhereInput[];
 }
 
 export interface ClassroomUpdateManyWithoutUserInput {
@@ -4365,34 +4238,6 @@ export interface SchoolUpdateOneWithoutStudentsInput {
   update?: SchoolUncheckedUpdateWithoutStudentsInput;
 }
 
-export interface PrivateChatSessionUpdateManyWithoutToInput {
-  create?: PrivateChatSessionCreateWithoutToInput[];
-  connectOrCreate?: PrivateChatSessionCreateOrConnectWithoutToInput[];
-  upsert?: PrivateChatSessionUpsertWithWhereUniqueWithoutToInput[];
-  createMany?: PrivateChatSessionCreateManyToInputEnvelope;
-  set?: PrivateChatSessionWhereUniqueInput[];
-  disconnect?: PrivateChatSessionWhereUniqueInput[];
-  delete?: PrivateChatSessionWhereUniqueInput[];
-  connect?: PrivateChatSessionWhereUniqueInput[];
-  update?: PrivateChatSessionUpdateWithWhereUniqueWithoutToInput[];
-  updateMany?: PrivateChatSessionUpdateManyWithWhereWithoutToInput[];
-  deleteMany?: PrivateChatSessionScalarWhereInput[];
-}
-
-export interface PrivateChatSessionUpdateManyWithoutFromInput {
-  create?: PrivateChatSessionCreateWithoutFromInput[];
-  connectOrCreate?: PrivateChatSessionCreateOrConnectWithoutFromInput[];
-  upsert?: PrivateChatSessionUpsertWithWhereUniqueWithoutFromInput[];
-  createMany?: PrivateChatSessionCreateManyFromInputEnvelope;
-  set?: PrivateChatSessionWhereUniqueInput[];
-  disconnect?: PrivateChatSessionWhereUniqueInput[];
-  delete?: PrivateChatSessionWhereUniqueInput[];
-  connect?: PrivateChatSessionWhereUniqueInput[];
-  update?: PrivateChatSessionUpdateWithWhereUniqueWithoutFromInput[];
-  updateMany?: PrivateChatSessionUpdateManyWithWhereWithoutFromInput[];
-  deleteMany?: PrivateChatSessionScalarWhereInput[];
-}
-
 export interface IdentityFileUncheckedUpdateManyWithoutUserInput {
   create?: IdentityFileCreateWithoutUserInput[];
   connectOrCreate?: IdentityFileCreateOrConnectWithoutUserInput[];
@@ -4449,32 +4294,18 @@ export interface ExamSessionUncheckedUpdateManyWithoutUserInput {
   deleteMany?: ExamSessionScalarWhereInput[];
 }
 
-export interface PrivateChatUncheckedUpdateManyWithoutToInput {
-  create?: PrivateChatCreateWithoutToInput[];
-  connectOrCreate?: PrivateChatCreateOrConnectWithoutToInput[];
-  upsert?: PrivateChatUpsertWithWhereUniqueWithoutToInput[];
-  createMany?: PrivateChatCreateManyToInputEnvelope;
-  set?: PrivateChatWhereUniqueInput[];
-  disconnect?: PrivateChatWhereUniqueInput[];
-  delete?: PrivateChatWhereUniqueInput[];
-  connect?: PrivateChatWhereUniqueInput[];
-  update?: PrivateChatUpdateWithWhereUniqueWithoutToInput[];
-  updateMany?: PrivateChatUpdateManyWithWhereWithoutToInput[];
-  deleteMany?: PrivateChatScalarWhereInput[];
-}
-
-export interface PrivateChatUncheckedUpdateManyWithoutFromInput {
-  create?: PrivateChatCreateWithoutFromInput[];
-  connectOrCreate?: PrivateChatCreateOrConnectWithoutFromInput[];
-  upsert?: PrivateChatUpsertWithWhereUniqueWithoutFromInput[];
-  createMany?: PrivateChatCreateManyFromInputEnvelope;
-  set?: PrivateChatWhereUniqueInput[];
-  disconnect?: PrivateChatWhereUniqueInput[];
-  delete?: PrivateChatWhereUniqueInput[];
-  connect?: PrivateChatWhereUniqueInput[];
-  update?: PrivateChatUpdateWithWhereUniqueWithoutFromInput[];
-  updateMany?: PrivateChatUpdateManyWithWhereWithoutFromInput[];
-  deleteMany?: PrivateChatScalarWhereInput[];
+export interface ChatUncheckedUpdateManyWithoutFromInput {
+  create?: ChatCreateWithoutFromInput[];
+  connectOrCreate?: ChatCreateOrConnectWithoutFromInput[];
+  upsert?: ChatUpsertWithWhereUniqueWithoutFromInput[];
+  createMany?: ChatCreateManyFromInputEnvelope;
+  set?: ChatWhereUniqueInput[];
+  disconnect?: ChatWhereUniqueInput[];
+  delete?: ChatWhereUniqueInput[];
+  connect?: ChatWhereUniqueInput[];
+  update?: ChatUpdateWithWhereUniqueWithoutFromInput[];
+  updateMany?: ChatUpdateManyWithWhereWithoutFromInput[];
+  deleteMany?: ChatScalarWhereInput[];
 }
 
 export interface ClassroomUncheckedUpdateManyWithoutUserInput {
@@ -4531,34 +4362,6 @@ export interface SchoolStaffUncheckedUpdateManyWithoutUserInput {
   update?: SchoolStaffUpdateWithWhereUniqueWithoutUserInput[];
   updateMany?: SchoolStaffUpdateManyWithWhereWithoutUserInput[];
   deleteMany?: SchoolStaffScalarWhereInput[];
-}
-
-export interface PrivateChatSessionUncheckedUpdateManyWithoutToInput {
-  create?: PrivateChatSessionCreateWithoutToInput[];
-  connectOrCreate?: PrivateChatSessionCreateOrConnectWithoutToInput[];
-  upsert?: PrivateChatSessionUpsertWithWhereUniqueWithoutToInput[];
-  createMany?: PrivateChatSessionCreateManyToInputEnvelope;
-  set?: PrivateChatSessionWhereUniqueInput[];
-  disconnect?: PrivateChatSessionWhereUniqueInput[];
-  delete?: PrivateChatSessionWhereUniqueInput[];
-  connect?: PrivateChatSessionWhereUniqueInput[];
-  update?: PrivateChatSessionUpdateWithWhereUniqueWithoutToInput[];
-  updateMany?: PrivateChatSessionUpdateManyWithWhereWithoutToInput[];
-  deleteMany?: PrivateChatSessionScalarWhereInput[];
-}
-
-export interface PrivateChatSessionUncheckedUpdateManyWithoutFromInput {
-  create?: PrivateChatSessionCreateWithoutFromInput[];
-  connectOrCreate?: PrivateChatSessionCreateOrConnectWithoutFromInput[];
-  upsert?: PrivateChatSessionUpsertWithWhereUniqueWithoutFromInput[];
-  createMany?: PrivateChatSessionCreateManyFromInputEnvelope;
-  set?: PrivateChatSessionWhereUniqueInput[];
-  disconnect?: PrivateChatSessionWhereUniqueInput[];
-  delete?: PrivateChatSessionWhereUniqueInput[];
-  connect?: PrivateChatSessionWhereUniqueInput[];
-  update?: PrivateChatSessionUpdateWithWhereUniqueWithoutFromInput[];
-  updateMany?: PrivateChatSessionUpdateManyWithWhereWithoutFromInput[];
-  deleteMany?: PrivateChatSessionScalarWhereInput[];
 }
 
 export interface UserCreateNestedOneWithoutNotificationsInput {
@@ -4889,122 +4692,87 @@ export interface EnumClassroomStudentStatusFieldUpdateOperationsInput {
   set?: ClassroomStudentStatus;
 }
 
-export interface UserCreateNestedOneWithoutMyPrivateChatSessionInput {
-  create?: UserUncheckedCreateWithoutMyPrivateChatSessionInput;
-  connectOrCreate?: UserCreateOrConnectWithoutMyPrivateChatSessionInput;
+export interface ChatSessionCreateparticipantsIdsInput {
+  set: string;
+}
+
+export interface ChatCreateNestedManyWithoutChatSessionInput {
+  create?: ChatCreateWithoutChatSessionInput[];
+  connectOrCreate?: ChatCreateOrConnectWithoutChatSessionInput[];
+  createMany?: ChatCreateManyChatSessionInputEnvelope;
+  connect?: ChatWhereUniqueInput[];
+}
+
+export interface ChatUncheckedCreateNestedManyWithoutChatSessionInput {
+  create?: ChatCreateWithoutChatSessionInput[];
+  connectOrCreate?: ChatCreateOrConnectWithoutChatSessionInput[];
+  createMany?: ChatCreateManyChatSessionInputEnvelope;
+  connect?: ChatWhereUniqueInput[];
+}
+
+export interface ChatSessionUpdateparticipantsIdsInput {
+  set?: string[];
+  push?: string[];
+}
+
+export interface ChatUpdateManyWithoutChatSessionInput {
+  create?: ChatCreateWithoutChatSessionInput[];
+  connectOrCreate?: ChatCreateOrConnectWithoutChatSessionInput[];
+  upsert?: ChatUpsertWithWhereUniqueWithoutChatSessionInput[];
+  createMany?: ChatCreateManyChatSessionInputEnvelope;
+  set?: ChatWhereUniqueInput[];
+  disconnect?: ChatWhereUniqueInput[];
+  delete?: ChatWhereUniqueInput[];
+  connect?: ChatWhereUniqueInput[];
+  update?: ChatUpdateWithWhereUniqueWithoutChatSessionInput[];
+  updateMany?: ChatUpdateManyWithWhereWithoutChatSessionInput[];
+  deleteMany?: ChatScalarWhereInput[];
+}
+
+export interface ChatUncheckedUpdateManyWithoutChatSessionInput {
+  create?: ChatCreateWithoutChatSessionInput[];
+  connectOrCreate?: ChatCreateOrConnectWithoutChatSessionInput[];
+  upsert?: ChatUpsertWithWhereUniqueWithoutChatSessionInput[];
+  createMany?: ChatCreateManyChatSessionInputEnvelope;
+  set?: ChatWhereUniqueInput[];
+  disconnect?: ChatWhereUniqueInput[];
+  delete?: ChatWhereUniqueInput[];
+  connect?: ChatWhereUniqueInput[];
+  update?: ChatUpdateWithWhereUniqueWithoutChatSessionInput[];
+  updateMany?: ChatUpdateManyWithWhereWithoutChatSessionInput[];
+  deleteMany?: ChatScalarWhereInput[];
+}
+
+export interface UserCreateNestedOneWithoutMyChatsInput {
+  create?: UserUncheckedCreateWithoutMyChatsInput;
+  connectOrCreate?: UserCreateOrConnectWithoutMyChatsInput;
   connect?: UserWhereUniqueInput;
 }
 
-export interface UserCreateNestedOneWithoutPrivateChatSessionInput {
-  create?: UserUncheckedCreateWithoutPrivateChatSessionInput;
-  connectOrCreate?: UserCreateOrConnectWithoutPrivateChatSessionInput;
+export interface ChatSessionCreateNestedOneWithoutChatsInput {
+  create?: ChatSessionUncheckedCreateWithoutChatsInput;
+  connectOrCreate?: ChatSessionCreateOrConnectWithoutChatsInput;
+  connect?: ChatSessionWhereUniqueInput;
+}
+
+export interface UserUpdateOneRequiredWithoutMyChatsInput {
+  create?: UserUncheckedCreateWithoutMyChatsInput;
+  connectOrCreate?: UserCreateOrConnectWithoutMyChatsInput;
+  upsert?: UserUpsertWithoutMyChatsInput;
   connect?: UserWhereUniqueInput;
-}
-
-export interface PrivateChatCreateNestedOneWithoutPrivateChatSessionInput {
-  create?: PrivateChatUncheckedCreateWithoutPrivateChatSessionInput;
-  connectOrCreate?: PrivateChatCreateOrConnectWithoutPrivateChatSessionInput;
-  connect?: PrivateChatWhereUniqueInput;
-}
-
-export interface UserUpdateOneRequiredWithoutMyPrivateChatSessionInput {
-  create?: UserUncheckedCreateWithoutMyPrivateChatSessionInput;
-  connectOrCreate?: UserCreateOrConnectWithoutMyPrivateChatSessionInput;
-  upsert?: UserUpsertWithoutMyPrivateChatSessionInput;
-  connect?: UserWhereUniqueInput;
-  update?: UserUncheckedUpdateWithoutMyPrivateChatSessionInput;
-}
-
-export interface UserUpdateOneRequiredWithoutPrivateChatSessionInput {
-  create?: UserUncheckedCreateWithoutPrivateChatSessionInput;
-  connectOrCreate?: UserCreateOrConnectWithoutPrivateChatSessionInput;
-  upsert?: UserUpsertWithoutPrivateChatSessionInput;
-  connect?: UserWhereUniqueInput;
-  update?: UserUncheckedUpdateWithoutPrivateChatSessionInput;
-}
-
-export interface PrivateChatUpdateOneWithoutPrivateChatSessionInput {
-  create?: PrivateChatUncheckedCreateWithoutPrivateChatSessionInput;
-  connectOrCreate?: PrivateChatCreateOrConnectWithoutPrivateChatSessionInput;
-  upsert?: PrivateChatUpsertWithoutPrivateChatSessionInput;
-  disconnect?: boolean;
-  delete?: boolean;
-  connect?: PrivateChatWhereUniqueInput;
-  update?: PrivateChatUncheckedUpdateWithoutPrivateChatSessionInput;
-}
-
-export interface UserCreateNestedOneWithoutMyPrivateChatsInput {
-  create?: UserUncheckedCreateWithoutMyPrivateChatsInput;
-  connectOrCreate?: UserCreateOrConnectWithoutMyPrivateChatsInput;
-  connect?: UserWhereUniqueInput;
-}
-
-export interface UserCreateNestedOneWithoutPrivateChatsInput {
-  create?: UserUncheckedCreateWithoutPrivateChatsInput;
-  connectOrCreate?: UserCreateOrConnectWithoutPrivateChatsInput;
-  connect?: UserWhereUniqueInput;
-}
-
-export interface PrivateChatSessionCreateNestedManyWithoutLastChatInput {
-  create?: PrivateChatSessionCreateWithoutLastChatInput[];
-  connectOrCreate?: PrivateChatSessionCreateOrConnectWithoutLastChatInput[];
-  createMany?: PrivateChatSessionCreateManyLastChatInputEnvelope;
-  connect?: PrivateChatSessionWhereUniqueInput[];
-}
-
-export interface PrivateChatSessionUncheckedCreateNestedManyWithoutLastChatInput {
-  create?: PrivateChatSessionCreateWithoutLastChatInput[];
-  connectOrCreate?: PrivateChatSessionCreateOrConnectWithoutLastChatInput[];
-  createMany?: PrivateChatSessionCreateManyLastChatInputEnvelope;
-  connect?: PrivateChatSessionWhereUniqueInput[];
-}
-
-export interface UserUpdateOneRequiredWithoutMyPrivateChatsInput {
-  create?: UserUncheckedCreateWithoutMyPrivateChatsInput;
-  connectOrCreate?: UserCreateOrConnectWithoutMyPrivateChatsInput;
-  upsert?: UserUpsertWithoutMyPrivateChatsInput;
-  connect?: UserWhereUniqueInput;
-  update?: UserUncheckedUpdateWithoutMyPrivateChatsInput;
-}
-
-export interface UserUpdateOneRequiredWithoutPrivateChatsInput {
-  create?: UserUncheckedCreateWithoutPrivateChatsInput;
-  connectOrCreate?: UserCreateOrConnectWithoutPrivateChatsInput;
-  upsert?: UserUpsertWithoutPrivateChatsInput;
-  connect?: UserWhereUniqueInput;
-  update?: UserUncheckedUpdateWithoutPrivateChatsInput;
+  update?: UserUncheckedUpdateWithoutMyChatsInput;
 }
 
 export interface EnumContentTypeFieldUpdateOperationsInput {
   set?: ContentType;
 }
 
-export interface PrivateChatSessionUpdateManyWithoutLastChatInput {
-  create?: PrivateChatSessionCreateWithoutLastChatInput[];
-  connectOrCreate?: PrivateChatSessionCreateOrConnectWithoutLastChatInput[];
-  upsert?: PrivateChatSessionUpsertWithWhereUniqueWithoutLastChatInput[];
-  createMany?: PrivateChatSessionCreateManyLastChatInputEnvelope;
-  set?: PrivateChatSessionWhereUniqueInput[];
-  disconnect?: PrivateChatSessionWhereUniqueInput[];
-  delete?: PrivateChatSessionWhereUniqueInput[];
-  connect?: PrivateChatSessionWhereUniqueInput[];
-  update?: PrivateChatSessionUpdateWithWhereUniqueWithoutLastChatInput[];
-  updateMany?: PrivateChatSessionUpdateManyWithWhereWithoutLastChatInput[];
-  deleteMany?: PrivateChatSessionScalarWhereInput[];
-}
-
-export interface PrivateChatSessionUncheckedUpdateManyWithoutLastChatInput {
-  create?: PrivateChatSessionCreateWithoutLastChatInput[];
-  connectOrCreate?: PrivateChatSessionCreateOrConnectWithoutLastChatInput[];
-  upsert?: PrivateChatSessionUpsertWithWhereUniqueWithoutLastChatInput[];
-  createMany?: PrivateChatSessionCreateManyLastChatInputEnvelope;
-  set?: PrivateChatSessionWhereUniqueInput[];
-  disconnect?: PrivateChatSessionWhereUniqueInput[];
-  delete?: PrivateChatSessionWhereUniqueInput[];
-  connect?: PrivateChatSessionWhereUniqueInput[];
-  update?: PrivateChatSessionUpdateWithWhereUniqueWithoutLastChatInput[];
-  updateMany?: PrivateChatSessionUpdateManyWithWhereWithoutLastChatInput[];
-  deleteMany?: PrivateChatSessionScalarWhereInput[];
+export interface ChatSessionUpdateOneRequiredWithoutChatsInput {
+  create?: ChatSessionUncheckedCreateWithoutChatsInput;
+  connectOrCreate?: ChatSessionCreateOrConnectWithoutChatsInput;
+  upsert?: ChatSessionUpsertWithoutChatsInput;
+  connect?: ChatSessionWhereUniqueInput;
+  update?: ChatSessionUncheckedUpdateWithoutChatsInput;
 }
 
 export interface UserCreateNestedOneWithoutExaminationsInput {
@@ -5723,15 +5491,12 @@ export interface UserCreateWithoutProvinceInput {
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  myChats?: ChatCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
   school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUncheckedCreateWithoutProvinceInput {
@@ -5760,15 +5525,12 @@ export interface UserUncheckedCreateWithoutProvinceInput {
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  myChats?: ChatUncheckedCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
   schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
 }
 
 export interface UserCreateOrConnectWithoutProvinceInput {
@@ -5978,15 +5740,12 @@ export interface UserCreateWithoutRegencyInput {
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  myChats?: ChatCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
   school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUncheckedCreateWithoutRegencyInput {
@@ -6015,15 +5774,12 @@ export interface UserUncheckedCreateWithoutRegencyInput {
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  myChats?: ChatUncheckedCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
   schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
 }
 
 export interface UserCreateOrConnectWithoutRegencyInput {
@@ -6161,15 +5917,12 @@ export interface UserCreateWithoutIdentityFilesInput {
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  myChats?: ChatCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
   school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUncheckedCreateWithoutIdentityFilesInput {
@@ -6198,15 +5951,12 @@ export interface UserUncheckedCreateWithoutIdentityFilesInput {
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  myChats?: ChatUncheckedCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
   schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
 }
 
 export interface UserCreateOrConnectWithoutIdentityFilesInput {
@@ -6245,15 +5995,12 @@ export interface UserUpdateWithoutIdentityFilesInput {
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  myChats?: ChatUpdateManyWithoutFromInput;
   classrooms?: ClassroomUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
   school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateWithoutIdentityFilesInput {
@@ -6282,15 +6029,12 @@ export interface UserUncheckedUpdateWithoutIdentityFilesInput {
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  myChats?: ChatUncheckedUpdateManyWithoutFromInput;
   classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
   schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
 export interface ProvinceCreateWithoutUsersInput {
@@ -6457,67 +6201,33 @@ export interface ExamSessionCreateManyUserInputEnvelope {
   skipDuplicates?: boolean;
 }
 
-export interface PrivateChatCreateWithoutToInput {
+export interface ChatCreateWithoutFromInput {
   id?: string;
-  from: UserCreateNestedOneWithoutMyPrivateChatsInput;
   contentType: ContentType;
   content: string;
   readAt?: undefined;
   createdAt?: undefined;
   updatedAt?: undefined;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutLastChatInput;
+  chatSession: ChatSessionCreateNestedOneWithoutChatsInput;
 }
 
-export interface PrivateChatUncheckedCreateWithoutToInput {
+export interface ChatUncheckedCreateWithoutFromInput {
   id?: string;
-  fromId: string;
   contentType: ContentType;
   content: string;
   readAt?: undefined;
   createdAt?: undefined;
   updatedAt?: undefined;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutLastChatInput;
+  chatSessionId: string;
 }
 
-export interface PrivateChatCreateOrConnectWithoutToInput {
-  where: PrivateChatWhereUniqueInput;
-  create: PrivateChatUncheckedCreateWithoutToInput;
+export interface ChatCreateOrConnectWithoutFromInput {
+  where: ChatWhereUniqueInput;
+  create: ChatUncheckedCreateWithoutFromInput;
 }
 
-export interface PrivateChatCreateManyToInputEnvelope {
-  data: PrivateChatCreateManyToInput;
-  skipDuplicates?: boolean;
-}
-
-export interface PrivateChatCreateWithoutFromInput {
-  id?: string;
-  to: UserCreateNestedOneWithoutPrivateChatsInput;
-  contentType: ContentType;
-  content: string;
-  readAt?: undefined;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutLastChatInput;
-}
-
-export interface PrivateChatUncheckedCreateWithoutFromInput {
-  id?: string;
-  toId: string;
-  contentType: ContentType;
-  content: string;
-  readAt?: undefined;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutLastChatInput;
-}
-
-export interface PrivateChatCreateOrConnectWithoutFromInput {
-  where: PrivateChatWhereUniqueInput;
-  create: PrivateChatUncheckedCreateWithoutFromInput;
-}
-
-export interface PrivateChatCreateManyFromInputEnvelope {
-  data: PrivateChatCreateManyFromInput;
+export interface ChatCreateManyFromInputEnvelope {
+  data: ChatCreateManyFromInput;
   skipDuplicates?: boolean;
 }
 
@@ -6674,62 +6384,6 @@ export interface SchoolUncheckedCreateWithoutStudentsInput {
 export interface SchoolCreateOrConnectWithoutStudentsInput {
   where: SchoolWhereUniqueInput;
   create: SchoolUncheckedCreateWithoutStudentsInput;
-}
-
-export interface PrivateChatSessionCreateWithoutToInput {
-  id?: string;
-  from: UserCreateNestedOneWithoutMyPrivateChatSessionInput;
-  lastReadAt?: undefined;
-  lastChat?: PrivateChatCreateNestedOneWithoutPrivateChatSessionInput;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface PrivateChatSessionUncheckedCreateWithoutToInput {
-  id?: string;
-  fromId: string;
-  lastReadAt?: undefined;
-  lastChatId?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface PrivateChatSessionCreateOrConnectWithoutToInput {
-  where: PrivateChatSessionWhereUniqueInput;
-  create: PrivateChatSessionUncheckedCreateWithoutToInput;
-}
-
-export interface PrivateChatSessionCreateManyToInputEnvelope {
-  data: PrivateChatSessionCreateManyToInput;
-  skipDuplicates?: boolean;
-}
-
-export interface PrivateChatSessionCreateWithoutFromInput {
-  id?: string;
-  to: UserCreateNestedOneWithoutPrivateChatSessionInput;
-  lastReadAt?: undefined;
-  lastChat?: PrivateChatCreateNestedOneWithoutPrivateChatSessionInput;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface PrivateChatSessionUncheckedCreateWithoutFromInput {
-  id?: string;
-  toId: string;
-  lastReadAt?: undefined;
-  lastChatId?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface PrivateChatSessionCreateOrConnectWithoutFromInput {
-  where: PrivateChatSessionWhereUniqueInput;
-  create: PrivateChatSessionUncheckedCreateWithoutFromInput;
-}
-
-export interface PrivateChatSessionCreateManyFromInputEnvelope {
-  data: PrivateChatSessionCreateManyFromInput;
-  skipDuplicates?: boolean;
 }
 
 export interface ProvinceUpsertWithoutUsersInput {
@@ -6890,50 +6544,34 @@ export interface ExamSessionScalarWhereInput {
   userId?: StringFilter;
 }
 
-export interface PrivateChatUpsertWithWhereUniqueWithoutToInput {
-  where: PrivateChatWhereUniqueInput;
-  update: PrivateChatUncheckedUpdateWithoutToInput;
-  create: PrivateChatUncheckedCreateWithoutToInput;
+export interface ChatUpsertWithWhereUniqueWithoutFromInput {
+  where: ChatWhereUniqueInput;
+  update: ChatUncheckedUpdateWithoutFromInput;
+  create: ChatUncheckedCreateWithoutFromInput;
 }
 
-export interface PrivateChatUpdateWithWhereUniqueWithoutToInput {
-  where: PrivateChatWhereUniqueInput;
-  data: PrivateChatUncheckedUpdateWithoutToInput;
+export interface ChatUpdateWithWhereUniqueWithoutFromInput {
+  where: ChatWhereUniqueInput;
+  data: ChatUncheckedUpdateWithoutFromInput;
 }
 
-export interface PrivateChatUpdateManyWithWhereWithoutToInput {
-  where: PrivateChatScalarWhereInput;
-  data: PrivateChatUncheckedUpdateManyWithoutPrivateChatsInput;
+export interface ChatUpdateManyWithWhereWithoutFromInput {
+  where: ChatScalarWhereInput;
+  data: ChatUncheckedUpdateManyWithoutMyChatsInput;
 }
 
-export interface PrivateChatScalarWhereInput {
-  AND?: PrivateChatScalarWhereInput[];
-  OR?: PrivateChatScalarWhereInput[];
-  NOT?: PrivateChatScalarWhereInput[];
+export interface ChatScalarWhereInput {
+  AND?: ChatScalarWhereInput[];
+  OR?: ChatScalarWhereInput[];
+  NOT?: ChatScalarWhereInput[];
   id?: StringFilter;
   fromId?: StringFilter;
-  toId?: StringFilter;
   contentType?: EnumContentTypeFilter;
   content?: StringFilter;
   readAt?: DateTimeNullableFilter;
   createdAt?: DateTimeFilter;
   updatedAt?: DateTimeFilter;
-}
-
-export interface PrivateChatUpsertWithWhereUniqueWithoutFromInput {
-  where: PrivateChatWhereUniqueInput;
-  update: PrivateChatUncheckedUpdateWithoutFromInput;
-  create: PrivateChatUncheckedCreateWithoutFromInput;
-}
-
-export interface PrivateChatUpdateWithWhereUniqueWithoutFromInput {
-  where: PrivateChatWhereUniqueInput;
-  data: PrivateChatUncheckedUpdateWithoutFromInput;
-}
-
-export interface PrivateChatUpdateManyWithWhereWithoutFromInput {
-  where: PrivateChatScalarWhereInput;
-  data: PrivateChatUncheckedUpdateManyWithoutMyPrivateChatsInput;
+  chatSessionId?: StringFilter;
 }
 
 export interface ClassroomUpsertWithWhereUniqueWithoutUserInput {
@@ -7092,51 +6730,6 @@ export interface SchoolUncheckedUpdateWithoutStudentsInput {
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutSchoolInput;
 }
 
-export interface PrivateChatSessionUpsertWithWhereUniqueWithoutToInput {
-  where: PrivateChatSessionWhereUniqueInput;
-  update: PrivateChatSessionUncheckedUpdateWithoutToInput;
-  create: PrivateChatSessionUncheckedCreateWithoutToInput;
-}
-
-export interface PrivateChatSessionUpdateWithWhereUniqueWithoutToInput {
-  where: PrivateChatSessionWhereUniqueInput;
-  data: PrivateChatSessionUncheckedUpdateWithoutToInput;
-}
-
-export interface PrivateChatSessionUpdateManyWithWhereWithoutToInput {
-  where: PrivateChatSessionScalarWhereInput;
-  data: PrivateChatSessionUncheckedUpdateManyWithoutPrivateChatSessionInput;
-}
-
-export interface PrivateChatSessionScalarWhereInput {
-  AND?: PrivateChatSessionScalarWhereInput[];
-  OR?: PrivateChatSessionScalarWhereInput[];
-  NOT?: PrivateChatSessionScalarWhereInput[];
-  id?: StringFilter;
-  fromId?: StringFilter;
-  toId?: StringFilter;
-  lastReadAt?: DateTimeNullableFilter;
-  lastChatId?: StringNullableFilter;
-  createdAt?: DateTimeFilter;
-  updatedAt?: DateTimeFilter;
-}
-
-export interface PrivateChatSessionUpsertWithWhereUniqueWithoutFromInput {
-  where: PrivateChatSessionWhereUniqueInput;
-  update: PrivateChatSessionUncheckedUpdateWithoutFromInput;
-  create: PrivateChatSessionUncheckedCreateWithoutFromInput;
-}
-
-export interface PrivateChatSessionUpdateWithWhereUniqueWithoutFromInput {
-  where: PrivateChatSessionWhereUniqueInput;
-  data: PrivateChatSessionUncheckedUpdateWithoutFromInput;
-}
-
-export interface PrivateChatSessionUpdateManyWithWhereWithoutFromInput {
-  where: PrivateChatSessionScalarWhereInput;
-  data: PrivateChatSessionUncheckedUpdateManyWithoutMyPrivateChatSessionInput;
-}
-
 export interface UserCreateWithoutNotificationsInput {
   id?: string;
   name: string;
@@ -7164,14 +6757,11 @@ export interface UserCreateWithoutNotificationsInput {
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  myChats?: ChatCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
   school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUncheckedCreateWithoutNotificationsInput {
@@ -7201,14 +6791,11 @@ export interface UserUncheckedCreateWithoutNotificationsInput {
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  myChats?: ChatUncheckedCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
   schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
 }
 
 export interface UserCreateOrConnectWithoutNotificationsInput {
@@ -7248,14 +6835,11 @@ export interface UserUpdateWithoutNotificationsInput {
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  myChats?: ChatUpdateManyWithoutFromInput;
   classrooms?: ClassroomUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
   school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateWithoutNotificationsInput {
@@ -7285,14 +6869,11 @@ export interface UserUncheckedUpdateWithoutNotificationsInput {
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  myChats?: ChatUncheckedUpdateManyWithoutFromInput;
   classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
   schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
 export interface ClassroomCreateWithoutSchoolInput {
@@ -7420,14 +7001,11 @@ export interface UserCreateWithoutSchoolInput {
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  myChats?: ChatCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUncheckedCreateWithoutSchoolInput {
@@ -7457,14 +7035,11 @@ export interface UserUncheckedCreateWithoutSchoolInput {
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  myChats?: ChatUncheckedCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
 }
 
 export interface UserCreateOrConnectWithoutSchoolInput {
@@ -7633,14 +7208,11 @@ export interface UserCreateWithoutSchoolStaffsInput {
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  myChats?: ChatCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
   school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUncheckedCreateWithoutSchoolStaffsInput {
@@ -7670,14 +7242,11 @@ export interface UserUncheckedCreateWithoutSchoolStaffsInput {
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  myChats?: ChatUncheckedCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
   schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
 }
 
 export interface UserCreateOrConnectWithoutSchoolStaffsInput {
@@ -7756,14 +7325,11 @@ export interface UserUpdateWithoutSchoolStaffsInput {
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  myChats?: ChatUpdateManyWithoutFromInput;
   classrooms?: ClassroomUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
   school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateWithoutSchoolStaffsInput {
@@ -7793,14 +7359,11 @@ export interface UserUncheckedUpdateWithoutSchoolStaffsInput {
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  myChats?: ChatUncheckedUpdateManyWithoutFromInput;
   classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
   schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
 export interface SchoolCreateWithoutClassroomsInput {
@@ -7869,14 +7432,11 @@ export interface UserCreateWithoutClassroomsInput {
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  myChats?: ChatCreateNestedManyWithoutFromInput;
   classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
   school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUncheckedCreateWithoutClassroomsInput {
@@ -7906,14 +7466,11 @@ export interface UserUncheckedCreateWithoutClassroomsInput {
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  myChats?: ChatUncheckedCreateNestedManyWithoutFromInput;
   classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
   schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
 }
 
 export interface UserCreateOrConnectWithoutClassroomsInput {
@@ -8018,14 +7575,11 @@ export interface UserUpdateWithoutClassroomsInput {
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  myChats?: ChatUpdateManyWithoutFromInput;
   classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
   school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateWithoutClassroomsInput {
@@ -8055,14 +7609,11 @@ export interface UserUncheckedUpdateWithoutClassroomsInput {
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  myChats?: ChatUncheckedUpdateManyWithoutFromInput;
   classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
   schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
 export interface ClassroomStudentUpsertWithWhereUniqueWithoutClassroomInput {
@@ -8108,14 +7659,11 @@ export interface UserCreateWithoutClassroomStudentsInput {
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  myChats?: ChatCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
   school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUncheckedCreateWithoutClassroomStudentsInput {
@@ -8145,14 +7693,11 @@ export interface UserUncheckedCreateWithoutClassroomStudentsInput {
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  myChats?: ChatUncheckedCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
   schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
 }
 
 export interface UserCreateOrConnectWithoutClassroomStudentsInput {
@@ -8217,14 +7762,11 @@ export interface UserUpdateWithoutClassroomStudentsInput {
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  myChats?: ChatUpdateManyWithoutFromInput;
   classrooms?: ClassroomUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
   school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateWithoutClassroomStudentsInput {
@@ -8254,14 +7796,11 @@ export interface UserUncheckedUpdateWithoutClassroomStudentsInput {
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  myChats?: ChatUncheckedUpdateManyWithoutFromInput;
   classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
   schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
 export interface ClassroomUpsertWithoutStudentsInput {
@@ -8289,168 +7828,9 @@ export interface ClassroomUncheckedUpdateWithoutStudentsInput {
   updatedAt?: DateTimeFieldUpdateOperationsInput;
 }
 
-export interface UserCreateWithoutMyPrivateChatSessionInput {
+export interface ChatCreateWithoutChatSessionInput {
   id?: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  address?: string;
-  profilePicturePath?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  nisn?: string;
-  nrg?: string;
-  verifykey?: string;
-  verifyType?: VerifyType;
-  province: ProvinceCreateNestedOneWithoutUsersInput;
-  regency: RegencyCreateNestedOneWithoutUsersInput;
-  isAdmin?: boolean;
-  isBimbel?: boolean;
-  role: Roles;
-  balance?: number;
-  emailVerifiedAt?: undefined;
-  phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
-  identityNumberVerifiedAt?: undefined;
-  identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
-  questions?: QuestionCreateNestedManyWithoutUserInput;
-  examinations?: ExamCreateNestedManyWithoutUserInput;
-  examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
-  notifications?: NotificationCreateNestedManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
-  school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-}
-
-export interface UserUncheckedCreateWithoutMyPrivateChatSessionInput {
-  id?: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  address?: string;
-  profilePicturePath?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  nisn?: string;
-  nrg?: string;
-  verifykey?: string;
-  verifyType?: VerifyType;
-  provinceId: string;
-  regencyId: string;
-  isAdmin?: boolean;
-  isBimbel?: boolean;
-  role: Roles;
-  balance?: number;
-  emailVerifiedAt?: undefined;
-  phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
-  identityNumberVerifiedAt?: undefined;
-  identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
-  questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
-  examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
-  examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
-  notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
-  schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-}
-
-export interface UserCreateOrConnectWithoutMyPrivateChatSessionInput {
-  where: UserWhereUniqueInput;
-  create: UserUncheckedCreateWithoutMyPrivateChatSessionInput;
-}
-
-export interface UserCreateWithoutPrivateChatSessionInput {
-  id?: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  address?: string;
-  profilePicturePath?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  nisn?: string;
-  nrg?: string;
-  verifykey?: string;
-  verifyType?: VerifyType;
-  province: ProvinceCreateNestedOneWithoutUsersInput;
-  regency: RegencyCreateNestedOneWithoutUsersInput;
-  isAdmin?: boolean;
-  isBimbel?: boolean;
-  role: Roles;
-  balance?: number;
-  emailVerifiedAt?: undefined;
-  phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
-  identityNumberVerifiedAt?: undefined;
-  identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
-  questions?: QuestionCreateNestedManyWithoutUserInput;
-  examinations?: ExamCreateNestedManyWithoutUserInput;
-  examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
-  notifications?: NotificationCreateNestedManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
-  school?: SchoolCreateNestedOneWithoutStudentsInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
-}
-
-export interface UserUncheckedCreateWithoutPrivateChatSessionInput {
-  id?: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  address?: string;
-  profilePicturePath?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  nisn?: string;
-  nrg?: string;
-  verifykey?: string;
-  verifyType?: VerifyType;
-  provinceId: string;
-  regencyId: string;
-  isAdmin?: boolean;
-  isBimbel?: boolean;
-  role: Roles;
-  balance?: number;
-  emailVerifiedAt?: undefined;
-  phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
-  identityNumberVerifiedAt?: undefined;
-  identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
-  questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
-  examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
-  examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
-  notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
-  schoolId?: string;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
-}
-
-export interface UserCreateOrConnectWithoutPrivateChatSessionInput {
-  where: UserWhereUniqueInput;
-  create: UserUncheckedCreateWithoutPrivateChatSessionInput;
-}
-
-export interface PrivateChatCreateWithoutPrivateChatSessionInput {
-  id?: string;
-  from: UserCreateNestedOneWithoutMyPrivateChatsInput;
-  to: UserCreateNestedOneWithoutPrivateChatsInput;
+  from: UserCreateNestedOneWithoutMyChatsInput;
   contentType: ContentType;
   content: string;
   readAt?: undefined;
@@ -8458,10 +7838,9 @@ export interface PrivateChatCreateWithoutPrivateChatSessionInput {
   updatedAt?: undefined;
 }
 
-export interface PrivateChatUncheckedCreateWithoutPrivateChatSessionInput {
+export interface ChatUncheckedCreateWithoutChatSessionInput {
   id?: string;
   fromId: string;
-  toId: string;
   contentType: ContentType;
   content: string;
   readAt?: undefined;
@@ -8469,388 +7848,132 @@ export interface PrivateChatUncheckedCreateWithoutPrivateChatSessionInput {
   updatedAt?: undefined;
 }
 
-export interface PrivateChatCreateOrConnectWithoutPrivateChatSessionInput {
-  where: PrivateChatWhereUniqueInput;
-  create: PrivateChatUncheckedCreateWithoutPrivateChatSessionInput;
+export interface ChatCreateOrConnectWithoutChatSessionInput {
+  where: ChatWhereUniqueInput;
+  create: ChatUncheckedCreateWithoutChatSessionInput;
 }
 
-export interface UserUpsertWithoutMyPrivateChatSessionInput {
-  update: UserUncheckedUpdateWithoutMyPrivateChatSessionInput;
-  create: UserUncheckedCreateWithoutMyPrivateChatSessionInput;
-}
-
-export interface UserUpdateWithoutMyPrivateChatSessionInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  email?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: NullableStringFieldUpdateOperationsInput;
-  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  nisn?: NullableStringFieldUpdateOperationsInput;
-  nrg?: NullableStringFieldUpdateOperationsInput;
-  verifykey?: NullableStringFieldUpdateOperationsInput;
-  verifyType?: NullableEnumVerifyTypeFieldUpdateOperationsInput;
-  province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
-  isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
-  role?: EnumRolesFieldUpdateOperationsInput;
-  balance?: FloatFieldUpdateOperationsInput;
-  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityFiles?: IdentityFileUpdateManyWithoutUserInput;
-  questions?: QuestionUpdateManyWithoutUserInput;
-  examinations?: ExamUpdateManyWithoutUserInput;
-  examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
-  notifications?: NotificationUpdateManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
-  school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-}
-
-export interface UserUncheckedUpdateWithoutMyPrivateChatSessionInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  email?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: NullableStringFieldUpdateOperationsInput;
-  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  nisn?: NullableStringFieldUpdateOperationsInput;
-  nrg?: NullableStringFieldUpdateOperationsInput;
-  verifykey?: NullableStringFieldUpdateOperationsInput;
-  verifyType?: NullableEnumVerifyTypeFieldUpdateOperationsInput;
-  provinceId?: StringFieldUpdateOperationsInput;
-  regencyId?: StringFieldUpdateOperationsInput;
-  isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
-  role?: EnumRolesFieldUpdateOperationsInput;
-  balance?: FloatFieldUpdateOperationsInput;
-  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
-  questions?: QuestionUncheckedUpdateManyWithoutUserInput;
-  examinations?: ExamUncheckedUpdateManyWithoutUserInput;
-  examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
-  notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
-  schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-}
-
-export interface UserUpsertWithoutPrivateChatSessionInput {
-  update: UserUncheckedUpdateWithoutPrivateChatSessionInput;
-  create: UserUncheckedCreateWithoutPrivateChatSessionInput;
-}
-
-export interface UserUpdateWithoutPrivateChatSessionInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  email?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: NullableStringFieldUpdateOperationsInput;
-  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  nisn?: NullableStringFieldUpdateOperationsInput;
-  nrg?: NullableStringFieldUpdateOperationsInput;
-  verifykey?: NullableStringFieldUpdateOperationsInput;
-  verifyType?: NullableEnumVerifyTypeFieldUpdateOperationsInput;
-  province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
-  isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
-  role?: EnumRolesFieldUpdateOperationsInput;
-  balance?: FloatFieldUpdateOperationsInput;
-  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityFiles?: IdentityFileUpdateManyWithoutUserInput;
-  questions?: QuestionUpdateManyWithoutUserInput;
-  examinations?: ExamUpdateManyWithoutUserInput;
-  examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
-  notifications?: NotificationUpdateManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
-  school?: SchoolUpdateOneWithoutStudentsInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
-}
-
-export interface UserUncheckedUpdateWithoutPrivateChatSessionInput {
-  id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  email?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: NullableStringFieldUpdateOperationsInput;
-  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  nisn?: NullableStringFieldUpdateOperationsInput;
-  nrg?: NullableStringFieldUpdateOperationsInput;
-  verifykey?: NullableStringFieldUpdateOperationsInput;
-  verifyType?: NullableEnumVerifyTypeFieldUpdateOperationsInput;
-  provinceId?: StringFieldUpdateOperationsInput;
-  regencyId?: StringFieldUpdateOperationsInput;
-  isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
-  role?: EnumRolesFieldUpdateOperationsInput;
-  balance?: FloatFieldUpdateOperationsInput;
-  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
-  questions?: QuestionUncheckedUpdateManyWithoutUserInput;
-  examinations?: ExamUncheckedUpdateManyWithoutUserInput;
-  examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
-  notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
-  schoolId?: NullableStringFieldUpdateOperationsInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
-}
-
-export interface PrivateChatUpsertWithoutPrivateChatSessionInput {
-  update: PrivateChatUncheckedUpdateWithoutPrivateChatSessionInput;
-  create: PrivateChatUncheckedCreateWithoutPrivateChatSessionInput;
-}
-
-export interface PrivateChatUpdateWithoutPrivateChatSessionInput {
-  id?: StringFieldUpdateOperationsInput;
-  from?: UserUpdateOneRequiredWithoutMyPrivateChatsInput;
-  to?: UserUpdateOneRequiredWithoutPrivateChatsInput;
-  contentType?: EnumContentTypeFieldUpdateOperationsInput;
-  content?: StringFieldUpdateOperationsInput;
-  readAt?: NullableDateTimeFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface PrivateChatUncheckedUpdateWithoutPrivateChatSessionInput {
-  id?: StringFieldUpdateOperationsInput;
-  fromId?: StringFieldUpdateOperationsInput;
-  toId?: StringFieldUpdateOperationsInput;
-  contentType?: EnumContentTypeFieldUpdateOperationsInput;
-  content?: StringFieldUpdateOperationsInput;
-  readAt?: NullableDateTimeFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface UserCreateWithoutMyPrivateChatsInput {
-  id?: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  address?: string;
-  profilePicturePath?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  nisn?: string;
-  nrg?: string;
-  verifykey?: string;
-  verifyType?: VerifyType;
-  province: ProvinceCreateNestedOneWithoutUsersInput;
-  regency: RegencyCreateNestedOneWithoutUsersInput;
-  isAdmin?: boolean;
-  isBimbel?: boolean;
-  role: Roles;
-  balance?: number;
-  emailVerifiedAt?: undefined;
-  phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
-  identityNumberVerifiedAt?: undefined;
-  identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
-  questions?: QuestionCreateNestedManyWithoutUserInput;
-  examinations?: ExamCreateNestedManyWithoutUserInput;
-  examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
-  notifications?: NotificationCreateNestedManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
-  school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
-}
-
-export interface UserUncheckedCreateWithoutMyPrivateChatsInput {
-  id?: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  address?: string;
-  profilePicturePath?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  nisn?: string;
-  nrg?: string;
-  verifykey?: string;
-  verifyType?: VerifyType;
-  provinceId: string;
-  regencyId: string;
-  isAdmin?: boolean;
-  isBimbel?: boolean;
-  role: Roles;
-  balance?: number;
-  emailVerifiedAt?: undefined;
-  phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
-  identityNumberVerifiedAt?: undefined;
-  identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
-  questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
-  examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
-  examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
-  notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
-  schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
-}
-
-export interface UserCreateOrConnectWithoutMyPrivateChatsInput {
-  where: UserWhereUniqueInput;
-  create: UserUncheckedCreateWithoutMyPrivateChatsInput;
-}
-
-export interface UserCreateWithoutPrivateChatsInput {
-  id?: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  address?: string;
-  profilePicturePath?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  nisn?: string;
-  nrg?: string;
-  verifykey?: string;
-  verifyType?: VerifyType;
-  province: ProvinceCreateNestedOneWithoutUsersInput;
-  regency: RegencyCreateNestedOneWithoutUsersInput;
-  isAdmin?: boolean;
-  isBimbel?: boolean;
-  role: Roles;
-  balance?: number;
-  emailVerifiedAt?: undefined;
-  phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
-  identityNumberVerifiedAt?: undefined;
-  identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
-  questions?: QuestionCreateNestedManyWithoutUserInput;
-  examinations?: ExamCreateNestedManyWithoutUserInput;
-  examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
-  notifications?: NotificationCreateNestedManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
-  school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
-}
-
-export interface UserUncheckedCreateWithoutPrivateChatsInput {
-  id?: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  address?: string;
-  profilePicturePath?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-  nisn?: string;
-  nrg?: string;
-  verifykey?: string;
-  verifyType?: VerifyType;
-  provinceId: string;
-  regencyId: string;
-  isAdmin?: boolean;
-  isBimbel?: boolean;
-  role: Roles;
-  balance?: number;
-  emailVerifiedAt?: undefined;
-  phoneNumberVerifiedAt?: undefined;
-  bimbelApprovedAt?: undefined;
-  identityNumberVerifiedAt?: undefined;
-  identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
-  questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
-  examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
-  examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
-  notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
-  schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
-}
-
-export interface UserCreateOrConnectWithoutPrivateChatsInput {
-  where: UserWhereUniqueInput;
-  create: UserUncheckedCreateWithoutPrivateChatsInput;
-}
-
-export interface PrivateChatSessionCreateWithoutLastChatInput {
-  id?: string;
-  from: UserCreateNestedOneWithoutMyPrivateChatSessionInput;
-  to: UserCreateNestedOneWithoutPrivateChatSessionInput;
-  lastReadAt?: undefined;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface PrivateChatSessionUncheckedCreateWithoutLastChatInput {
-  id?: string;
-  fromId: string;
-  toId: string;
-  lastReadAt?: undefined;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface PrivateChatSessionCreateOrConnectWithoutLastChatInput {
-  where: PrivateChatSessionWhereUniqueInput;
-  create: PrivateChatSessionUncheckedCreateWithoutLastChatInput;
-}
-
-export interface PrivateChatSessionCreateManyLastChatInputEnvelope {
-  data: PrivateChatSessionCreateManyLastChatInput;
+export interface ChatCreateManyChatSessionInputEnvelope {
+  data: ChatCreateManyChatSessionInput;
   skipDuplicates?: boolean;
 }
 
-export interface UserUpsertWithoutMyPrivateChatsInput {
-  update: UserUncheckedUpdateWithoutMyPrivateChatsInput;
-  create: UserUncheckedCreateWithoutMyPrivateChatsInput;
+export interface ChatUpsertWithWhereUniqueWithoutChatSessionInput {
+  where: ChatWhereUniqueInput;
+  update: ChatUncheckedUpdateWithoutChatSessionInput;
+  create: ChatUncheckedCreateWithoutChatSessionInput;
 }
 
-export interface UserUpdateWithoutMyPrivateChatsInput {
+export interface ChatUpdateWithWhereUniqueWithoutChatSessionInput {
+  where: ChatWhereUniqueInput;
+  data: ChatUncheckedUpdateWithoutChatSessionInput;
+}
+
+export interface ChatUpdateManyWithWhereWithoutChatSessionInput {
+  where: ChatScalarWhereInput;
+  data: ChatUncheckedUpdateManyWithoutChatsInput;
+}
+
+export interface UserCreateWithoutMyChatsInput {
+  id?: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  address?: string;
+  profilePicturePath?: string;
+  createdAt?: undefined;
+  updatedAt?: undefined;
+  nisn?: string;
+  nrg?: string;
+  verifykey?: string;
+  verifyType?: VerifyType;
+  province: ProvinceCreateNestedOneWithoutUsersInput;
+  regency: RegencyCreateNestedOneWithoutUsersInput;
+  isAdmin?: boolean;
+  isBimbel?: boolean;
+  role: Roles;
+  balance?: number;
+  emailVerifiedAt?: undefined;
+  phoneNumberVerifiedAt?: undefined;
+  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
+  questions?: QuestionCreateNestedManyWithoutUserInput;
+  examinations?: ExamCreateNestedManyWithoutUserInput;
+  examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
+  classrooms?: ClassroomCreateNestedManyWithoutUserInput;
+  classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
+  notifications?: NotificationCreateNestedManyWithoutUserInput;
+  schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
+  school?: SchoolCreateNestedOneWithoutStudentsInput;
+}
+
+export interface UserUncheckedCreateWithoutMyChatsInput {
+  id?: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  address?: string;
+  profilePicturePath?: string;
+  createdAt?: undefined;
+  updatedAt?: undefined;
+  nisn?: string;
+  nrg?: string;
+  verifykey?: string;
+  verifyType?: VerifyType;
+  provinceId: string;
+  regencyId: string;
+  isAdmin?: boolean;
+  isBimbel?: boolean;
+  role: Roles;
+  balance?: number;
+  emailVerifiedAt?: undefined;
+  phoneNumberVerifiedAt?: undefined;
+  bimbelApprovedAt?: undefined;
+  identityNumberVerifiedAt?: undefined;
+  identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
+  questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
+  examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
+  examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
+  classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
+  classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
+  notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
+  schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
+  schoolId?: string;
+}
+
+export interface UserCreateOrConnectWithoutMyChatsInput {
+  where: UserWhereUniqueInput;
+  create: UserUncheckedCreateWithoutMyChatsInput;
+}
+
+export interface ChatSessionCreateWithoutChatsInput {
+  id?: string;
+  participantsIds?: string[];
+  lastReadAt?: undefined;
+  createdAt?: undefined;
+  updatedAt?: undefined;
+}
+
+export interface ChatSessionUncheckedCreateWithoutChatsInput {
+  id?: string;
+  participantsIds?: string[];
+  lastReadAt?: undefined;
+  createdAt?: undefined;
+  updatedAt?: undefined;
+}
+
+export interface ChatSessionCreateOrConnectWithoutChatsInput {
+  where: ChatSessionWhereUniqueInput;
+  create: ChatSessionUncheckedCreateWithoutChatsInput;
+}
+
+export interface UserUpsertWithoutMyChatsInput {
+  update: UserUncheckedUpdateWithoutMyChatsInput;
+  create: UserUncheckedCreateWithoutMyChatsInput;
+}
+
+export interface UserUpdateWithoutMyChatsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
@@ -8877,17 +8000,14 @@ export interface UserUpdateWithoutMyPrivateChatsInput {
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
   classrooms?: ClassroomUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
   school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
-export interface UserUncheckedUpdateWithoutMyPrivateChatsInput {
+export interface UserUncheckedUpdateWithoutMyChatsInput {
   id?: StringFieldUpdateOperationsInput;
   name?: StringFieldUpdateOperationsInput;
   email?: StringFieldUpdateOperationsInput;
@@ -8914,109 +8034,32 @@ export interface UserUncheckedUpdateWithoutMyPrivateChatsInput {
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
   classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
   schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
-export interface UserUpsertWithoutPrivateChatsInput {
-  update: UserUncheckedUpdateWithoutPrivateChatsInput;
-  create: UserUncheckedCreateWithoutPrivateChatsInput;
+export interface ChatSessionUpsertWithoutChatsInput {
+  update: ChatSessionUncheckedUpdateWithoutChatsInput;
+  create: ChatSessionUncheckedCreateWithoutChatsInput;
 }
 
-export interface UserUpdateWithoutPrivateChatsInput {
+export interface ChatSessionUpdateWithoutChatsInput {
   id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  email?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: NullableStringFieldUpdateOperationsInput;
-  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
+  participantsIds?: string[];
+  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
-  nisn?: NullableStringFieldUpdateOperationsInput;
-  nrg?: NullableStringFieldUpdateOperationsInput;
-  verifykey?: NullableStringFieldUpdateOperationsInput;
-  verifyType?: NullableEnumVerifyTypeFieldUpdateOperationsInput;
-  province?: ProvinceUpdateOneRequiredWithoutUsersInput;
-  regency?: RegencyUpdateOneRequiredWithoutUsersInput;
-  isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
-  role?: EnumRolesFieldUpdateOperationsInput;
-  balance?: FloatFieldUpdateOperationsInput;
-  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityFiles?: IdentityFileUpdateManyWithoutUserInput;
-  questions?: QuestionUpdateManyWithoutUserInput;
-  examinations?: ExamUpdateManyWithoutUserInput;
-  examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
-  notifications?: NotificationUpdateManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
-  school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
-export interface UserUncheckedUpdateWithoutPrivateChatsInput {
+export interface ChatSessionUncheckedUpdateWithoutChatsInput {
   id?: StringFieldUpdateOperationsInput;
-  name?: StringFieldUpdateOperationsInput;
-  email?: StringFieldUpdateOperationsInput;
-  phoneNumber?: StringFieldUpdateOperationsInput;
-  address?: NullableStringFieldUpdateOperationsInput;
-  profilePicturePath?: NullableStringFieldUpdateOperationsInput;
+  participantsIds?: string[];
+  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
-  nisn?: NullableStringFieldUpdateOperationsInput;
-  nrg?: NullableStringFieldUpdateOperationsInput;
-  verifykey?: NullableStringFieldUpdateOperationsInput;
-  verifyType?: NullableEnumVerifyTypeFieldUpdateOperationsInput;
-  provinceId?: StringFieldUpdateOperationsInput;
-  regencyId?: StringFieldUpdateOperationsInput;
-  isAdmin?: BoolFieldUpdateOperationsInput;
-  isBimbel?: BoolFieldUpdateOperationsInput;
-  role?: EnumRolesFieldUpdateOperationsInput;
-  balance?: FloatFieldUpdateOperationsInput;
-  emailVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  phoneNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  bimbelApprovedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityNumberVerifiedAt?: NullableDateTimeFieldUpdateOperationsInput;
-  identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
-  questions?: QuestionUncheckedUpdateManyWithoutUserInput;
-  examinations?: ExamUncheckedUpdateManyWithoutUserInput;
-  examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
-  classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
-  classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
-  notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
-  schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
-  schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
-}
-
-export interface PrivateChatSessionUpsertWithWhereUniqueWithoutLastChatInput {
-  where: PrivateChatSessionWhereUniqueInput;
-  update: PrivateChatSessionUncheckedUpdateWithoutLastChatInput;
-  create: PrivateChatSessionUncheckedCreateWithoutLastChatInput;
-}
-
-export interface PrivateChatSessionUpdateWithWhereUniqueWithoutLastChatInput {
-  where: PrivateChatSessionWhereUniqueInput;
-  data: PrivateChatSessionUncheckedUpdateWithoutLastChatInput;
-}
-
-export interface PrivateChatSessionUpdateManyWithWhereWithoutLastChatInput {
-  where: PrivateChatSessionScalarWhereInput;
-  data: PrivateChatSessionUncheckedUpdateManyWithoutPrivateChatSessionInput;
 }
 
 export interface UserCreateWithoutExaminationsInput {
@@ -9045,15 +8088,12 @@ export interface UserCreateWithoutExaminationsInput {
   identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  myChats?: ChatCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
   school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUncheckedCreateWithoutExaminationsInput {
@@ -9082,15 +8122,12 @@ export interface UserUncheckedCreateWithoutExaminationsInput {
   identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  myChats?: ChatUncheckedCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
   schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
 }
 
 export interface UserCreateOrConnectWithoutExaminationsInput {
@@ -9181,15 +8218,12 @@ export interface UserUpdateWithoutExaminationsInput {
   identityFiles?: IdentityFileUpdateManyWithoutUserInput;
   questions?: QuestionUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  myChats?: ChatUpdateManyWithoutFromInput;
   classrooms?: ClassroomUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
   school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateWithoutExaminationsInput {
@@ -9218,15 +8252,12 @@ export interface UserUncheckedUpdateWithoutExaminationsInput {
   identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  myChats?: ChatUncheckedUpdateManyWithoutFromInput;
   classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
   schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
 export interface ExamQuestionUpsertWithWhereUniqueWithoutExamInput {
@@ -9311,15 +8342,12 @@ export interface UserCreateWithoutExamsessionsInput {
   identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
   questions?: QuestionCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  myChats?: ChatCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
   school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUncheckedCreateWithoutExamsessionsInput {
@@ -9348,15 +8376,12 @@ export interface UserUncheckedCreateWithoutExamsessionsInput {
   identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
   questions?: QuestionUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  myChats?: ChatUncheckedCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
   schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
 }
 
 export interface UserCreateOrConnectWithoutExamsessionsInput {
@@ -9423,15 +8448,12 @@ export interface UserUpdateWithoutExamsessionsInput {
   identityFiles?: IdentityFileUpdateManyWithoutUserInput;
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  myChats?: ChatUpdateManyWithoutFromInput;
   classrooms?: ClassroomUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
   school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateWithoutExamsessionsInput {
@@ -9460,15 +8482,12 @@ export interface UserUncheckedUpdateWithoutExamsessionsInput {
   identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  myChats?: ChatUncheckedUpdateManyWithoutFromInput;
   classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
   schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
 export interface ExamAnswerUpsertWithWhereUniqueWithoutExamSessionInput {
@@ -9721,15 +8740,12 @@ export interface UserCreateWithoutQuestionsInput {
   identityFiles?: IdentityFileCreateNestedManyWithoutUserInput;
   examinations?: ExamCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatCreateNestedManyWithoutFromInput;
+  myChats?: ChatCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentCreateNestedManyWithoutUserInput;
   notifications?: NotificationCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffCreateNestedManyWithoutUserInput;
   school?: SchoolCreateNestedOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionCreateNestedManyWithoutFromInput;
 }
 
 export interface UserUncheckedCreateWithoutQuestionsInput {
@@ -9758,15 +8774,12 @@ export interface UserUncheckedCreateWithoutQuestionsInput {
   identityFiles?: IdentityFileUncheckedCreateNestedManyWithoutUserInput;
   examinations?: ExamUncheckedCreateNestedManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedCreateNestedManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedCreateNestedManyWithoutFromInput;
+  myChats?: ChatUncheckedCreateNestedManyWithoutFromInput;
   classrooms?: ClassroomUncheckedCreateNestedManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedCreateNestedManyWithoutUserInput;
   notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedCreateNestedManyWithoutUserInput;
   schoolId?: string;
-  privateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedCreateNestedManyWithoutFromInput;
 }
 
 export interface UserCreateOrConnectWithoutQuestionsInput {
@@ -9904,15 +8917,12 @@ export interface UserUpdateWithoutQuestionsInput {
   identityFiles?: IdentityFileUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  myChats?: ChatUpdateManyWithoutFromInput;
   classrooms?: ClassroomUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
   school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateWithoutQuestionsInput {
@@ -9941,15 +8951,12 @@ export interface UserUncheckedUpdateWithoutQuestionsInput {
   identityFiles?: IdentityFileUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  myChats?: ChatUncheckedUpdateManyWithoutFromInput;
   classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
   schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
 export interface QuestionUpsertWithoutChildrensInput {
@@ -10108,15 +9115,12 @@ export interface UserUpdateWithoutProvinceInput {
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  myChats?: ChatUpdateManyWithoutFromInput;
   classrooms?: ClassroomUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
   school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateWithoutProvinceInput {
@@ -10145,15 +9149,12 @@ export interface UserUncheckedUpdateWithoutProvinceInput {
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  myChats?: ChatUncheckedUpdateManyWithoutFromInput;
   classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
   schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateManyWithoutUsersInput {
@@ -10294,15 +9295,12 @@ export interface UserUpdateWithoutRegencyInput {
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  myChats?: ChatUpdateManyWithoutFromInput;
   classrooms?: ClassroomUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
   school?: SchoolUpdateOneWithoutStudentsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateWithoutRegencyInput {
@@ -10331,15 +9329,12 @@ export interface UserUncheckedUpdateWithoutRegencyInput {
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  myChats?: ChatUncheckedUpdateManyWithoutFromInput;
   classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
   schoolId?: NullableStringFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
 export interface SchoolUpdateWithoutRegencyInput {
@@ -10412,24 +9407,14 @@ export interface ExamSessionCreateManyUserInput {
   maxPlayer?: number;
 }
 
-export interface PrivateChatCreateManyToInput {
+export interface ChatCreateManyFromInput {
   id?: string;
-  fromId: string;
   contentType: ContentType;
   content: string;
   readAt?: undefined;
   createdAt?: undefined;
   updatedAt?: undefined;
-}
-
-export interface PrivateChatCreateManyFromInput {
-  id?: string;
-  toId: string;
-  contentType: ContentType;
-  content: string;
-  readAt?: undefined;
-  createdAt?: undefined;
-  updatedAt?: undefined;
+  chatSessionId: string;
 }
 
 export interface ClassroomCreateManyUserInput {
@@ -10465,24 +9450,6 @@ export interface SchoolStaffCreateManyUserInput {
   id?: string;
   schoolId: string;
   roles?: SchoolStaffRoles[];
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface PrivateChatSessionCreateManyToInput {
-  id?: string;
-  fromId: string;
-  lastReadAt?: undefined;
-  lastChatId?: string;
-  createdAt?: undefined;
-  updatedAt?: undefined;
-}
-
-export interface PrivateChatSessionCreateManyFromInput {
-  id?: string;
-  toId: string;
-  lastReadAt?: undefined;
-  lastChatId?: string;
   createdAt?: undefined;
   updatedAt?: undefined;
 }
@@ -10605,68 +9572,34 @@ export interface ExamSessionUncheckedUpdateManyWithoutExamsessionsInput {
   maxPlayer?: NullableIntFieldUpdateOperationsInput;
 }
 
-export interface PrivateChatUpdateWithoutToInput {
+export interface ChatUpdateWithoutFromInput {
   id?: StringFieldUpdateOperationsInput;
-  from?: UserUpdateOneRequiredWithoutMyPrivateChatsInput;
   contentType?: EnumContentTypeFieldUpdateOperationsInput;
   content?: StringFieldUpdateOperationsInput;
   readAt?: NullableDateTimeFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutLastChatInput;
+  chatSession?: ChatSessionUpdateOneRequiredWithoutChatsInput;
 }
 
-export interface PrivateChatUncheckedUpdateWithoutToInput {
+export interface ChatUncheckedUpdateWithoutFromInput {
   id?: StringFieldUpdateOperationsInput;
-  fromId?: StringFieldUpdateOperationsInput;
   contentType?: EnumContentTypeFieldUpdateOperationsInput;
   content?: StringFieldUpdateOperationsInput;
   readAt?: NullableDateTimeFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutLastChatInput;
+  chatSessionId?: StringFieldUpdateOperationsInput;
 }
 
-export interface PrivateChatUncheckedUpdateManyWithoutPrivateChatsInput {
+export interface ChatUncheckedUpdateManyWithoutMyChatsInput {
   id?: StringFieldUpdateOperationsInput;
-  fromId?: StringFieldUpdateOperationsInput;
   contentType?: EnumContentTypeFieldUpdateOperationsInput;
   content?: StringFieldUpdateOperationsInput;
   readAt?: NullableDateTimeFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface PrivateChatUpdateWithoutFromInput {
-  id?: StringFieldUpdateOperationsInput;
-  to?: UserUpdateOneRequiredWithoutPrivateChatsInput;
-  contentType?: EnumContentTypeFieldUpdateOperationsInput;
-  content?: StringFieldUpdateOperationsInput;
-  readAt?: NullableDateTimeFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutLastChatInput;
-}
-
-export interface PrivateChatUncheckedUpdateWithoutFromInput {
-  id?: StringFieldUpdateOperationsInput;
-  toId?: StringFieldUpdateOperationsInput;
-  contentType?: EnumContentTypeFieldUpdateOperationsInput;
-  content?: StringFieldUpdateOperationsInput;
-  readAt?: NullableDateTimeFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutLastChatInput;
-}
-
-export interface PrivateChatUncheckedUpdateManyWithoutMyPrivateChatsInput {
-  id?: StringFieldUpdateOperationsInput;
-  toId?: StringFieldUpdateOperationsInput;
-  contentType?: EnumContentTypeFieldUpdateOperationsInput;
-  content?: StringFieldUpdateOperationsInput;
-  readAt?: NullableDateTimeFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
+  chatSessionId?: StringFieldUpdateOperationsInput;
 }
 
 export interface ClassroomUpdateWithoutUserInput {
@@ -10782,60 +9715,6 @@ export interface SchoolStaffUncheckedUpdateManyWithoutSchoolStaffsInput {
   updatedAt?: DateTimeFieldUpdateOperationsInput;
 }
 
-export interface PrivateChatSessionUpdateWithoutToInput {
-  id?: StringFieldUpdateOperationsInput;
-  from?: UserUpdateOneRequiredWithoutMyPrivateChatSessionInput;
-  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
-  lastChat?: PrivateChatUpdateOneWithoutPrivateChatSessionInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface PrivateChatSessionUncheckedUpdateWithoutToInput {
-  id?: StringFieldUpdateOperationsInput;
-  fromId?: StringFieldUpdateOperationsInput;
-  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
-  lastChatId?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface PrivateChatSessionUncheckedUpdateManyWithoutPrivateChatSessionInput {
-  id?: StringFieldUpdateOperationsInput;
-  fromId?: StringFieldUpdateOperationsInput;
-  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
-  lastChatId?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface PrivateChatSessionUpdateWithoutFromInput {
-  id?: StringFieldUpdateOperationsInput;
-  to?: UserUpdateOneRequiredWithoutPrivateChatSessionInput;
-  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
-  lastChat?: PrivateChatUpdateOneWithoutPrivateChatSessionInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface PrivateChatSessionUncheckedUpdateWithoutFromInput {
-  id?: StringFieldUpdateOperationsInput;
-  toId?: StringFieldUpdateOperationsInput;
-  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
-  lastChatId?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
-export interface PrivateChatSessionUncheckedUpdateManyWithoutMyPrivateChatSessionInput {
-  id?: StringFieldUpdateOperationsInput;
-  toId?: StringFieldUpdateOperationsInput;
-  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
-  lastChatId?: NullableStringFieldUpdateOperationsInput;
-  createdAt?: DateTimeFieldUpdateOperationsInput;
-  updatedAt?: DateTimeFieldUpdateOperationsInput;
-}
-
 export interface ClassroomCreateManySchoolInput {
   id?: string;
   name: string;
@@ -10941,14 +9820,11 @@ export interface UserUpdateWithoutSchoolInput {
   questions?: QuestionUpdateManyWithoutUserInput;
   examinations?: ExamUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUpdateManyWithoutFromInput;
+  myChats?: ChatUpdateManyWithoutFromInput;
   classrooms?: ClassroomUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUpdateManyWithoutUserInput;
   notifications?: NotificationUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUpdateManyWithoutUserInput;
-  privateChatSession?: PrivateChatSessionUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateWithoutSchoolInput {
@@ -10978,14 +9854,11 @@ export interface UserUncheckedUpdateWithoutSchoolInput {
   questions?: QuestionUncheckedUpdateManyWithoutUserInput;
   examinations?: ExamUncheckedUpdateManyWithoutUserInput;
   examsessions?: ExamSessionUncheckedUpdateManyWithoutUserInput;
-  privateChats?: PrivateChatUncheckedUpdateManyWithoutToInput;
-  myPrivateChats?: PrivateChatUncheckedUpdateManyWithoutFromInput;
+  myChats?: ChatUncheckedUpdateManyWithoutFromInput;
   classrooms?: ClassroomUncheckedUpdateManyWithoutUserInput;
   classroomStudents?: ClassroomStudentUncheckedUpdateManyWithoutUserInput;
   notifications?: NotificationUncheckedUpdateManyWithoutUserInput;
   schoolStaffs?: SchoolStaffUncheckedUpdateManyWithoutUserInput;
-  privateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutToInput;
-  myPrivateChatSession?: PrivateChatSessionUncheckedUpdateManyWithoutFromInput;
 }
 
 export interface UserUncheckedUpdateManyWithoutStudentsInput {
@@ -11045,29 +9918,42 @@ export interface ClassroomStudentUncheckedUpdateManyWithoutStudentsInput {
   updatedAt?: DateTimeFieldUpdateOperationsInput;
 }
 
-export interface PrivateChatSessionCreateManyLastChatInput {
+export interface ChatCreateManyChatSessionInput {
   id?: string;
   fromId: string;
-  toId: string;
-  lastReadAt?: undefined;
+  contentType: ContentType;
+  content: string;
+  readAt?: undefined;
   createdAt?: undefined;
   updatedAt?: undefined;
 }
 
-export interface PrivateChatSessionUpdateWithoutLastChatInput {
+export interface ChatUpdateWithoutChatSessionInput {
   id?: StringFieldUpdateOperationsInput;
-  from?: UserUpdateOneRequiredWithoutMyPrivateChatSessionInput;
-  to?: UserUpdateOneRequiredWithoutPrivateChatSessionInput;
-  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
+  from?: UserUpdateOneRequiredWithoutMyChatsInput;
+  contentType?: EnumContentTypeFieldUpdateOperationsInput;
+  content?: StringFieldUpdateOperationsInput;
+  readAt?: NullableDateTimeFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
 }
 
-export interface PrivateChatSessionUncheckedUpdateWithoutLastChatInput {
+export interface ChatUncheckedUpdateWithoutChatSessionInput {
   id?: StringFieldUpdateOperationsInput;
   fromId?: StringFieldUpdateOperationsInput;
-  toId?: StringFieldUpdateOperationsInput;
-  lastReadAt?: NullableDateTimeFieldUpdateOperationsInput;
+  contentType?: EnumContentTypeFieldUpdateOperationsInput;
+  content?: StringFieldUpdateOperationsInput;
+  readAt?: NullableDateTimeFieldUpdateOperationsInput;
+  createdAt?: DateTimeFieldUpdateOperationsInput;
+  updatedAt?: DateTimeFieldUpdateOperationsInput;
+}
+
+export interface ChatUncheckedUpdateManyWithoutChatsInput {
+  id?: StringFieldUpdateOperationsInput;
+  fromId?: StringFieldUpdateOperationsInput;
+  contentType?: EnumContentTypeFieldUpdateOperationsInput;
+  content?: StringFieldUpdateOperationsInput;
+  readAt?: NullableDateTimeFieldUpdateOperationsInput;
   createdAt?: DateTimeFieldUpdateOperationsInput;
   updatedAt?: DateTimeFieldUpdateOperationsInput;
 }
@@ -11300,16 +10186,16 @@ export interface AggregateClassroomStudent {
   _max: Maybe<ClassroomStudentMaxAggregateOutputType>;
 }
 
-export interface AggregatePrivateChatSession {
-  _count: Maybe<PrivateChatSessionCountAggregateOutputType>;
-  _min: Maybe<PrivateChatSessionMinAggregateOutputType>;
-  _max: Maybe<PrivateChatSessionMaxAggregateOutputType>;
+export interface AggregateChatSession {
+  _count: Maybe<ChatSessionCountAggregateOutputType>;
+  _min: Maybe<ChatSessionMinAggregateOutputType>;
+  _max: Maybe<ChatSessionMaxAggregateOutputType>;
 }
 
-export interface AggregatePrivateChat {
-  _count: Maybe<PrivateChatCountAggregateOutputType>;
-  _min: Maybe<PrivateChatMinAggregateOutputType>;
-  _max: Maybe<PrivateChatMaxAggregateOutputType>;
+export interface AggregateChat {
+  _count: Maybe<ChatCountAggregateOutputType>;
+  _min: Maybe<ChatMinAggregateOutputType>;
+  _max: Maybe<ChatMaxAggregateOutputType>;
 }
 
 export interface AggregateExam {
@@ -11431,14 +10317,11 @@ export interface UserCountOutputType {
   questions: number;
   examinations: number;
   examsessions: number;
-  privateChats: number;
-  myPrivateChats: number;
+  myChats: number;
   classrooms: number;
   classroomStudents: number;
   notifications: number;
   schoolStaffs: number;
-  privateChatSession: number;
-  myPrivateChatSession: number;
 }
 
 export interface UserCountAggregateOutputType {
@@ -11723,73 +10606,65 @@ export interface ClassroomStudentMaxAggregateOutputType {
   updatedAt: Maybe<undefined>;
 }
 
-export interface PrivateChatSessionCountAggregateOutputType {
+export interface ChatSessionCountOutputType {
+  chats: number;
+}
+
+export interface ChatSessionCountAggregateOutputType {
   id: number;
-  fromId: number;
-  toId: number;
+  participantsIds: number;
   lastReadAt: number;
-  lastChatId: number;
   createdAt: number;
   updatedAt: number;
   _all: number;
 }
 
-export interface PrivateChatSessionMinAggregateOutputType {
+export interface ChatSessionMinAggregateOutputType {
   id: Maybe<string>;
-  fromId: Maybe<string>;
-  toId: Maybe<string>;
   lastReadAt: Maybe<undefined>;
-  lastChatId: Maybe<string>;
   createdAt: Maybe<undefined>;
   updatedAt: Maybe<undefined>;
 }
 
-export interface PrivateChatSessionMaxAggregateOutputType {
+export interface ChatSessionMaxAggregateOutputType {
   id: Maybe<string>;
-  fromId: Maybe<string>;
-  toId: Maybe<string>;
   lastReadAt: Maybe<undefined>;
-  lastChatId: Maybe<string>;
   createdAt: Maybe<undefined>;
   updatedAt: Maybe<undefined>;
 }
 
-export interface PrivateChatCountOutputType {
-  privateChatSession: number;
-}
-
-export interface PrivateChatCountAggregateOutputType {
+export interface ChatCountAggregateOutputType {
   id: number;
   fromId: number;
-  toId: number;
   contentType: number;
   content: number;
   readAt: number;
   createdAt: number;
   updatedAt: number;
+  chatSessionId: number;
   _all: number;
 }
 
-export interface PrivateChatMinAggregateOutputType {
+export interface ChatMinAggregateOutputType {
   id: Maybe<string>;
   fromId: Maybe<string>;
-  toId: Maybe<string>;
   contentType: Maybe<ContentType>;
   content: Maybe<string>;
   readAt: Maybe<undefined>;
   createdAt: Maybe<undefined>;
   updatedAt: Maybe<undefined>;
+  chatSessionId: Maybe<string>;
 }
 
-export interface PrivateChatMaxAggregateOutputType {
+export interface ChatMaxAggregateOutputType {
   id: Maybe<string>;
   fromId: Maybe<string>;
-  toId: Maybe<string>;
   contentType: Maybe<ContentType>;
   content: Maybe<string>;
   readAt: Maybe<undefined>;
   createdAt: Maybe<undefined>;
   updatedAt: Maybe<undefined>;
+  chatSessionId: Maybe<string>;
 }
 
 export interface ExamCountOutputType {
@@ -11970,84 +10845,6 @@ export interface QuestionMaxAggregateOutputType {
   originalQuestionId: Maybe<string>;
   createdAt: Maybe<undefined>;
   updatedAt: Maybe<undefined>;
-}
-
-export interface findUniquePrivateChatSessionArgs {
-  where: PrivateChatSessionWhereUniqueInput;
-}
-
-export interface findFirstPrivateChatSessionArgs {
-  where?: PrivateChatSessionWhereInput;
-  orderBy?: PrivateChatSessionOrderByWithRelationInput[];
-  cursor?: PrivateChatSessionWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: PrivateChatSessionScalarFieldEnum[];
-}
-
-export interface findManyPrivateChatSessionArgs {
-  where?: PrivateChatSessionWhereInput;
-  orderBy?: PrivateChatSessionOrderByWithRelationInput[];
-  cursor?: PrivateChatSessionWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: PrivateChatSessionScalarFieldEnum[];
-}
-
-export interface findManyPrivateChatSessionCountArgs {
-  where?: PrivateChatSessionWhereInput;
-  orderBy?: PrivateChatSessionOrderByWithRelationInput[];
-  cursor?: PrivateChatSessionWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: PrivateChatSessionScalarFieldEnum[];
-}
-
-export interface aggregatePrivateChatSessionArgs {
-  where?: PrivateChatSessionWhereInput;
-  orderBy?: PrivateChatSessionOrderByWithRelationInput[];
-  cursor?: PrivateChatSessionWhereUniqueInput;
-  take?: number;
-  skip?: number;
-}
-
-export interface findUniqueSchoolStaffArgs {
-  where: SchoolStaffWhereUniqueInput;
-}
-
-export interface findFirstSchoolStaffArgs {
-  where?: SchoolStaffWhereInput;
-  orderBy?: SchoolStaffOrderByWithRelationInput[];
-  cursor?: SchoolStaffWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: SchoolStaffScalarFieldEnum[];
-}
-
-export interface findManySchoolStaffArgs {
-  where?: SchoolStaffWhereInput;
-  orderBy?: SchoolStaffOrderByWithRelationInput[];
-  cursor?: SchoolStaffWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: SchoolStaffScalarFieldEnum[];
-}
-
-export interface findManySchoolStaffCountArgs {
-  where?: SchoolStaffWhereInput;
-  orderBy?: SchoolStaffOrderByWithRelationInput[];
-  cursor?: SchoolStaffWhereUniqueInput;
-  take?: number;
-  skip?: number;
-  distinct?: SchoolStaffScalarFieldEnum[];
-}
-
-export interface aggregateSchoolStaffArgs {
-  where?: SchoolStaffWhereInput;
-  orderBy?: SchoolStaffOrderByWithRelationInput[];
-  cursor?: SchoolStaffWhereUniqueInput;
-  take?: number;
-  skip?: number;
 }
 
 export interface findUniqueQuestionArgs {
@@ -12245,41 +11042,80 @@ export interface aggregateExamArgs {
   skip?: number;
 }
 
-export interface findUniquePrivateChatArgs {
-  where: PrivateChatWhereUniqueInput;
+export interface findUniqueChatArgs {
+  where: ChatWhereUniqueInput;
 }
 
-export interface findFirstPrivateChatArgs {
-  where?: PrivateChatWhereInput;
-  orderBy?: PrivateChatOrderByWithRelationInput[];
-  cursor?: PrivateChatWhereUniqueInput;
+export interface findFirstChatArgs {
+  where?: ChatWhereInput;
+  orderBy?: ChatOrderByWithRelationInput[];
+  cursor?: ChatWhereUniqueInput;
   take?: number;
   skip?: number;
-  distinct?: PrivateChatScalarFieldEnum[];
+  distinct?: ChatScalarFieldEnum[];
 }
 
-export interface findManyPrivateChatArgs {
-  where?: PrivateChatWhereInput;
-  orderBy?: PrivateChatOrderByWithRelationInput[];
-  cursor?: PrivateChatWhereUniqueInput;
+export interface findManyChatArgs {
+  where?: ChatWhereInput;
+  orderBy?: ChatOrderByWithRelationInput[];
+  cursor?: ChatWhereUniqueInput;
   take?: number;
   skip?: number;
-  distinct?: PrivateChatScalarFieldEnum[];
+  distinct?: ChatScalarFieldEnum[];
 }
 
-export interface findManyPrivateChatCountArgs {
-  where?: PrivateChatWhereInput;
-  orderBy?: PrivateChatOrderByWithRelationInput[];
-  cursor?: PrivateChatWhereUniqueInput;
+export interface findManyChatCountArgs {
+  where?: ChatWhereInput;
+  orderBy?: ChatOrderByWithRelationInput[];
+  cursor?: ChatWhereUniqueInput;
   take?: number;
   skip?: number;
-  distinct?: PrivateChatScalarFieldEnum[];
+  distinct?: ChatScalarFieldEnum[];
 }
 
-export interface aggregatePrivateChatArgs {
-  where?: PrivateChatWhereInput;
-  orderBy?: PrivateChatOrderByWithRelationInput[];
-  cursor?: PrivateChatWhereUniqueInput;
+export interface aggregateChatArgs {
+  where?: ChatWhereInput;
+  orderBy?: ChatOrderByWithRelationInput[];
+  cursor?: ChatWhereUniqueInput;
+  take?: number;
+  skip?: number;
+}
+
+export interface findUniqueChatSessionArgs {
+  where: ChatSessionWhereUniqueInput;
+}
+
+export interface findFirstChatSessionArgs {
+  where?: ChatSessionWhereInput;
+  orderBy?: ChatSessionOrderByWithRelationInput[];
+  cursor?: ChatSessionWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: ChatSessionScalarFieldEnum[];
+}
+
+export interface findManyChatSessionArgs {
+  where?: ChatSessionWhereInput;
+  orderBy?: ChatSessionOrderByWithRelationInput[];
+  cursor?: ChatSessionWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: ChatSessionScalarFieldEnum[];
+}
+
+export interface findManyChatSessionCountArgs {
+  where?: ChatSessionWhereInput;
+  orderBy?: ChatSessionOrderByWithRelationInput[];
+  cursor?: ChatSessionWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: ChatSessionScalarFieldEnum[];
+}
+
+export interface aggregateChatSessionArgs {
+  where?: ChatSessionWhereInput;
+  orderBy?: ChatSessionOrderByWithRelationInput[];
+  cursor?: ChatSessionWhereUniqueInput;
   take?: number;
   skip?: number;
 }
@@ -12358,6 +11194,45 @@ export interface aggregateClassroomArgs {
   where?: ClassroomWhereInput;
   orderBy?: ClassroomOrderByWithRelationInput[];
   cursor?: ClassroomWhereUniqueInput;
+  take?: number;
+  skip?: number;
+}
+
+export interface findUniqueSchoolStaffArgs {
+  where: SchoolStaffWhereUniqueInput;
+}
+
+export interface findFirstSchoolStaffArgs {
+  where?: SchoolStaffWhereInput;
+  orderBy?: SchoolStaffOrderByWithRelationInput[];
+  cursor?: SchoolStaffWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: SchoolStaffScalarFieldEnum[];
+}
+
+export interface findManySchoolStaffArgs {
+  where?: SchoolStaffWhereInput;
+  orderBy?: SchoolStaffOrderByWithRelationInput[];
+  cursor?: SchoolStaffWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: SchoolStaffScalarFieldEnum[];
+}
+
+export interface findManySchoolStaffCountArgs {
+  where?: SchoolStaffWhereInput;
+  orderBy?: SchoolStaffOrderByWithRelationInput[];
+  cursor?: SchoolStaffWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: SchoolStaffScalarFieldEnum[];
+}
+
+export interface aggregateSchoolStaffArgs {
+  where?: SchoolStaffWhereInput;
+  orderBy?: SchoolStaffOrderByWithRelationInput[];
+  cursor?: SchoolStaffWhereUniqueInput;
   take?: number;
   skip?: number;
 }
@@ -12598,60 +11473,10 @@ export interface aggregateProvinceArgs {
 
 export interface meArgs {}
 
-export interface createOnePrivateChatSessionArgs {
-  data: PrivateChatSessionCreateInput;
-}
-
-export interface updateOnePrivateChatSessionArgs {
-  data: PrivateChatSessionUpdateInput;
-  where: PrivateChatSessionWhereUniqueInput;
-}
-
-export interface upsertOnePrivateChatSessionArgs {
-  where: PrivateChatSessionWhereUniqueInput;
-  create: PrivateChatSessionCreateInput;
-  update: PrivateChatSessionUpdateInput;
-}
-
-export interface deleteOnePrivateChatSessionArgs {
-  where: PrivateChatSessionWhereUniqueInput;
-}
-
-export interface updateManyPrivateChatSessionArgs {
-  data: PrivateChatSessionUpdateManyMutationInput;
-  where?: PrivateChatSessionWhereInput;
-}
-
-export interface deleteManyPrivateChatSessionArgs {
-  where?: PrivateChatSessionWhereInput;
-}
-
-export interface createOneSchoolStaffArgs {
-  data: SchoolStaffCreateInput;
-}
-
-export interface updateOneSchoolStaffArgs {
-  data: SchoolStaffUpdateInput;
-  where: SchoolStaffWhereUniqueInput;
-}
-
-export interface upsertOneSchoolStaffArgs {
-  where: SchoolStaffWhereUniqueInput;
-  create: SchoolStaffCreateInput;
-  update: SchoolStaffUpdateInput;
-}
-
-export interface deleteOneSchoolStaffArgs {
-  where: SchoolStaffWhereUniqueInput;
-}
-
-export interface updateManySchoolStaffArgs {
-  data: SchoolStaffUpdateManyMutationInput;
-  where?: SchoolStaffWhereInput;
-}
-
-export interface deleteManySchoolStaffArgs {
-  where?: SchoolStaffWhereInput;
+export interface findChatTargetArgs {
+  name: string;
+  /** @default 10*/
+  take?: number;
 }
 
 export interface createOneQuestionArgs {
@@ -12794,32 +11619,60 @@ export interface deleteManyExamArgs {
   where?: ExamWhereInput;
 }
 
-export interface createOnePrivateChatArgs {
-  data: PrivateChatCreateInput;
+export interface createOneChatArgs {
+  data: ChatCreateInput;
 }
 
-export interface updateOnePrivateChatArgs {
-  data: PrivateChatUpdateInput;
-  where: PrivateChatWhereUniqueInput;
+export interface updateOneChatArgs {
+  data: ChatUpdateInput;
+  where: ChatWhereUniqueInput;
 }
 
-export interface upsertOnePrivateChatArgs {
-  where: PrivateChatWhereUniqueInput;
-  create: PrivateChatCreateInput;
-  update: PrivateChatUpdateInput;
+export interface upsertOneChatArgs {
+  where: ChatWhereUniqueInput;
+  create: ChatCreateInput;
+  update: ChatUpdateInput;
 }
 
-export interface deleteOnePrivateChatArgs {
-  where: PrivateChatWhereUniqueInput;
+export interface deleteOneChatArgs {
+  where: ChatWhereUniqueInput;
 }
 
-export interface updateManyPrivateChatArgs {
-  data: PrivateChatUpdateManyMutationInput;
-  where?: PrivateChatWhereInput;
+export interface updateManyChatArgs {
+  data: ChatUpdateManyMutationInput;
+  where?: ChatWhereInput;
 }
 
-export interface deleteManyPrivateChatArgs {
-  where?: PrivateChatWhereInput;
+export interface deleteManyChatArgs {
+  where?: ChatWhereInput;
+}
+
+export interface createOneChatSessionArgs {
+  data: ChatSessionCreateInput;
+}
+
+export interface updateOneChatSessionArgs {
+  data: ChatSessionUpdateInput;
+  where: ChatSessionWhereUniqueInput;
+}
+
+export interface upsertOneChatSessionArgs {
+  where: ChatSessionWhereUniqueInput;
+  create: ChatSessionCreateInput;
+  update: ChatSessionUpdateInput;
+}
+
+export interface deleteOneChatSessionArgs {
+  where: ChatSessionWhereUniqueInput;
+}
+
+export interface updateManyChatSessionArgs {
+  data: ChatSessionUpdateManyMutationInput;
+  where?: ChatSessionWhereInput;
+}
+
+export interface deleteManyChatSessionArgs {
+  where?: ChatSessionWhereInput;
 }
 
 export interface createOneClassroomStudentArgs {
@@ -12876,6 +11729,34 @@ export interface updateManyClassroomArgs {
 
 export interface deleteManyClassroomArgs {
   where?: ClassroomWhereInput;
+}
+
+export interface createOneSchoolStaffArgs {
+  data: SchoolStaffCreateInput;
+}
+
+export interface updateOneSchoolStaffArgs {
+  data: SchoolStaffUpdateInput;
+  where: SchoolStaffWhereUniqueInput;
+}
+
+export interface upsertOneSchoolStaffArgs {
+  where: SchoolStaffWhereUniqueInput;
+  create: SchoolStaffCreateInput;
+  update: SchoolStaffUpdateInput;
+}
+
+export interface deleteOneSchoolStaffArgs {
+  where: SchoolStaffWhereUniqueInput;
+}
+
+export interface updateManySchoolStaffArgs {
+  data: SchoolStaffUpdateManyMutationInput;
+  where?: SchoolStaffWhereInput;
+}
+
+export interface deleteManySchoolStaffArgs {
+  where?: SchoolStaffWhereInput;
 }
 
 export interface createOneSchoolArgs {
@@ -13074,6 +11955,10 @@ export interface loginArgs {
   password: string;
 }
 
+export interface createNewSessionArgs {
+  to: string;
+}
+
 export interface sendChatArgs {
   to: string;
   content: string;
@@ -13081,4 +11966,4 @@ export interface sendChatArgs {
   file?: File;
 }
 
-export interface privateChatSubscribeArgs {}
+export interface chatSubscribeArgs {}

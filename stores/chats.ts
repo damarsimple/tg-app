@@ -1,38 +1,69 @@
 import { gql } from "@apollo/client";
 import create from "zustand";
-import { PrivateChat, PrivateChatSession } from "../generated";
+import { Chat, ChatSession } from "../generated";
 import { client } from "../modules/apollo";
 import { useUserStore } from "./user";
 
 type SPESIFIC_CHAT_FILTER = "read" | "unread";
 
-interface PrivateChatState {
+interface ChatState {
+
+  conversationId?: string;
+  setConversationId: (conversationId: string, target: string) => void;
+  conversations: Chat[];
+  setConversations: (conversations: Chat[]) => void;
+  addConversation: (conversation: Chat) => void;
+
   registerCalled: boolean;
-  sessions: PrivateChatSession[];
-  getConversation: (fromId: string) => PrivateChat[];
+  sessions: ChatSession[];
   sendConversation: (
     toId: string,
     content: string,
     cb: (r: boolean) => void
   ) => void;
-  lastChatMap: Record<string, PrivateChat>;
-  setLastChatMap: (by: Record<string, PrivateChat>) => void;
-  getSession: (type: string) => PrivateChatSession | undefined;
-  setSessions: (privateChats: PrivateChatSession[]) => void;
-  addSessions: (privateChats: PrivateChatSession) => void;
+  lastChatMap: Record<string, Chat>;
+  setLastChatMap: (by: Record<string, Chat>) => void;
+  getSession: (type: string) => ChatSession | undefined;
+  setSessions: (chats: ChatSession[]) => void;
+  addSessions: (chats: ChatSession) => void;
 
-  privateChats: PrivateChat[];
-  getSpesificPrivateChats: (type: SPESIFIC_CHAT_FILTER) => PrivateChat[];
-  setPrivateChats: (privateChats: PrivateChat[]) => void;
-  addPrivateChats: (privateChats: PrivateChat) => void;
+
+  chats: Chat[];
+  getSpesificChats: (type: SPESIFIC_CHAT_FILTER) => Chat[];
+  setChats: (chats: Chat[]) => void;
+  addChats: (chats: Chat) => void;
   register: () => void;
 
   fetchSessions: () => Promise<void>;
   fetchSession: (id: string) => Promise<void>;
 }
 
-export const usePrivateChatStore = create<PrivateChatState>((set, get) => ({
+export const useChatStore = create<ChatState>((set, get) => ({
   registerCalled: false,
+
+  conversationId: undefined,
+
+  setConversationId: async (conversationId: string, targetId: string) => {
+
+
+
+    await client.mutate({
+      mutation: gql`
+      mutation FindManyChats($fr: String!) {}
+    
+    `, variables: {}
+    })
+
+    set({ conversationId });
+
+  },
+  conversations: [],
+  setConversations: (conversations: Chat[]) => set({ conversations }),
+  addConversation: (conversation: Chat) => {
+    const conversations = get().conversations;
+    set({ conversations: [...conversations, conversation] });
+  },
+
   sendConversation: (to, content, cb) => {
     client
       .mutate({
@@ -58,43 +89,52 @@ export const usePrivateChatStore = create<PrivateChatState>((set, get) => ({
   },
   lastChatMap: {},
   sessions: [],
-  privateChats: [],
+  chats: [],
   setLastChatMap: (lastChatMap) => set(() => ({ lastChatMap })),
-  getConversation: (fromId) => {
-    const userId = useUserStore.getState().user?.id;
-    return get().privateChats.filter((chat) => {
-      return chat.fromId === fromId && chat.toId === userId;
-    });
-  },
+
   getSession: (id) => {
     return get().sessions.find((session) => session.id === id);
   },
   setSessions: (sessions) => set(() => ({ sessions })),
   addSessions: (sessions) =>
     set(() => ({ sessions: [...get().sessions, sessions] })),
-  getSpesificPrivateChats: (type) => {
+  getSpesificChats: (type) => {
     if (type == "read")
-      return get().privateChats.filter((chat) => !!chat.readAt);
+      return get().chats.filter((chat) => !!chat.readAt);
 
-    return get().privateChats.filter((chat) => chat.readAt == null);
+    return get().chats.filter((chat) => chat.readAt == null);
   },
-  setPrivateChats: (privateChats: PrivateChat[]) =>
-    set(() => ({ privateChats })),
-  addPrivateChats: (privateChats: PrivateChat) =>
-    set(() => ({ privateChats: [...get().privateChats, privateChats] })),
+  setChats: (chats: Chat[]) =>
+    set(() => ({ chats })),
+  addChats: (chats: Chat) =>
+    set(() => ({ chats: [...get().chats, chats] })),
 
   fetchSessions: async () => {
     const userId = useUserStore.getState().user?.id;
 
     if (!userId) return;
 
-    const { data: { findManyPrivateChatSession } = {} } = await client.query<{
-      findManyPrivateChatSession: PrivateChatSession[];
+    const { data: { findManyChatSession } = {} } = await client.query<{
+      findManyChatSession: ChatSession[];
     }>({
       query: gql`
-        query FindManyPrivateChatSession($where: PrivateChatSessionWhereInput) {
-          findManyPrivateChatSession(where: $where) {
-        .e
+        query FindManyChatSession($where: ChatSessionWhereInput) {
+          findManyChatSession(where: $where) {
+            id
+            toId
+            fromId
+            to {
+              id
+              name
+              profilePicturePath
+            }
+            from {
+              id
+              name
+              profilePicturePath
+            }
+            lastReadAt
+            lastChatId
           }
         }
       `,
@@ -107,8 +147,8 @@ export const usePrivateChatStore = create<PrivateChatState>((set, get) => ({
       },
     });
 
-    if (findManyPrivateChatSession) {
-      set({ sessions: findManyPrivateChatSession });
+    if (findManyChatSession) {
+      set({ sessions: findManyChatSession });
     }
   },
 
@@ -117,14 +157,14 @@ export const usePrivateChatStore = create<PrivateChatState>((set, get) => ({
 
     if (!userId) return;
 
-    const { data: { findFirstPrivateChatSession } = {} } = await client.query<{
-      findFirstPrivateChatSession: PrivateChatSession;
+    const { data: { findFirstChatSession } = {} } = await client.query<{
+      findFirstChatSession: ChatSession;
     }>({
       query: gql`
-        query findFirstPrivateChatSession(
-          $where: PrivateChatSessionWhereInput
+        query findFirstChatSession(
+          $where: ChatSessionWhereInput
         ) {
-          findFirstPrivateChatSession(where: $where) {
+          findFirstChatSession(where: $where) {
             id
             toId
             fromId
@@ -156,12 +196,12 @@ export const usePrivateChatStore = create<PrivateChatState>((set, get) => ({
     });
 
     if (
-      findFirstPrivateChatSession &&
+      findFirstChatSession &&
       !get().sessions.find(
-        (session) => session.id == findFirstPrivateChatSession.id
+        (session) => session.id == findFirstChatSession.id
       )
     ) {
-      set({ sessions: [...get().sessions, findFirstPrivateChatSession] });
+      set({ sessions: [...get().sessions, findFirstChatSession] });
     }
   },
 
@@ -170,10 +210,10 @@ export const usePrivateChatStore = create<PrivateChatState>((set, get) => ({
 
     await get().fetchSessions();
     await client
-      .subscribe<{ privateChatSubscribe: PrivateChat }>({
+      .subscribe<{ chatSubscribe: Chat }>({
         query: gql`
           subscription Subscription {
-            privateChatSubscribe {
+            chatSubscribe {
               id
               contentType
               content
@@ -185,26 +225,26 @@ export const usePrivateChatStore = create<PrivateChatState>((set, get) => ({
         `,
       })
       .subscribe(({ data }) => {
-        const { privateChatSubscribe } = data || {};
+        const { chatSubscribe } = data || {};
 
-        if (!privateChatSubscribe) return;
+        if (!chatSubscribe) return;
 
         if (
-          !get().sessions.find((e) => e.fromId == privateChatSubscribe?.fromId)
+          !get().sessions.find((e) => e.id == chatSubscribe?.chatSessionId)
         ) {
-          get().fetchSession(privateChatSubscribe.fromId);
+          get().fetchSession(chatSubscribe.fromId);
         }
 
-        get().addPrivateChats(privateChatSubscribe);
+        get().addChats(chatSubscribe);
 
         get().setLastChatMap({
           ...get().lastChatMap,
-          [privateChatSubscribe.fromId]: privateChatSubscribe,
+          [chatSubscribe.fromId]: chatSubscribe,
         });
 
         set({ registerCalled: true });
       });
 
-    console.log("[PrivateChat] Handler registered");
+    console.log("[Chat] Handler registered");
   },
 }));
