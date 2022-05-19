@@ -24,24 +24,25 @@ import {
 } from "@mui/material";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { User } from "generated";
-import { PrivateChat, PrivateChatSession } from "../generated";
+import { Chat, ChatSession } from "../generated";
 
 export default function Chats() {
   const {
     sessions,
     lastChatMap,
-    getConversation,
     sendConversation,
     getSession,
-    fetchSession,
+    conversations,
+    addConversation,
     addSessions,
+    conversationId,
+    setConversationId,
   } = usePrivateChatStore();
 
-  const [selectedId, setSelectedId] = useState("");
   const isDesktop = useMediaQuery("only screen and (min-width: 400px)");
   const isMobile = !isDesktop;
 
-  const session = getSession(selectedId);
+  const session = conversationId ? getSession(conversationId) : undefined;
 
   const [chatContent, setChatContent] = useState("");
 
@@ -75,7 +76,7 @@ export default function Chats() {
   );
 
   const [handleCreate] = useMutation<{
-    createNewSession: PrivateChatSession;
+    createNewSession: ChatSession;
   }>(gql`
     mutation CreateNewSession($to: String!) {
       createNewSession(to: $to) {
@@ -146,11 +147,14 @@ export default function Chats() {
                     handleCreate({ variables: { to: e.id } }).then((x) => {
                       if (!x?.data?.createNewSession) return;
                       addSessions(x.data?.createNewSession);
-                      setSelectedId(`${x.data?.createNewSession?.id}`);
+                      setConversationId(
+                        `${x.data?.createNewSession.id}`,
+                        x.data.createNewSession.toId
+                      );
                       setShowSendModal(false);
                     });
                   }}
-                  selected={selectedId === e.id}
+                  selected={conversationId === e.id}
                   sx={{ width: "100%" }}
                 >
                   <ListItemAvatar>
@@ -175,7 +179,7 @@ export default function Chats() {
       >
         KIRIM PESAN BARU
       </Button>
-      {(isDesktop || (isMobile && !selectedId)) && (
+      {(isDesktop || (isMobile && !conversationId)) && (
         <List
           sx={{
             width: "100%",
@@ -187,9 +191,9 @@ export default function Chats() {
             <Fragment key={e.id}>
               <ListItemButton
                 onClick={() => {
-                  setSelectedId(e.id);
+                  setConversationId(e.id, e.fromId);
                 }}
-                selected={selectedId === e.id}
+                selected={conversationId === e.id}
                 sx={{ width: "100%" }}
               >
                 <ListItemAvatar>
@@ -212,7 +216,7 @@ export default function Chats() {
           ))}
         </List>
       )}
-      {selectedId && session && (
+      {conversationId && session && (
         <Box
           sx={{
             display: "flex",
@@ -232,7 +236,7 @@ export default function Chats() {
             </Typography>
           </Paper>
           <Box sx={{ p: 1, display: "flex", flexDirection: "column", gap: 1 }}>
-            {getConversation(session.from.id)?.map((e) => (
+            {conversations?.map((e) => (
               <Paper
                 key={e.id}
                 sx={{
