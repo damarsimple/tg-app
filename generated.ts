@@ -255,7 +255,7 @@ export interface Auth {
 }
 
 export interface VerificationResponse {
-  success: Maybe<boolean>;
+  status: Maybe<boolean>;
   message: Maybe<string>;
 }
 
@@ -1145,7 +1145,6 @@ export interface ChatOrderByWithRelationInput {
 
 export interface ChatWhereUniqueInput {
   id?: string;
-  chatSessionId?: string;
 }
 
 export interface ChatOrderByWithAggregationInput {

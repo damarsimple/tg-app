@@ -224,7 +224,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
     return get().chats.filter((chat) => chat.readAt == null);
   },
   setChats: (chats: Chat[]) => set(() => ({ chats })),
-  addChats: (chats: Chat) => set(() => ({ chats: [...get().chats, chats] })),
+  addChats: (chat: Chat) => {
+    const userId = useUserStore.getState().user?.id;
+
+    const chats_ = get().chats?.filter((e) => e.fromId !== userId);
+
+    console.log(chats_);
+
+    if (chats_.map((e) => e.id).includes(chat.id)) return;
+
+    set(() => ({ chats: [...chats_, chat] }));
+  },
 
   fetchSessions: async () => {
     const userId = useUserStore.getState().user?.id;

@@ -41,6 +41,7 @@ import { useNoticationStore } from "stores/notifications";
 import { useChatStore } from "../stores/chats";
 import { useRouter } from "next/router";
 import { useDrawerStore } from "../stores/applayout";
+import BrowserOnly from "./BrowserOnly";
 
 const drawerWidth = 240;
 
@@ -305,10 +306,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [role, setRole] = useState(0);
 
   const { user } = useUserStore();
-  const { register } = useChatStore();
+  const { register, chats } = useChatStore();
 
   const init = async () => {
     await register();
+
+    console.log(`logged as ${user?.name} ${user?.email}`);
   };
 
   useEffect(() => {
@@ -317,7 +320,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   const { notifications } = useNoticationStore();
   const isMenuOpen = Boolean(anchorEl);
-  const unreadChats = [];
+  const unreadChats = chats?.filter((e) => e.readAt == null);
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
@@ -552,28 +555,30 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <Box sx={{ marginLeft: "56px" }}>{children}</Box>
         {renderMenu}
       </Box>
-      {pathname == "/dashboard" && (
-        <Paper
-          sx={{
-            height: 50,
-            width: "100%",
-            alignContent: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            position: "fixed",
-            bottom: 0,
-            zIndex: 99999,
-            paddingBottom: 5,
-          }}
-        >
-          <Typography variant="h5">Anda belum memverifikasi email</Typography>
-          <Typography variant="body2">
-            <Link href="/">
-              <a>klik disini untuk kirim ulang verifikasi email</a>
-            </Link>
-          </Typography>
-        </Paper>
-      )}
+      <BrowserOnly>
+        {pathname == "/dashboard" && !!user?.emailVerifiedAt && (
+          <Paper
+            sx={{
+              height: 50,
+              width: "100%",
+              alignContent: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              position: "fixed",
+              bottom: 0,
+              zIndex: 99999,
+              paddingBottom: 5,
+            }}
+          >
+            <Typography variant="h5">Anda belum memverifikasi email</Typography>
+            <Typography variant="body2">
+              <Link href="/">
+                <a>klik disini untuk kirim ulang verifikasi email</a>
+              </Link>
+            </Typography>
+          </Paper>
+        )}
+      </BrowserOnly>
     </Box>
   );
 }
