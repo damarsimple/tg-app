@@ -38,7 +38,7 @@ import { useUserStore } from "stores/user";
 import Link from "next/link";
 import Paper from "@mui/material/Paper";
 import { useNoticationStore } from "stores/notifications";
-import { usePrivateChatStore } from "../stores/chats";
+import { useChatStore } from "../stores/chats";
 import { useRouter } from "next/router";
 import { useDrawerStore } from "../stores/applayout";
 
@@ -305,7 +305,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [role, setRole] = useState(0);
 
   const { user } = useUserStore();
-  const { getSpesificPrivateChats, register } = usePrivateChatStore();
+  const { register } = useChatStore();
 
   const init = async () => {
     await register();
@@ -317,7 +317,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   const { notifications } = useNoticationStore();
   const isMenuOpen = Boolean(anchorEl);
-  const unreadChats = getSpesificPrivateChats("unread");
+  const unreadChats = [];
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}

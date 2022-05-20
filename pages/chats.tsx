@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, Fragment, useRef } from "react";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import Divider from "@mui/material/Divider";
@@ -7,7 +7,7 @@ import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import AppLayout from "../components/AppLayout";
-import { usePrivateChatStore } from "stores/chats";
+import { useChatStore } from "stores/chats";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import MailIcon from "@mui/icons-material/Mail";
@@ -25,9 +25,11 @@ import {
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { User } from "generated";
 import { Chat, ChatSession } from "../generated";
+import { useUserStore } from "stores/user";
 
 export default function Chats() {
   const {
+    chatUsers,
     sessions,
     lastChatMap,
     sendConversation,
@@ -37,7 +39,11 @@ export default function Chats() {
     addSessions,
     conversationId,
     setConversationId,
-  } = usePrivateChatStore();
+    getUsers,
+    setOnNewConversation,
+  } = useChatStore();
+
+  const { user } = useUserStore();
 
   const isDesktop = useMediaQuery("only screen and (min-width: 400px)");
   const isMobile = !isDesktop;
@@ -47,9 +53,9 @@ export default function Chats() {
   const [chatContent, setChatContent] = useState("");
 
   const sendChatHandler = () => {
-    if (chatContent.length == 0 || !session?.fromId) return;
+    if (chatContent.length == 0 || !session?.id) return;
 
-    sendConversation(session.fromId, chatContent, () => {
+    sendConversation(session.id, chatContent, () => {
       setChatContent("");
     });
   };
@@ -81,21 +87,27 @@ export default function Chats() {
     mutation CreateNewSession($to: String!) {
       createNewSession(to: $to) {
         id
-        toId
-        fromId
-        from {
-          id
-          name
-          profilePicturePath
-        }
+        participantsIds
         lastReadAt
-        lastChatId
-        lastChat {
-          content
-        }
       }
     }
   `);
+
+  const lastChatElementRef = useRef<HTMLDivElement>(null);
+
+  const scroll = () => {
+    setTimeout(() => {
+      if (lastChatElementRef.current) {
+        lastChatElementRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 200);
+  };
+
+  const setConversationHandler = (id: string) => {
+    setConversationId(id);
+    setOnNewConversation(scroll);
+    scroll();
+  };
 
   return (
     <AppLayout>
@@ -147,10 +159,7 @@ export default function Chats() {
                     handleCreate({ variables: { to: e.id } }).then((x) => {
                       if (!x?.data?.createNewSession) return;
                       addSessions(x.data?.createNewSession);
-                      setConversationId(
-                        `${x.data?.createNewSession.id}`,
-                        x.data.createNewSession.toId
-                      );
+                      setConversationHandler(`${x.data?.createNewSession.id}`);
                       setShowSendModal(false);
                     });
                   }}
@@ -174,12 +183,18 @@ export default function Chats() {
 
       <Button
         fullWidth
-        onClick={() => setShowSendModal(!showSendModal)}
-        startIcon={<Icon>send</Icon>}
+        onClick={() => {
+          if (conversationId) {
+            setConversationId("");
+          } else {
+            setShowSendModal(!showSendModal);
+          }
+        }}
+        startIcon={<Icon>{conversationId ? "arrow_back" : "send"}</Icon>}
       >
-        KIRIM PESAN BARU
+        {conversationId ? "KEMBALI" : "KIRIM PESAN BARU"}
       </Button>
-      {(isDesktop || (isMobile && !conversationId)) && (
+      {!conversationId && (isDesktop || isMobile) && (
         <List
           sx={{
             width: "100%",
@@ -191,25 +206,30 @@ export default function Chats() {
             <Fragment key={e.id}>
               <ListItemButton
                 onClick={() => {
-                  setConversationId(e.id, e.fromId);
+                  setConversationHandler(e.id);
                 }}
                 selected={conversationId === e.id}
                 sx={{ width: "100%" }}
               >
-                <ListItemAvatar>
-                  <Avatar
-                    alt={e.from.name}
-                    src={e.from.profilePicturePath ?? "fallback"}
+                {getUsers(e.participantsIds)?.map((e) => (
+                  <ListItemAvatar key={e?.id}>
+                    <Avatar
+                      alt={e?.name}
+                      src={e?.profilePicturePath ?? "fallback"}
+                    />
+                  </ListItemAvatar>
+                ))}
+                {getUsers(e.participantsIds)?.map((e) => (
+                  <ListItemText
+                    key={e?.id}
+                    primary={e?.name}
+                    secondary={
+                      <Typography variant="caption" noWrap>
+                        {e && lastChatMap[e.id]?.content}
+                      </Typography>
+                    }
                   />
-                </ListItemAvatar>
-                <ListItemText
-                  primary={e.from.name}
-                  secondary={
-                    <Typography variant="caption" noWrap>
-                      {lastChatMap[e.from.id]?.content}
-                    </Typography>
-                  }
-                />
+                ))}
               </ListItemButton>
               <Divider variant="inset" component="li" />
             </Fragment>
@@ -221,18 +241,32 @@ export default function Chats() {
           sx={{
             display: "flex",
             minHeight: "100vh",
-            paddingBottom: 100,
+            paddingBottom: 10,
             flexDirection: "column",
             backgroundColor: "lightgray",
+            position: "relative",
           }}
         >
-          <Paper sx={{ p: 2, display: "flex", gap: 2, alignContent: "center" }}>
-            <Avatar
-              alt={session.from.name}
-              src={session.from.profilePicturePath ?? "fallback"}
-            />
+          <Paper
+            sx={{
+              p: 2,
+              width: "100%",
+              display: "flex",
+              gap: 2,
+              alignContent: "center",
+            }}
+          >
+            {getUsers(session.participantsIds)?.map((e) => (
+              <Avatar
+                key={e?.id}
+                alt={e?.name}
+                src={e?.profilePicturePath ?? "fallback"}
+              />
+            ))}
             <Typography noWrap variant="h5">
-              {session.from.name}
+              {getUsers(session.participantsIds)
+                ?.map((e) => e?.name)
+                ?.join(",")}
             </Typography>
           </Paper>
           <Box sx={{ p: 1, display: "flex", flexDirection: "column", gap: 1 }}>
@@ -240,11 +274,12 @@ export default function Chats() {
               <Paper
                 key={e.id}
                 sx={{
+                  mx: 2,
                   maxWidth: "85%",
                   p: 1,
-                  alignSelf:
-                    e.fromId !== session.from.id ? "flex-end" : "flex-start",
+                  alignSelf: e.fromId == user?.id ? "flex-end" : "flex-start",
                 }}
+                ref={lastChatElementRef}
               >
                 <Typography paragraph sx={{ wordWrap: "break-word" }}>
                   {e.content}
