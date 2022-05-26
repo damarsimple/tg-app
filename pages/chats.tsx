@@ -180,20 +180,18 @@ export default function Chats() {
           </List>
         </Box>
       </Modal>
-
-      <Button
-        fullWidth
-        onClick={() => {
-          if (conversationId) {
-            setConversationId("");
-          } else {
+      {!conversationId && (
+        <Button
+          fullWidth
+          sx={{ mt: 2 }}
+          onClick={() => {
             setShowSendModal(!showSendModal);
-          }
-        }}
-        startIcon={<Icon>{conversationId ? "arrow_back" : "send"}</Icon>}
-      >
-        {conversationId ? "KEMBALI" : "KIRIM PESAN BARU"}
-      </Button>
+          }}
+          startIcon={<Icon>{"send"}</Icon>}
+        >
+          {"KIRIM PESAN BARU"}
+        </Button>
+      )}
       {!conversationId && (isDesktop || isMobile) && (
         <List
           sx={{
@@ -244,7 +242,6 @@ export default function Chats() {
             paddingBottom: 10,
             flexDirection: "column",
             backgroundColor: "lightgray",
-            position: "relative",
           }}
         >
           <Paper
@@ -254,8 +251,16 @@ export default function Chats() {
               display: "flex",
               gap: 2,
               alignContent: "center",
+              position: "fixed",
             }}
           >
+            <IconButton
+              onClick={() => {
+                setConversationId("");
+              }}
+            >
+              <Icon>{"arrow_back"}</Icon>
+            </IconButton>
             {getUsers(session.participantsIds)?.map((e) => (
               <Avatar
                 key={e?.id}
@@ -263,13 +268,29 @@ export default function Chats() {
                 src={e?.profilePicturePath ?? "fallback"}
               />
             ))}
-            <Typography noWrap variant="h5">
-              {getUsers(session.participantsIds)
-                ?.map((e) => e?.name)
-                ?.join(",")}
-            </Typography>
+            <Box>
+              <Typography noWrap variant="h6">
+                {getUsers(session.participantsIds)
+                  ?.map((e) => e?.name)
+                  ?.join(",")}
+              </Typography>
+              {getUsers(session.participantsIds)?.length > 1 && (
+                <Typography noWrap variant="caption">
+                  dan {getUsers(session.participantsIds)?.length} orang lainnya.
+                </Typography>
+              )}
+            </Box>
           </Paper>
-          <Box sx={{ p: 1, display: "flex", flexDirection: "column", gap: 1 }}>
+          <Box
+            sx={{
+              p: 1,
+              display: "flex",
+              overflowY: "auto",
+              flexDirection: "column",
+              gap: 1,
+              pt: 10,
+            }}
+          >
             {conversations?.map((e) => (
               <Paper
                 key={e.id}

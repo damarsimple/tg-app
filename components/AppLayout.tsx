@@ -42,50 +42,14 @@ import { useChatStore } from "../stores/chats";
 import { useRouter } from "next/router";
 import { useDrawerStore } from "../stores/applayout";
 import BrowserOnly from "./BrowserOnly";
+import { useMediaQuery } from "@react-hook/media-query";
+import { toast } from "react-toastify";
+import { client } from "../modules/apollo";
+import { gql } from "@apollo/client";
+import { VerificationResponse } from "generated";
 
 const drawerWidth = 240;
 
-const Search = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginLeft: 0,
-  width: "100%",
-  [theme.breakpoints.up("sm")]: {
-    marginLeft: theme.spacing(1),
-    width: "auto",
-  },
-}));
-
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: "100%",
-  position: "absolute",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
-  "& .MuiInputBase-input": {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create("width"),
-    width: "100%",
-    [theme.breakpoints.up("sm")]: {
-      width: "12ch",
-      "&:focus": {
-        width: "20ch",
-      },
-    },
-  },
-}));
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
   transition: theme.transitions.create("width", {
@@ -114,7 +78,7 @@ const rolesFeatures: Record<
   TEACHER: [
     {
       name: "Meeting",
-      link: "/meeting",
+      link: "/meetings",
       icon: "videocam",
     },
     {
@@ -134,7 +98,7 @@ const rolesFeatures: Record<
     },
     {
       name: "Tugas",
-      link: "/classrooms",
+      link: "/assigments",
       icon: "task",
     },
     {
@@ -178,12 +142,12 @@ const rolesFeatures: Record<
   STUDENT: [
     {
       name: "Meeting",
-      link: "/school",
+      link: "/meetings",
       icon: "videocam",
     },
     {
       name: "Sekolah",
-      link: "/school",
+      link: "/schools",
       icon: "school",
     },
     {
@@ -286,6 +250,11 @@ const RolesTranslation: Record<string, string> = {
 };
 
 export default function AppLayout({ children }: { children: ReactNode }) {
+  const isDesktop = useMediaQuery("only screen and (min-width: 400px)");
+  const isMobile = useMediaQuery("only screen and (max-width: 768px)");
+
+  console.log(isMobile);
+
   const { push, pathname } = useRouter();
 
   const { open, handleDrawerClose, handleDrawerOpen } = useDrawerStore();
@@ -321,6 +290,41 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { notifications } = useNoticationStore();
   const isMenuOpen = Boolean(anchorEl);
   const unreadChats = chats?.filter((e) => e.readAt == null);
+
+  const [asked, setAsked] = useState(false);
+
+  const notifyEmailSent = () => toast("Wow so easy!");
+
+  const notifyEmailFailed = () => toast("Failed to send email");
+
+  const handleReverify = () => {
+    client
+      .mutate<{ resendVerification: VerificationResponse }>({
+        mutation: gql`
+          mutation Mutation($type: VerifyType!) {
+            resendVerification(type: $type) {
+              status
+              message
+            }
+          }
+        `,
+        variables: {
+          type: "EMAIL",
+        },
+      })
+      .then((res) => {
+        if (res.data?.resendVerification?.status) {
+          notifyEmailSent();
+        } else {
+          notifyEmailFailed();
+          console.log(res.data);
+        }
+
+        setAsked(true);
+      })
+      .catch(notifyEmailFailed);
+  };
+
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
@@ -346,36 +350,37 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <Box>
-      <CssBaseline />
+      <BrowserOnly>
+        <CssBaseline />
 
-      <AppBar position="fixed" open={open}>
-        <Toolbar sx={{ justifyContent: "space-between", display: "flex" }}>
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
-              edge="start"
-              sx={{
-                marginRight: 5,
-                ...(open && { display: "none" }),
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-            {!open && (
-              <Typography
-                variant="h6"
-                noWrap
-                component="div"
+        <AppBar position="fixed" open={open}>
+          <Toolbar sx={{ justifyContent: "space-between", display: "flex" }}>
+            <Toolbar>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="start"
                 sx={{
-                  display: { xs: "none", sm: "block" },
+                  marginRight: 5,
+                  ...(open && { display: "none" }),
                 }}
               >
-                TUGAS GURU
-              </Typography>
-            )}
-            {/* <Search>
+                <MenuIcon />
+              </IconButton>
+              {!open && (
+                <Typography
+                  variant="h6"
+                  noWrap
+                  component="div"
+                  sx={{
+                    display: { xs: "none", sm: "block" },
+                  }}
+                >
+                  TUGAS GURU
+                </Typography>
+              )}
+              {/* <Search>
               <SearchIconWrapper>
                 <SearchIcon />
               </SearchIconWrapper>
@@ -384,179 +389,198 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 inputProps={{ "aria-label": "search" }}
               />
             </Search> */}
-          </Toolbar>
-          <Toolbar>
-            <IconButton
-              size="large"
-              aria-label="show 4 new mails"
-              color="inherit"
-              onClick={() => {
-                setRole((role + 1) % ROLES.length);
-                setRoles(ROLES[role]);
-              }}
-            >
-              <Badge badgeContent={role + 1} color="error">
-                <Icon>update</Icon>
-              </Badge>
-            </IconButton>
-            <IconButton
-              size="large"
-              aria-label="show 4 new mails"
-              color="inherit"
-              onClick={() => {
-                push("/chats");
-              }}
-            >
-              <Badge badgeContent={unreadChats.length} color="error">
-                <MailIcon />
-              </Badge>
-            </IconButton>
-            <IconButton
-              size="large"
-              aria-label="show 17 new notifications"
-              color="inherit"
-              onClick={() => {
-                push("/notifications");
-              }}
-            >
-              <Badge badgeContent={notifications.length} color="error">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="primary-search-account-menu"
-              aria-haspopup="true"
-              color="inherit"
-              onClick={handleProfileMenuOpen}
-            >
-              <Avatar sx={{ height: 30, width: 30 }} />
-            </IconButton>
-          </Toolbar>
-        </Toolbar>
-      </AppBar>
-      <Drawer variant="permanent" open={open}>
-        <DrawerHeader>
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{
-              display: { xs: "none", sm: "block" },
-            }}
-          >
-            {RolesTranslation[roles] ?? roles}
-          </Typography>
-          <IconButton onClick={handleDrawerClose}>
-            <ChevronRightIcon />
-          </IconButton>
-        </DrawerHeader>
-        <Divider />
-        <List>
-          {[
-            {
-              name: "Dashboard",
-              link: "/dashboard",
-              icon: "home",
-            },
-          ].map((text, index) => (
-            <ListItem key={text.name} disablePadding>
-              <ListItemButton
+            </Toolbar>
+            <Toolbar>
+              <IconButton
+                size="large"
+                aria-label="show 4 new mails"
+                color="inherit"
                 onClick={() => {
-                  push(text.link);
+                  setRole((role + 1) % ROLES.length);
+                  setRoles(ROLES[role]);
                 }}
               >
-                <ListItemIcon>
-                  <Icon>{text.icon}</Icon>
-                </ListItemIcon>
-                <ListItemText primary={text.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {features?.map((text, index) => (
-            <ListItem key={text.name} disablePadding>
-              <ListItemButton
+                <Badge badgeContent={role + 1} color="error">
+                  <Icon>update</Icon>
+                </Badge>
+              </IconButton>
+              <IconButton
+                size="large"
+                aria-label="show 4 new mails"
+                color="inherit"
                 onClick={() => {
-                  push(text.link);
+                  push("/chats");
                 }}
               >
-                <ListItemIcon>
-                  <Icon>{text.icon}</Icon>
-                </ListItemIcon>
-                <ListItemText primary={text.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+                <Badge badgeContent={unreadChats.length} color="error">
+                  <MailIcon />
+                </Badge>
+              </IconButton>
+              <IconButton
+                size="large"
+                aria-label="show 17 new notifications"
+                color="inherit"
+                onClick={() => {
+                  push("/notifications");
+                }}
+              >
+                <Badge badgeContent={notifications.length} color="error">
+                  <NotificationsIcon />
+                </Badge>
+              </IconButton>
+              <IconButton
+                size="large"
+                aria-label="account of current user"
+                aria-controls="primary-search-account-menu"
+                aria-haspopup="true"
+                color="inherit"
+                onClick={handleProfileMenuOpen}
+              >
+                <Avatar sx={{ height: 30, width: 30 }} />
+              </IconButton>
+            </Toolbar>
+          </Toolbar>
+        </AppBar>
+        {(!isMobile || open) && (
+          <Drawer variant="permanent" open={open}>
+            <DrawerHeader>
+              <Typography
+                variant="h6"
+                component="div"
+                sx={{
+                  display: { xs: "none", sm: "block" },
+                }}
+              >
+                {RolesTranslation[roles] ?? roles}
+              </Typography>
+              <IconButton onClick={handleDrawerClose}>
+                <ChevronRightIcon />
+              </IconButton>
+            </DrawerHeader>
+            <Divider />
+            <List>
+              {[
+                {
+                  name: "Dashboard",
+                  link: "/dashboard",
+                  icon: "home",
+                },
+              ].map((text, index) => (
+                <ListItem key={text.name} disablePadding>
+                  <ListItemButton
+                    onClick={() => {
+                      push(text.link);
+                      handleDrawerClose();
+                    }}
+                  >
+                    <ListItemIcon>
+                      <Icon>{text.icon}</Icon>
+                    </ListItemIcon>
+                    <ListItemText primary={text.name} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+            <Divider />
+            <List>
+              {features?.map((text, index) => (
+                <ListItem key={text.name} disablePadding>
+                  <ListItemButton
+                    onClick={() => {
+                      push(text.link);
+                      handleDrawerClose();
+                    }}
+                  >
+                    <ListItemIcon>
+                      <Icon>{text.icon}</Icon>
+                    </ListItemIcon>
+                    <ListItemText primary={text.name} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
 
-        <Divider />
-        <List>
-          {[
-            {
-              name: "Bimbel",
-              link: "/bimbel",
-              icon: "group",
-            },
-          ].map((text, index) => (
-            <ListItem key={text.name} disablePadding>
-              <ListItemButton
-                onClick={() => {
-                  push(text.link);
-                }}
-              >
-                <ListItemIcon>
-                  <Icon>{text.icon}</Icon>
-                </ListItemIcon>
-                <ListItemText primary={text.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {[
-            {
-              name: "Chat",
-              link: "/chat",
-              icon: "chat",
-            },
-            {
-              name: "Transaksi",
-              link: "/transaction",
-              icon: "receipt_long",
-            },
-            {
-              name: "Notifikasi",
-              link: "/notification",
-              icon: "notifications",
-            },
-            {
-              name: "Profil",
-              link: "/profile",
-              icon: "manage_accounts",
-            },
-          ].map((text, index) => (
-            <ListItem key={text.name} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  <Icon>{text.icon}</Icon>
-                </ListItemIcon>
-                <ListItemText primary={text.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
+            <Divider />
+            <List>
+              {[
+                {
+                  name: "Bimbel",
+                  link: "/bimbel",
+                  icon: "group",
+                },
+              ].map((text, index) => (
+                <ListItem key={text.name} disablePadding>
+                  <ListItemButton
+                    onClick={() => {
+                      push(text.link);
+                      handleDrawerClose();
+                    }}
+                  >
+                    <ListItemIcon>
+                      <Icon>{text.icon}</Icon>
+                    </ListItemIcon>
+                    <ListItemText primary={text.name} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+            <Divider />
+            <List>
+              {[
+                {
+                  name: "Chat",
+                  link: "/chat",
+                  icon: "chat",
+                },
+                {
+                  name: "Transaksi",
+                  link: "/transaction",
+                  icon: "receipt_long",
+                },
+                {
+                  name: "Notifikasi",
+                  link: "/notification",
+                  icon: "notifications",
+                },
+                {
+                  name: "Profil",
+                  link: "/profile",
+                  icon: "manage_accounts",
+                },
+              ].map((text, index) => (
+                <ListItem key={text.name} disablePadding>
+                  <ListItemButton
+                    onClick={() => {
+                      push(text.link);
+                      handleDrawerClose();
+                    }}
+                  >
+                    <ListItemIcon>
+                      <Icon>{text.icon}</Icon>
+                    </ListItemIcon>
+                    <ListItemText primary={text.name} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          </Drawer>
+        )}
+      </BrowserOnly>
       <Box component="main">
         <DrawerHeader />
-        <Box sx={{ marginLeft: "56px" }}>{children}</Box>
+        <Box
+          sx={{
+            marginLeft: !isMobile || open ? "56px" : isMobile ? 1 : 10,
+            marginRight: !isMobile || open ? undefined : isMobile ? 1 : 3,
+            marginTop: 2,
+          }}
+        >
+          {children}
+        </Box>
         {renderMenu}
       </Box>
       <BrowserOnly>
-        {pathname == "/dashboard" && !!user?.emailVerifiedAt && (
+        {!asked && pathname == "/dashboard" && user?.emailVerifiedAt == null && (
           <Paper
             sx={{
               height: 50,
@@ -567,14 +591,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               position: "fixed",
               bottom: 0,
               zIndex: 99999,
-              paddingBottom: 5,
+              paddingBottom: 10,
+              paddingTop: 2,
+              backgroundColor: "lightgray",
             }}
           >
             <Typography variant="h5">Anda belum memverifikasi email</Typography>
-            <Typography variant="body2">
-              <Link href="/">
-                <a>klik disini untuk kirim ulang verifikasi email</a>
-              </Link>
+            <Typography variant="body2" onClick={handleReverify}>
+              <a>klik disini untuk kirim ulang verifikasi email</a>
             </Typography>
           </Paper>
         )}

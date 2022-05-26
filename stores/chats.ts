@@ -156,6 +156,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           }
         }
       `,
+      fetchPolicy: "network-only",
       variables: {
         where: {
           chatSessionId: {
@@ -164,7 +165,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         },
         orderBy: [
           {
-            createdAt: "desc",
+            createdAt: "asc",
           },
         ],
       },
@@ -172,6 +173,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
     if (findManyChat) {
       set({ conversationId, conversations: findManyChat });
+      if (get().onNewConversation) get().onNewConversation();
     }
   },
   conversations: [],
@@ -228,8 +230,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const userId = useUserStore.getState().user?.id;
 
     const chats_ = get().chats?.filter((e) => e.fromId !== userId);
-
-    console.log(chats_);
 
     if (chats_.map((e) => e.id).includes(chat.id)) return;
 
