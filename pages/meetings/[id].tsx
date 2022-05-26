@@ -191,6 +191,7 @@ export default function Id() {
           >
             {[...Array(10)].map((_, i) => (
               <Box
+                key={i}
                 sx={{
                   mt: 3,
                   height: 150,
